@@ -1,0 +1,35 @@
+[project]
+name = "ai-tutor"
+version = "0.20"
+description = "An AI interface with the Canvas Learning Management System"
+readme = "README.md"
+dependencies = [
+  "streamlit>=1.39.0",
+  "fastapi",
+  "openai",
+  "tiktoken",
+  "requests",
+  "bs4",
+  "lxml",
+  "ipython",
+  "SQLAlchemy",
+]
+
+[project.optional-dependencies]
+dev = ["black"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+target-version = ["py37"]
+
+[tool.ruff]
+line-length = 120
+output-format = "grouped"
+target-version = "py37"
+
+[tool.ruff.format]
+docstring-code-format = true
