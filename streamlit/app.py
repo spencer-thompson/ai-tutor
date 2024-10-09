@@ -44,4 +44,9 @@ dev_pages = []
 
 pages = {}
 
-st.navigation()
+pages["AI"] = [st.Page("chat.py", title="Chat", icon=":material/chat:", default=True)]
+
+
+pg = st.navigation(pages)
+
+pg.run()

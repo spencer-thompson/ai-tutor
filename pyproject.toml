@@ -5,7 +5,6 @@ description = "An AI interface with the Canvas Learning Management System"
 readme = "README.md"
 dependencies = [
   "streamlit>=1.39.0",
-  "fastapi",
   "openai",
   "tiktoken",
   "requests",
@@ -19,8 +18,11 @@ dependencies = [
 dev = ["black"]
 
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.setuptools.packages.find]
+include = ["streamlit"]
 
 [tool.black]
 line-length = 120
