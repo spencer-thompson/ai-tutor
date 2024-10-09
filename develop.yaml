@@ -1,0 +1,51 @@
+include:
+  - path: ./compose/mongo.yaml
+#   - path: ./streamlit/compose.yaml
+#     project_directory: ../
+#   - path: ./backend/compose.yaml
+#     project_directory: ../
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  streamlit:
+    build:
+      context: ./streamlit/
+      dockerfile: Dockerfile
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - __pycache__/
+    ports:
+      - "8501:8501"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.streamlit.loadbalancer.server.port=8501
+
+networks:
+  web:
+    external: false
