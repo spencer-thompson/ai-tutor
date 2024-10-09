@@ -9,6 +9,7 @@ import streamlit as st
 
 VERSION = 0.250
 
+# two collections, one for users, one for classes
 
 if "patterns" not in st.session_state:
     st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
