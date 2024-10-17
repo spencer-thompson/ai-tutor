@@ -24,17 +24,28 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  # backend:
+  #   build:
+  #     context: ./backend/
+  #     dockerfile: Dockerfile
+  #   command: fastapi dev main.py --proxy-headers --port 8080
+  #   ports:
+  #     - "8080:8080"
+
   streamlit:
     build:
       context: ./streamlit/
       dockerfile: Dockerfile
     command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN: ${DOMAIN}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
     develop:
       watch:
         - action: sync
-          path: ./frontend
+          path: ./streamlit
           target: /app
           ignore:
             - __pycache__/
