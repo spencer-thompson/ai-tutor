@@ -1,3 +1,9 @@
+"""
+FastAPI backend for the AI Tutor (webapp and mobile)
+
+Reference: https://medium.com/@ChanakaDev/mongodb-with-fastapi-1d5440880520
+"""
+
 import os
 from contextlib import asynccontextmanager
 from logging import info  # @asynccontextmanager
@@ -10,12 +16,13 @@ CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_
 # --- INIT ---
 
 
+@asynccontextmanager
 async def db_lifespan(app: FastAPI):
     # Startup
 
     app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)
-    app.database = app.mongodb_client.get_default_database()
-    ping_response = await app.database.command("ping")
+    app.mongodb = app.mongodb_client.get_default_database()  # can use `get_database()` method
+    ping_response = await app.mongodb.command("ping")
 
     if int(ping_response["ok"]) != 1:
         raise Exception("Problem connecting to database cluster.")
