@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "AI Tutor",
+  "description": "AI Tutor extension for Canvas.",
+  "version": "1.0",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_icon": "icon/icon-32.png",
+    "default_title": "Toggle Sidebar"
+  },
+  "sidebar_action": {
+    "default_title": "AI Tutor",
+    "default_panel": "sidepanel.html",
+    "default_icon": "icon/icon-32.png"
+  },
+  "permissions": ["activeTab"],
+  "icons": {
+    "16": "icon/icon-16.png",
+    "32": "icon/icon-32.png",
+    "128": "icon/icon-128.png"
+  }
+}

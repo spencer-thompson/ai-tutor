@@ -6,6 +6,7 @@ import os
 import re
 from collections import namedtuple
 
+import requests
 from pymongo import MongoClient
 
 import streamlit as st
@@ -17,6 +18,19 @@ if "mongo" not in st.session_state:
     st.session_state.mongo = MongoClient(
         f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@{os.getenv("DOMAIN")}'
     )
+
+if "backend" not in st.session_state:
+
+    def backend_get(data=None):  # TODO:
+        r = requests.get()
+
+    def backend_post():
+        pass
+
+    st.session_state.backend = namedtuple("Backend", ["get", "post"])(
+        backend_get,
+        backend_post,
+    )  # add more if needed
 
 
 if "user" not in st.session_state:
@@ -61,16 +75,18 @@ def logout():
 
 
 account_pages = [
-    st.Page(logout, title="Log out", icon=":material/logout:"),
+    st.Page(logout, title="Log Out", icon=":material/logout:"),
 ]
-user_pages = []
+user_pages = [
+    st.Page("./pages/chat.py", title="Chat", icon=":material/chat:", default=True),
+]
 dev_pages = [
     st.Page("./pages/session_state.py", title="Session State", icon=":material/settings:"),
 ]
 
 pages = {}
 
-pages["AI"] = [st.Page("chat.py", title="Chat", icon=":material/chat:", default=True)]
+pages["AI"] = []
 
 
 if len(pages) > 0:

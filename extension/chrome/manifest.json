@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "AI Tutor",
+  "description": "AI Tutor extension for Canvas.",
+  "version": "1.0",
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "permissions": ["sidePanel"]
+}

@@ -29,11 +29,19 @@ async def db_lifespan(app: FastAPI):
     app.mongodb_client.close()
 
 
-app = FastAPI(lifespan=db_lifespan)
+# app = FastAPI(lifespan=db_lifespan)
+app = FastAPI()
 
 # --- ENDPOINTS ---
 
 
 @app.get("/")
 async def read_root():
-    return {"Hello", "World"}
+    return {"Hello": "World"}
+
+
+@app.get("/test_user")
+async def test_user():
+    return {
+        "Hello": "World",
+    }

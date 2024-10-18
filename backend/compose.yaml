@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: fastapi run main.py --proxy-headers --port 8000
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - __pycache__/
+    # volumes:
+    #   - "./frontend/.streamlit/:/app/.streamlit/"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      # - traefik.http.routers.streamlit.entrypoints=web,websecure
+      - traefik.http.routers.streamlit.entrypoints=websecure
+      # - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`)
+      # - traefik.http.routers.streamlit.tls=true
+      # - traefik.http.routers.streamlit.tls.certresolver=production
+      # - traefik.http.services.streamlit.loadbalancer.server.port=8501
