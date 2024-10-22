@@ -2,6 +2,10 @@
 FastAPI backend for the AI Tutor (webapp and mobile)
 
 Reference: https://medium.com/@ChanakaDev/mongodb-with-fastapi-1d5440880520
+
+THOUGHTS:
+- This is going to be the "brain" of the whole project, where everything connects together
+  that being said we need to create a couple end points
 """
 
 import os
@@ -39,10 +43,17 @@ async def db_lifespan(app: FastAPI):
 # app = FastAPI(lifespan=db_lifespan)
 app = FastAPI()
 
-# --- ENDPOINTS ---
+# --- V1 ENDPOINTS --- #
+
+# NOTE: we will put all end points for now under the subdirectory `v1`
+# for example:
+# https://api.aitutor.live/v1/login
+
+# TODO: Setup authorization
+# I literally have no idea how to do this
 
 
-@app.get("/")
+@app.get("/")  # this is a test endpoint just to see if it working
 async def read_root():
     return {"Hello": "World"}
 
@@ -52,3 +63,17 @@ async def test_user():
     return {
         "Hello": "World",
     }
+
+
+# NOTE: we need to define the data that the endpoint takes, just like a function call
+# we need to figure out the required and not required parameters for each
+
+# TODO: | /v1/ingest
+# something like this to send data from extension
+
+# TODO: | /v1/login
+#       | /v1/logout
+# just an endpoint(s) to login/logout
+
+# TODO: | /v1/message
+# get a message from the tutor aka send a message to the tutor and get a response back
