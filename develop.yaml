@@ -1,9 +1,5 @@
-include:
-  - path: ./compose/mongo.yaml
-#   - path: ./streamlit/compose.yaml
-#     project_directory: ../
-#   - path: ./backend/compose.yaml
-#     project_directory: ../
+# include:
+#   - path: ./compose/mongo.yaml
 
 services:
   traefik:
@@ -24,13 +20,63 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # backend:
-  #   build:
-  #     context: ./backend/
-  #     dockerfile: Dockerfile
-  #   command: fastapi dev main.py --proxy-headers --port 8080
+  fastapi:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: fastapi dev main.py --host 0.0.0.0 --port 8080
+    # TODO: add watch
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/
+          target: /app
+          ignore:
+            - __pycache__/
+    environment:
+      CHAT_MODEL: ${CHAT_MODEL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "8080:8080"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: unless-stopped
+    # entrypoint: ["/usr/bin/mongod", "--bind_ip_all"] # oh my god
+    command: >
+      bash -c "
+      mongod --bind_ip_all &&
+      mongoimport -d aitutor -c users --file /tmp/users.json --drop
+      "
+    ports:
+      - "27017:27017"
+    networks:
+      - web
+    volumes:
+      - ./dev/users.json:/tmp/users.json
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+  # mongo-express: # view from web
+  #   image: mongo-express
+  #   restart: unless-stopped
   #   ports:
-  #     - "8080:8080"
+  #     - 8081:8081
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: example
+  #     ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+  #     ME_CONFIG_BASICAUTH: false
 
   streamlit:
     build:
@@ -38,10 +84,8 @@ services:
       dockerfile: Dockerfile
     command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
       DOMAIN: ${DOMAIN}
-      MONGO_USERNAME: ${MONGO_USERNAME}
-      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      BACKEND: ${BACKEND}
     develop:
       watch:
         - action: sync
@@ -60,3 +104,6 @@ services:
 networks:
   web:
     external: false
+
+volumes:
+  mongo-data:

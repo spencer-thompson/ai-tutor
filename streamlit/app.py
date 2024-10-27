@@ -7,25 +7,27 @@ import re
 from collections import namedtuple
 
 import requests
-from pymongo import MongoClient
 
 import streamlit as st
 
 VERSION = 0.250
 
-# two collections, one for users, one for classes
-if "mongo" not in st.session_state:
-    st.session_state.mongo = MongoClient(
-        f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@{os.getenv("DOMAIN")}'
-    )
 
 if "backend" not in st.session_state:
 
-    def backend_get(data=None):  # TODO:
-        r = requests.get()
+    def backend_get(endpoint: str = "", data: dict | None = None):  # TODO:
+        r = requests.get(url=os.getenv("BACKEND") + endpoint, json=data)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            st.warning(f"Error: {r.status_code}")
 
-    def backend_post():
-        pass
+    def backend_post(endpoint: str = "", data: dict | None = None):
+        r = requests.post(url=os.getenv("BACKEND") + endpoint, json=data)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            st.warning(f"Error: {r.status_code}")
 
     st.session_state.backend = namedtuple("Backend", ["get", "post"])(
         backend_get,
@@ -78,19 +80,20 @@ account_pages = [
     st.Page(logout, title="Log Out", icon=":material/logout:"),
 ]
 user_pages = [
-    st.Page("./pages/chat.py", title="Chat", icon=":material/chat:", default=True),
+    st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
 ]
 dev_pages = [
-    st.Page("./pages/session_state.py", title="Session State", icon=":material/settings:"),
+    st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
 ]
 
 pages = {}
 
-pages["AI"] = []
+pages["AI"] = user_pages
+pages["DEV"] = dev_pages
 
 
 if len(pages) > 0:
-    pg = st.navigation(pages)
+    # pg = st.navigation(pages)
     pg = st.navigation({"Profile": account_pages} | pages)
 
 else:

@@ -1,0 +1,5 @@
+{"user_id": "001", "first_name": "John Doe", "last_name": "l_n", "is_active": true, "roles": ["admin", "editor"], "created_at": "2023-01-15T08:30:00Z"}
+{"user_id": "002", "first_name": "Jane Smith", "last_name": "l_n", "is_active": false, "roles": ["viewer"], "created_at": "2023-02-20T10:00:00Z"}
+{"user_id": "003", "first_name": "Alice Johnson", "last_name": "l_n", "is_active": true, "roles": ["editor"], "created_at": "2023-03-10T14:45:00Z"}
+{"user_id": "004", "first_name": "Bob Brown", "last_name": "l_n", "is_active": true, "roles": ["admin"], "created_at": "2023-04-05T09:15:00Z"}
+{"user_id": "005", "first_name": "Emily Davis", "last_name": "l_n", "is_active": false, "roles": ["viewer", "editor"], "created_at": "2023-05-12T11:30:00Z"}

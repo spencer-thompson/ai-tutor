@@ -11,22 +11,29 @@ THOUGHTS:
 import os
 from contextlib import asynccontextmanager
 from logging import info  # @asynccontextmanager
+from typing import List
 
 from fastapi import FastAPI
+from models import Message
 from motor.motor_asyncio import AsyncIOMotorClient
+from openai import AsyncOpenAI
 
-CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@{os.getenv("DOMAIN")}'
+CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo'
+CHAT_MODEL = os.getenv("CHAT_MODEL")
+
 
 # --- INIT ---
-
-
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
     # Startup
 
+    # setup mongo
     app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)
-    app.mongodb = app.mongodb_client.get_default_database()  # can use `get_database()` method
+    app.mongodb = app.mongodb_client.get_database("aitutor")
     ping_response = await app.mongodb.command("ping")
+
+    # Setup OpenAI
+    app.openai = AsyncOpenAI()
 
     if int(ping_response["ok"]) != 1:
         raise Exception("Problem connecting to database cluster.")
@@ -40,8 +47,8 @@ async def db_lifespan(app: FastAPI):
     app.mongodb_client.close()
 
 
-# app = FastAPI(lifespan=db_lifespan)
-app = FastAPI()
+app = FastAPI(lifespan=db_lifespan)
+# app = FastAPI()
 
 # --- V1 ENDPOINTS --- #
 
@@ -60,9 +67,22 @@ async def read_root():
 
 @app.get("/test_user")
 async def test_user():
-    return {
-        "Hello": "World",
-    }
+    users = await app.mongodb["users"].find().to_list(None)
+    # Convert ObjectId to string
+    for user in users:
+        # TODO: implement modeling to avoid this
+        # This is just a workaround for now
+        user["_id"] = str(user["_id"])
+    return users
+
+
+@app.post("/v1/chat")
+async def chat(messages: List[Message]):
+    completion = await app.openai.chat.completions.create(
+        messages=messages,
+        model=CHAT_MODEL,
+    )
+    return completion.choices[0].message
 
 
 # NOTE: we need to define the data that the endpoint takes, just like a function call

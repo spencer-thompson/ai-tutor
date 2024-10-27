@@ -3,6 +3,7 @@ services:
     image: mongo
     container_name: mongo
     restart: unless-stopped
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all"] # oh my god
     ports:
       - "27017:27017"
     volumes:
