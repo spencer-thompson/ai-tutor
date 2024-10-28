@@ -10,16 +10,20 @@ THOUGHTS:
 
 import os
 from contextlib import asynccontextmanager
-from logging import info  # @asynccontextmanager
+from logging import info
 from typing import List
 
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse  # TODO: add streaming response
 from models import Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
 CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo'
 CHAT_MODEL = os.getenv("CHAT_MODEL")
+
+# TODO: Add API keys properly,
+# this will fix issue #7
 
 
 # --- INIT ---
@@ -55,9 +59,6 @@ app = FastAPI(lifespan=db_lifespan)
 # NOTE: we will put all end points for now under the subdirectory `v1`
 # for example:
 # https://api.aitutor.live/v1/login
-
-# TODO: Setup authorization
-# I literally have no idea how to do this
 
 
 @app.get("/")  # this is a test endpoint just to see if it working

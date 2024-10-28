@@ -4,7 +4,6 @@
 services:
   traefik:
     image: traefik:latest
-    container_name: traefik
     restart: unless-stopped
     command:
       - "--log.level=DEBUG"
@@ -25,7 +24,6 @@ services:
       context: ./backend/
       dockerfile: Dockerfile
     command: fastapi dev main.py --host 0.0.0.0 --port 8080
-    # TODO: add watch
     develop:
       watch:
         - action: sync
@@ -38,6 +36,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       MONGO_USERNAME: ${MONGO_USERNAME}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+    depends_on:
+      - mongo
     ports:
       - "8080:8080"
     networks:
@@ -48,7 +48,6 @@ services:
 
   mongo:
     image: mongo
-    container_name: mongo
     restart: unless-stopped
     # entrypoint: ["/usr/bin/mongod", "--bind_ip_all"] # oh my god
     command: >
@@ -93,6 +92,8 @@ services:
           target: /app
           ignore:
             - __pycache__/
+    depends_on:
+      - fastapi
     ports:
       - "8501:8501"
     networks:
