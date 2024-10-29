@@ -19,7 +19,7 @@ from models import Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
-CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo'
+CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 
 # TODO: Add API keys properly,

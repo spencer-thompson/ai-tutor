@@ -7,4 +7,6 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
+RUN python util.py
+
 EXPOSE 8501

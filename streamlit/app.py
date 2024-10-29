@@ -7,11 +7,11 @@ import re
 from collections import namedtuple
 
 import requests
+from util import inject_header, style
 
 import streamlit as st
 
 VERSION = 0.250
-
 
 if "backend" not in st.session_state:
 
@@ -94,6 +94,7 @@ pages["DEV"] = dev_pages
 
 if len(pages) > 0:
     # pg = st.navigation(pages)
+    st.html(style())  # Only call after login for speedy fast page loads
     pg = st.navigation({"Profile": account_pages} | pages)
 
 else:

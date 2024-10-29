@@ -1,0 +1,55 @@
+/* hide 0-height iframes */
+.element-container:has(iframe[height="0"]) {
+  display: none;
+}
+
+/* less space between header elements */
+hr {
+  margin-top: 0rem;
+  margin-bottom: 2rem;
+}
+
+.reportview-container {
+  margin-top: -2em;
+}
+
+/* #MainMenu { */
+/*   visibility: hidden; */
+/* } */
+
+.stAppDeployButton {
+  visibility: hidden;
+}
+
+footer {
+  visibility: hidden;
+}
+
+#stDecoration {
+  display: none;
+}
+
+/* fonts */
+textarea,
+strong,
+.st-ax,
+body,
+html,
+em,
+hi,
+a,
+li,
+p {
+  font-family: "Montserrat";
+}
+
+pre,
+code,
+/* .token, */
+h2,
+span,
+kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-optical-sizing: auto;
+  /* font-style: normal; */
+}

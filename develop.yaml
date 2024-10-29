@@ -49,7 +49,13 @@ services:
   mongo:
     image: mongo
     restart: unless-stopped
-    # entrypoint: ["/usr/bin/mongod", "--bind_ip_all"] # oh my god
+    # entrypoint:
+    # - /usr/bin/mongod
+    # - --bind_ip_all
+    # - "--auth"
+    # - "--authenticationDatabase"
+    # - "admin"
+    # oh my god
     command: >
       bash -c "
       mongod --bind_ip_all &&
@@ -62,10 +68,11 @@ services:
     volumes:
       - ./dev/users.json:/tmp/users.json
       - mongo-data:/data/db
+      # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-
+      # MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
   # mongo-express: # view from web
   #   image: mongo-express
   #   restart: unless-stopped
