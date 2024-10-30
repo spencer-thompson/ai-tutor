@@ -15,14 +15,17 @@ from logging import info
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader
-from models import Message
+from models import CanvasData, Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
 CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
 CHAT_MODEL = os.getenv("CHAT_MODEL")
+BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
+
 
 # TODO: Add API keys properly,
 # this will fix issue #7
@@ -54,7 +57,14 @@ async def db_lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=db_lifespan)
-header_scheme = APIKeyHeader(name="AITUTOR-API-KEY")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://uvu.instructure.com"],  # List the allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+header_scheme = APIKeyHeader(name=BACKEND_API_KEY_NAME)
 
 
 async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
@@ -94,6 +104,15 @@ async def test_user():
         # This is just a workaround for now
         user["_id"] = str(user["_id"])
     return users
+
+
+@app.post("/v1/ingest")
+async def ingest_data(user_data: CanvasData):
+    user_dict = dict(user_data)
+    users = await app.mongodb["users"].update_one(
+        {"canvas_id": user_dict["canvas_id"]}, {"$set": dict(user_data)}, upsert=True
+    )
+    print(users)
 
 
 @app.post("/v1/chat")

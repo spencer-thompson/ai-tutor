@@ -26,3 +26,12 @@ class Message(BaseModel):
     name: str
     role: Literal["user", "assistant"]
     content: str
+
+
+class CanvasData(BaseModel):
+    institution: str
+    canvas_id: int
+    first_name: str
+    last_name: str
+    avatar_url: str
+    # effective_local: str

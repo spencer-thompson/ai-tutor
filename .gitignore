@@ -1,6 +1,9 @@
 .envrc
 .venv/
 
+### JS ###
+node_modules/
+
 ### PYTHON ###
 
 # Byte-compiled / optimized / DLL files

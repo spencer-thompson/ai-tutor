@@ -1,7 +1,7 @@
 // Connect to admin database and create an admin user
 db = db.getSiblingDB("admin");
 
-if (db.system.users.find({ user: "adminUser" }).count() === 0) {
+if (db.system.users.find({ user: "user" }).count() === 0) {
   db.createUser({
     user: "user",
     pwd: "pass",
@@ -25,7 +25,7 @@ print("Users inserted into aitutor database");
 
 // Insert a test API key into the keys collection, replacing if it exists
 db.keys.updateOne(
-  { apiKey: "test-api-key" },
+  { apiKey: "test_key" },
   { $set: { description: "This is a test API key" } },
   { upsert: true },
 );

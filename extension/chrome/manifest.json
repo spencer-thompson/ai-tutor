@@ -6,8 +6,14 @@
   "background": {
     "service_worker": "service-worker.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://*.instructure.com/*"],
+      "js": ["content.bundle.js"]
+    }
+  ],
   "side_panel": {
     "default_path": "sidepanel.html"
   },
-  "permissions": ["sidePanel"]
+  "permissions": ["sidePanel", "storage"]
 }

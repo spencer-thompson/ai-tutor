@@ -6,7 +6,7 @@ services:
     image: traefik:latest
     restart: unless-stopped
     command:
-      - "--log.level=DEBUG"
+      # - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -34,6 +34,7 @@ services:
     environment:
       CHAT_MODEL: ${CHAT_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
       MONGO_USERNAME: ${MONGO_USERNAME}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
     depends_on:
@@ -55,6 +56,7 @@ services:
     entrypoint:
       - /usr/bin/mongod
       - --bind_ip_all
+    # entrypoint: sh -c "mongod --bind_ip_all && mongosh --file /tmp/mongo-dev-init.js"
     # - "--auth"
     # - "--authenticationDatabase"
     # - "admin"
@@ -73,8 +75,9 @@ services:
     volumes:
       - ./dev/users.json:/tmp/users.json
       - ./dev/keys.json:/tmp/keys.json
-      - ./dev/mongo-dev-init.js:/docker-entrypoint-initdb.d/mongo-dev-init.js
-      - mongo-data:/data/db
+      - ./mongo/mongo-dev-init.js:/tmp/mongo-dev-init.js
+      - ./dev/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      # - mongo-data:/data/db
       # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
@@ -100,6 +103,8 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
       BACKEND: ${BACKEND}
+      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
     develop:
       watch:
         - action: sync
@@ -120,6 +125,5 @@ services:
 networks:
   web:
     external: false
-
-volumes:
-  mongo-data:
+# volumes:
+#   mongo-data:

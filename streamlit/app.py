@@ -15,23 +15,27 @@ import streamlit as st
 VERSION = 0.250
 
 if "backend" not in st.session_state:  # maybe change to a class?
+    base_url = os.getenv("BACKEND")
+    headers = {
+        os.getenv("BACKEND_API_KEY_NAME"): os.getenv("BACKEND_API_KEY"),
+    }
 
     def backend_get(endpoint: str = "", data: dict | None = None):
-        r = requests.get(url=os.getenv("BACKEND") + endpoint, json=data)
+        r = requests.get(url=base_url + endpoint, headers=headers, json=data)
         if r.status_code == 200:
             return r.json()
         else:
             st.warning(f"Error: {r.status_code}")
 
     def backend_post(endpoint: str = "", data: dict | None = None):
-        r = requests.post(url=os.getenv("BACKEND") + endpoint, json=data)
+        r = requests.post(url=base_url + endpoint, headers=headers, json=data)
         if r.status_code == 200:
             return r.json()
         else:
             st.warning(f"Error: {r.status_code}")
 
     def backend_post_stream(endpoint: str = "", data: dict | None = None):
-        r = requests.post(url=os.getenv("BACKEND") + endpoint, json=data, stream=True)
+        r = requests.post(url=base_url + endpoint, headers=headers, json=data, stream=True)
         r.raise_for_status()
         for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
             if chunk:
