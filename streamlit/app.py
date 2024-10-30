@@ -2,20 +2,21 @@
 Entry point for streamlit
 """
 
+import json
 import os
 import re
 from collections import namedtuple
 
 import requests
-from util import inject_header, style
+from util import style
 
 import streamlit as st
 
 VERSION = 0.250
 
-if "backend" not in st.session_state:
+if "backend" not in st.session_state:  # maybe change to a class?
 
-    def backend_get(endpoint: str = "", data: dict | None = None):  # TODO:
+    def backend_get(endpoint: str = "", data: dict | None = None):
         r = requests.get(url=os.getenv("BACKEND") + endpoint, json=data)
         if r.status_code == 200:
             return r.json()
@@ -29,15 +30,26 @@ if "backend" not in st.session_state:
         else:
             st.warning(f"Error: {r.status_code}")
 
-    st.session_state.backend = namedtuple("Backend", ["get", "post"])(
+    def backend_post_stream(endpoint: str = "", data: dict | None = None):
+        r = requests.post(url=os.getenv("BACKEND") + endpoint, json=data, stream=True)
+        r.raise_for_status()
+        for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
+            if chunk:
+                try:
+                    yield json.loads(chunk)  # .decode("utf-8")
+                except UnicodeDecodeError as e:
+                    st.error(e)
+
+    st.session_state.backend = namedtuple("Backend", ["get", "post", "post_stream"])(
         backend_get,
         backend_post,
+        backend_post_stream,
     )  # add more if needed
 
 
 if "user" not in st.session_state:
     User = namedtuple("User", ["id", "name", "mobile"])
-    st.session_state.user = {"mobile": False}
+    st.session_state.user = {"mobile": False, "role": None}
     # HACK: Temporary
 
 
@@ -59,7 +71,7 @@ st.set_page_config(
     page_title="AI Tutor",
     page_icon=":mortar_board:",
     layout=st.session_state.layout,
-    initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "expanded",
+    initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "auto",
     menu_items={
         "Get Help": None,  # url
         "Report a bug": None,  # url
@@ -67,13 +79,21 @@ st.set_page_config(
     },
 )
 
+st.html(style())
+
 
 def login():
     st.header("Log in")
+    if st.button("login"):
+        st.session_state.user["role"] = "dev"
+        st.rerun()
+    else:
+        st.stop()
 
 
 def logout():
-    pass
+    del st.session_state.user
+    st.rerun()
 
 
 account_pages = [
@@ -82,22 +102,28 @@ account_pages = [
 user_pages = [
     st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
 ]
+info_pages = [st.Page("./page/about.py", title="About", icon=":material/info:")]
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
 ]
 
 pages = {}
 
-pages["AI"] = user_pages
-pages["DEV"] = dev_pages
+if st.session_state.user["role"] in ["normal", "admin"]:
+    pages["AI"] = user_pages
+    pages["INFO"] = info_pages
+
+
+if st.session_state.user["role"] in ["dev"]:
+    pages["AI"] = user_pages
+    pages["INFO"] = info_pages
+    pages["DEV"] = dev_pages
 
 
 if len(pages) > 0:
-    # pg = st.navigation(pages)
-    st.html(style())  # Only call after login for speedy fast page loads
-    pg = st.navigation({"Profile": account_pages} | pages)
+    pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
 
 else:
-    pg = st.navigation([st.Page(login)])
+    pg = st.navigation([st.Page(login)], expanded=True)
 
 pg.run()

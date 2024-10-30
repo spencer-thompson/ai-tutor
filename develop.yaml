@@ -49,29 +49,37 @@ services:
   mongo:
     image: mongo
     restart: unless-stopped
-    # entrypoint:
-    # - /usr/bin/mongod
-    # - --bind_ip_all
+    # build:
+    #   context: ./mongo/
+    #   dockerfile: Dockerfile
+    entrypoint:
+      - /usr/bin/mongod
+      - --bind_ip_all
     # - "--auth"
     # - "--authenticationDatabase"
     # - "admin"
     # oh my god
-    command: >
-      bash -c "
-      mongod --bind_ip_all &&
-      mongoimport -d aitutor -c users --file /tmp/users.json --drop
-      "
+    # command: >
+    #   bash -c "
+    #   mongod --bind_ip_all;
+    #   mongoimport -d aitutor -c users --file /tmp/users.json --drop;
+    #   mongoimport -d aitutor -c keys --file /tmp/keys.json --drop;
+    #   mongosh --file /tmp/mongo-dev-init.js;
+    #   "
     ports:
       - "27017:27017"
     networks:
       - web
     volumes:
       - ./dev/users.json:/tmp/users.json
+      - ./dev/keys.json:/tmp/keys.json
+      - ./dev/mongo-dev-init.js:/docker-entrypoint-initdb.d/mongo-dev-init.js
       - mongo-data:/data/db
       # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
       # MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
   # mongo-express: # view from web
   #   image: mongo-express

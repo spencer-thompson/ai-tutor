@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    # entrypoint:
+    # - /usr/bin/mongod
+    # - --bind_ip_all
+    # - "--auth"
+    # - "--authenticationDatabase"
+    # - "admin"
+    # oh my god
+    command: >
+      bash -c "
+      mongod --bind_ip_all &&
+      mongoimport -d aitutor -c users --file /tmp/users.json --drop
+      "
+    ports:
+      - "27017:27017"
+    networks:
+      - web
+    volumes:
+      - ./dev/users.json:/tmp/users.json
+      - mongo-data:/data/db
+      # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+volumes:
+  mongo-data:

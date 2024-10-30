@@ -4,4 +4,5 @@ st.header("Session State")
 st.write(st.session_state)
 
 st.subheader("Context")
-st.write(st.context)
+st.write(st.context.cookies)
+st.write(st.context.headers)

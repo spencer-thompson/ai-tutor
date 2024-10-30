@@ -8,13 +8,15 @@ THOUGHTS:
   that being said we need to create a couple end points
 """
 
+import json
 import os
 from contextlib import asynccontextmanager
 from logging import info
 from typing import List
 
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse  # TODO: add streaming response
+from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi.responses import StreamingResponse
+from fastapi.security import APIKeyHeader
 from models import Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
@@ -52,7 +54,19 @@ async def db_lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=db_lifespan)
-# app = FastAPI()
+header_scheme = APIKeyHeader(name="AITUTOR-API-KEY")
+
+
+async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
+    document = await app.mongodb["keys"].find_one({api_key: {"$exists": True}})
+    if document:
+        return [v for k, v in document.items() if k not in {"_id"}][0]
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid API key",
+        )
+
 
 # --- V1 ENDPOINTS --- #
 
@@ -64,6 +78,11 @@ app = FastAPI(lifespan=db_lifespan)
 @app.get("/")  # this is a test endpoint just to see if it working
 async def read_root():
     return {"Hello": "World"}
+
+
+@app.get("/key")
+async def get_key(api_key_value: dict = Depends(check_api_key)):
+    return api_key_value
 
 
 @app.get("/test_user")
@@ -78,12 +97,30 @@ async def test_user():
 
 
 @app.post("/v1/chat")
-async def chat(messages: List[Message]):
+async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_key)):
     completion = await app.openai.chat.completions.create(
         messages=messages,
         model=CHAT_MODEL,
     )
     return completion.choices[0].message
+
+
+@app.post("/v1/chat_stream")
+async def chat_stream(messages: List[Message]):
+    async def iter_response(messages):
+        completion = await app.openai.chat.completions.create(
+            messages=messages,
+            model=CHAT_MODEL,
+            logprobs=True,
+            stream=True,
+        )
+        async for chunk in completion:
+            delta = chunk.choices[0].delta
+            if delta.content:
+                # yield {"content": chunk.choices[0].delta.content}
+                yield json.dumps({"content": chunk.choices[0].delta.content})
+
+    return StreamingResponse(iter_response(messages), media_type="application/json")
 
 
 # NOTE: we need to define the data that the endpoint takes, just like a function call
