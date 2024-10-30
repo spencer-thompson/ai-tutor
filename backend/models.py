@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -24,5 +24,5 @@ class User(BaseModel):
 
 class Message(BaseModel):
     name: str
-    role: str
+    role: Literal["user", "assistant"]
     content: str
