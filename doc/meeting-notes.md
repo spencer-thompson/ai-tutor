@@ -90,3 +90,42 @@
   - Develop a chat interface customized for university use with Canvas LMS via a browser extension.
   - Potential for a live voice interaction feature.
   - Implement new features to pull live data from Canvas using a crowdsourcing approach.
+ 
+---
+
+# Meeting Notes
+
+## Topics Discussed
+
+### Apache Airflow
+- Asmaa mentioned that **Apache Airflow** is a tool to assist with the data pipeline.
+
+### MongoDB
+- There are **3 collections** in MongoDB related to the project.
+
+## Plan for the Week
+- Asmaa reiterated that **Apache Airflow** will be crucial for the data pipeline.
+
+### Key Milestone
+- By **Friday, November 8th**, we aim to have:
+  - A **working system**.
+  - A **browser extension**.
+  - A **working app**.
+  - **Airflow** fully functional.
+
+## Demo Planning
+- Schedule a demo for the **second week of December**.
+- Identify **1 to 3 use cases** to showcase during the demonstration.
+- Explore the possibility of adapting this into **different learning systems** in the future.
+- Include a demonstration of the **mobile app**.
+
+## User Types and Requirements
+- **Developer**: Needs for building and maintaining the system.
+- **Students**: Interface and data necessary for learning purposes.
+- **Teacher**: Insights required to effectively help their students.
+- **Researcher**: Types of data needed for research analysis.
+
+## Risks
+- **Data Latency**: Time for data to be processed and appear on the mobile app.
+- **User Experience**: Potential issues with users needing to download multiple apps.
+
