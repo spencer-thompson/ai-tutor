@@ -22,13 +22,18 @@ from models import CanvasData, Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
+BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
 CHAT_MODEL = os.getenv("CHAT_MODEL")
-BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
-
-
-# TODO: Add API keys properly,
-# this will fix issue #7
+SYSTEM_MESSAGE = [
+    {
+        "role": "system",
+        "content": """
+    You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
+    Respond in a concise and effictive manner. Format your response in github flavored markdown.
+    """,
+    }
+]
 
 
 # --- INIT ---
@@ -108,10 +113,8 @@ async def test_user():
 
 @app.post("/v1/ingest")
 async def ingest_data(user_data: CanvasData):
-    user_dict = dict(user_data)
-    users = await app.mongodb["users"].update_one(
-        {"canvas_id": user_dict["canvas_id"]}, {"$set": dict(user_data)}, upsert=True
-    )
+    user_dict = user_data.dict()
+    users = await app.mongodb["users"].update_one(user_dict, {"$set": user_data}, upsert=True)
     print(users)
 
 
@@ -125,18 +128,19 @@ async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_
 
 
 @app.post("/v1/chat_stream")
-async def chat_stream(messages: List[Message]):
+async def chat_stream(messages: List[Message], api_key_value: dict = Depends(check_api_key)):
     async def iter_response(messages):
         completion = await app.openai.chat.completions.create(
-            messages=messages,
+            messages=SYSTEM_MESSAGE + messages,
             model=CHAT_MODEL,
             logprobs=True,
             stream=True,
+            top_p=0.5,
+            # stream_options={"include_usage": True}, # currently errors out
         )
         async for chunk in completion:
             delta = chunk.choices[0].delta
             if delta.content:
-                # yield {"content": chunk.choices[0].delta.content}
                 yield json.dumps({"content": chunk.choices[0].delta.content})
 
     return StreamingResponse(iter_response(messages), media_type="application/json")
@@ -144,9 +148,6 @@ async def chat_stream(messages: List[Message]):
 
 # NOTE: we need to define the data that the endpoint takes, just like a function call
 # we need to figure out the required and not required parameters for each
-
-# TODO: | /v1/ingest
-# something like this to send data from extension
 
 # TODO: | /v1/login
 #       | /v1/logout

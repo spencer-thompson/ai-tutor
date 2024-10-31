@@ -29,6 +29,12 @@ footer {
   display: none;
 }
 
+.st-af,
+.st-ae {
+  /* stupid stars */
+  justify-content: center;
+}
+
 /* fonts */
 textarea,
 strong,
@@ -43,11 +49,12 @@ p {
   font-family: "Montserrat";
 }
 
-pre,
 code,
+pre,
 /* .token, */
 h1,
 h2,
+.st-b8,
 span,
 kbd {
   font-family: "JetBrains Mono", monospace;

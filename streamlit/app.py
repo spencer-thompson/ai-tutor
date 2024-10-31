@@ -12,7 +12,7 @@ from util import style
 
 import streamlit as st
 
-VERSION = 0.250
+VERSION = 1.000
 
 if "backend" not in st.session_state:  # maybe change to a class?
     base_url = os.getenv("BACKEND")
@@ -40,7 +40,7 @@ if "backend" not in st.session_state:  # maybe change to a class?
         for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
             if chunk:
                 try:
-                    yield json.loads(chunk)  # .decode("utf-8")
+                    yield json.loads(chunk)
                 except UnicodeDecodeError as e:
                     st.error(e)
 
@@ -48,12 +48,12 @@ if "backend" not in st.session_state:  # maybe change to a class?
         backend_get,
         backend_post,
         backend_post_stream,
-    )  # add more if needed
+    )
 
 
 if "user" not in st.session_state:
     User = namedtuple("User", ["id", "name", "mobile"])
-    st.session_state.user = {"mobile": False, "role": None}
+    st.session_state.user = {"mobile": False, "role": None, "id": "1", "name": "Spencer"}
     # HACK: Temporary
 
 
@@ -87,7 +87,7 @@ st.html(style())
 
 
 def login():
-    st.header("Log in")
+    st.header("Log In")
     if st.button("login"):
         st.session_state.user["role"] = "dev"
         st.rerun()
@@ -106,7 +106,9 @@ account_pages = [
 user_pages = [
     st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
 ]
-info_pages = [st.Page("./page/about.py", title="About", icon=":material/info:")]
+info_pages = [
+    st.Page("./page/about.py", title="About", icon=":material/info:"),
+]
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
 ]
@@ -131,3 +133,5 @@ else:
     pg = st.navigation([st.Page(login)], expanded=True)
 
 pg.run()
+
+st.sidebar.caption(f"* AI Tutor Version: :green-background[{VERSION}]")

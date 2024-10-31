@@ -73,11 +73,11 @@ services:
     networks:
       - web
     volumes:
-      - ./dev/users.json:/tmp/users.json
-      - ./dev/keys.json:/tmp/keys.json
-      - ./mongo/mongo-dev-init.js:/tmp/mongo-dev-init.js
-      - ./dev/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      # - mongo-data:/data/db
+      # - ./dev/users.json:/tmp/users.json
+      # - ./dev/keys.json:/tmp/keys.json
+      # - ./mongo/mongo-dev-init.js:/tmp/mongo-dev-init.js
+      # - ./dev/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongo-data:/data/db
       # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
@@ -125,5 +125,6 @@ services:
 networks:
   web:
     external: false
-# volumes:
-#   mongo-data:
+
+volumes:
+  mongo-data:

@@ -23,9 +23,39 @@ class User(BaseModel):
 
 
 class Message(BaseModel):
-    name: str
+    name: Optional[str] = None
     role: Literal["user", "assistant"]
     content: str
+
+
+class Course(BaseModel):
+    id: int
+    name: str
+    role: str
+
+
+class SubmissionComment(BaseModel):
+    author_name: str
+    comment: str
+
+
+class Activity(BaseModel):
+    id: int
+    kind: str
+    title: str
+    message: Optional[str] = None
+    html_url: str
+    course_id: int
+    created_at: str
+    updated_at: str
+    read_state: bool
+    late: Optional[bool] = None
+    missing: Optional[bool] = None
+    seconds_late: Optional[int] = None
+    score: Optional[int] = None
+    assignment_id: Optional[int] = None
+    points_possible: Optional[int] = None
+    submission_comments: Optional[List[SubmissionComment]] = None
 
 
 class CanvasData(BaseModel):
@@ -34,4 +64,6 @@ class CanvasData(BaseModel):
     first_name: str
     last_name: str
     avatar_url: str
+    courses: List[Course]
+    activity_stream: List[Activity]
     # effective_local: str

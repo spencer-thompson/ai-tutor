@@ -15,17 +15,12 @@ db = db.getSiblingDB("aitutor");
 
 // Insert users into the users collection
 db.users.deleteMany({});
-db.users.insertMany([
-  { name: "Alice", age: 25, city: "New York" },
-  { name: "Bob", age: 30, city: "San Francisco" },
-  { name: "Charlie", age: 35, city: "Los Angeles" },
-]);
 
-print("Users inserted into aitutor database");
+print("Deleted Users");
 
 // Insert a test API key into the keys collection, replacing if it exists
 db.keys.updateOne(
-  { apiKey: "test_key" },
+  { test_key: "This is the first api key for the AI Tutor project" },
   { $set: { description: "This is a test API key" } },
   { upsert: true },
 );

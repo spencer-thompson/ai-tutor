@@ -22,7 +22,7 @@ async function postData(url, data) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "AITUTOR-API-KEY": "",
+      "AITUTOR-API-KEY": apiKey,
       Accept: "application/json",
     },
     body: JSON.stringify(data),
@@ -31,17 +31,91 @@ async function postData(url, data) {
   return resp;
 }
 
-async function dostuff() {
-  let data = await getData(`${domain}/api/v1/users/self`);
+function printDataTypes(obj, prefix = "") {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+      const type = typeof value;
 
-  let resp = await postData(`${aitutorUrl}v1/ingest`, {
-    institution: institution,
-    canvas_id: data.id,
-    first_name: data.first_name,
-    last_name: data.last_name,
-    // effective_local: data.effective_local,
-    avatar_url: data.avatar_url,
-  });
+      if (type === "object" && value !== null) {
+        console.log(
+          `${prefix}${key}: ${Array.isArray(value) ? "array" : "object"}`,
+        );
+        printDataTypes(value, `${prefix}  `);
+      } else {
+        console.log(`${prefix}${key}: ${type}`);
+      }
+    }
+  }
 }
 
-dostuff();
+async function getContext() {
+  let user_data = await getData(`${domain}/api/v1/users/self`);
+  let courses_data = await getData(
+    `${domain}/api/v1/users/self/courses?enrollment_state=active`,
+  );
+  let activity_stream = await getData(
+    `${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
+  );
+
+  let cleaned_data = {
+    institution: institution,
+    canvas_id: user_data.id,
+    first_name: user_data.first_name,
+    last_name: user_data.last_name,
+    avatar_url: user_data.avatar_url,
+    courses: courses_data.map(({ id, name, enrollments }) => ({
+      id,
+      name,
+      role: enrollments[0].type,
+    })),
+    activity_stream: activity_stream.map(
+      ({
+        id,
+        type,
+        title,
+        message,
+        html_url,
+        course_id,
+        created_at,
+        updated_at,
+        read_state,
+        late,
+        seconds_late,
+        missing,
+        score,
+        assignment_id,
+        assignment,
+        submission_comments,
+      }) => ({
+        id,
+        kind: type,
+        title,
+        ...(message !== null && { message }),
+        html_url,
+        course_id,
+        created_at,
+        updated_at,
+        read_state,
+        ...(late !== undefined && { late }),
+        ...(seconds_late !== undefined && { seconds_late }),
+        ...(missing !== undefined && { missing }),
+        ...(score !== undefined && { score }),
+        ...(assignment_id !== undefined && { assignment_id }),
+        ...(assignment?.points_possible !== undefined && {
+          points_possible: assignment.points_possible,
+        }),
+        ...(submission_comments?.length > 0 && {
+          submission_comments: submission_comments.map(
+            ({ author_name, comment }) => ({ author_name, comment }),
+          ),
+        }),
+      }),
+    ),
+  };
+  console.log(cleaned_data);
+
+  postData(`${aitutorUrl}v1/ingest`, cleaned_data);
+}
+
+getContext();
