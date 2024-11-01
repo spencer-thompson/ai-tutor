@@ -52,7 +52,7 @@ class Activity(BaseModel):
     late: Optional[bool] = None
     missing: Optional[bool] = None
     seconds_late: Optional[int] = None
-    score: Optional[int] = None
+    score: Optional[float] = None
     assignment_id: Optional[int] = None
     points_possible: Optional[int] = None
     submission_comments: Optional[List[SubmissionComment]] = None

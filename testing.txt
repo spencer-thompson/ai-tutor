@@ -1,1 +1,55 @@
 testing
+
+let activity_stream = await getData(
+`${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
+);
+
+
+let cleaned_data = {
+
+activity_stream: activity_stream.map(
+  ({
+    id,
+    type,
+    title,
+    message,
+    html_url,
+    course_id,
+    created_at,
+    updated_at,
+    read_state,
+    late,
+    seconds_late,
+    missing,
+    score,
+    assignment_id,
+    assignment,
+    submission_comments,
+  }) => ({
+    id,
+    kind: type,
+    title,
+    ...(message !== null && { message }),
+    html_url,
+    course_id,
+    created_at,
+    updated_at,
+    read_state,
+    ...(late !== undefined && { late }),
+    ...(seconds_late !== undefined && { seconds_late }),
+    ...(missing !== undefined && { missing }),
+    ...(score !== undefined && { score }),
+    ...(assignment_id !== undefined && { assignment_id }),
+    ...(assignment?.points_possible !== undefined && {
+      points_possible: assignment.points_possible,
+    }),
+    ...(submission_comments?.length > 0 && {
+      submission_comments: submission_comments.map(
+        ({ author_name, comment }) => ({ author_name, comment }),
+      ),
+    }),
+  }),
+),
+};
+
+console.log(cleaned_data);

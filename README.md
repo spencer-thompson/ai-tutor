@@ -7,9 +7,10 @@ This is the repository for the Generative AI Tutor pioneered at [UVU](https://ww
 In order to run the project in development mode:
 
 1. Ensure [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/install/) and the [Mongo Shell](https://www.mongodb.com/try/download/shell) are installed
-2. In the project root directory, run the command `docker compose -f develop.yaml up --watch`
-3. Lastly, run `mongosh --file ./dev/mongo-init.js`
-3. Everything should be up and running 😄
+2. In the project root directory, run the command `docker compose -f develop.yaml up mongo`
+3. Then, run `mongosh --file ./dev/mongo-init.js`
+4. In the project root directory, run the command `docker compose -f develop.yaml up --watch`
+5. Everything should be up and running 😄
 
 # Acknowledgments
 

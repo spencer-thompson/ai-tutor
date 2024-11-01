@@ -8,7 +8,6 @@ import re
 from collections import namedtuple
 
 import requests
-from util import style
 
 import streamlit as st
 
@@ -53,7 +52,7 @@ if "backend" not in st.session_state:  # maybe change to a class?
 
 if "user" not in st.session_state:
     User = namedtuple("User", ["id", "name", "mobile"])
-    st.session_state.user = {"mobile": False, "role": None, "id": "1", "name": "Spencer"}
+    st.session_state.user = {"mobile": False, "role": None, "id": "1", "user": "test_user"}
     # HACK: Temporary
 
 
@@ -82,8 +81,6 @@ st.set_page_config(
         "About": f"""# Version: {VERSION}""",
     },
 )
-
-st.html(style())
 
 
 def login():

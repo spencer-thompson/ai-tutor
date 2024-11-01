@@ -20,6 +20,9 @@ def inject_header():
     with open("head.html") as file:
         new_head_html = file.read()
 
+    with open("styles/main.css") as styles:
+        new_styles = styles.read()
+
     index_path = pathlib.Path(st.__file__).parent / "static" / "index.html"
     logging.info(f"Editing {index_path}")
     soup = BeautifulSoup(index_path.read_text(), features="lxml")
@@ -32,6 +35,7 @@ def inject_header():
         html = str(soup)
         new_html = html.replace("<head>", "<head>\n" + new_head_html)
         new_html = new_html.replace("<title>Streamlit</title>", "<title>AI Tutor</title>")
+        new_html = new_html.replace("</head>", f"<style>{new_styles}</style>\n</head>")
         index_path.write_text(new_html)
 
 

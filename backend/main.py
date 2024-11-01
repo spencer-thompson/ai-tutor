@@ -113,8 +113,10 @@ async def test_user():
 
 @app.post("/v1/ingest")
 async def ingest_data(user_data: CanvasData):
-    user_dict = user_data.dict()
-    users = await app.mongodb["users"].update_one(user_dict, {"$set": user_data}, upsert=True)
+    user_dict = user_data.dict(exclude_none=True)
+    users = await app.mongodb["users"].update_one(
+        {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]}, {"$set": user_dict}, upsert=True
+    )
     print(users)
 
 
