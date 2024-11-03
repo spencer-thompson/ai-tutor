@@ -72,6 +72,8 @@ class _MyHomePageState extends State<MyHomePage> {
           user:
               _user, // probably a necessary element for the chat ui is the user's id (the UUID) seen earlier
           customMessageBuilder: _buildMarkdownMessage,
+          showUserAvatars: true,
+          showUserNames: true,
         ),
       );
 
@@ -86,37 +88,36 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _handleSendPressed(types.PartialText message) {
-    if (message.text.trim().isEmpty) return;
+    //if (message.text.trim().isEmpty) return;
 
-    final markdownMessage = types.CustomMessage(
+    print(message.text);
+    print(message.text.length);
+    final current_message = types.CustomMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
+      showStatus: true,
+      status: types.Status.sent,
+      //text: message.text,
       metadata: {'markdown': message.text},
     );
-    _addMessage(markdownMessage);
+    _addMessage(current_message);
   }
 
   Widget _buildMarkdownMessage(types.CustomMessage message,
       {required int messageWidth}) {
     final markdownText = message.metadata?['markdown'] as String? ?? '';
 
-    return Markdown(
-      data: markdownText,
-      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+    print(markdownText);
+    print(markdownText.length / messageWidth);
+    print(messageWidth);
+    return SizedBox(
+      height: 100,
+      //width: messageWidth.toDouble(),
+      width: 150,
+      child: Markdown(
+        data: markdownText,
+      ),
     );
   }
 }
-  //void _handleSendPressed(types.PartialText message) {
-  //  // if the enter or send button is pressed
-  //  // we accept a PartialText message because our text may be empty, or it may not
-  //  final textMessage = types.TextMessage(
-  //    author: _user,
-  //    createdAt: DateTime.now()
-  //        .millisecondsSinceEpoch, // this is a time format that is independent of the time zone
-  //    id: randomString(), // this is the id of the text message, a 16 character 8-bit ascii id
-  //    text: message.text,
-  //  );
-  //  _addMessage(textMessage);
-  //}
-

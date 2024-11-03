@@ -10,8 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-//import 'package:playground/basic_chat_ui.dart';
-import 'package:playground/markdown_2.dart';
+import 'package:playground/basic_chat_ui.dart';
+//import 'package:playground/markdown_2.dart';
 
 // it would be cool to have the user press a key for which 'version' of main they want to run. That way I could have multiple
 // main.dart's within the same flutter project. I'm thinking of adding a terminal command of sorts
