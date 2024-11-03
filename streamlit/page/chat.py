@@ -37,7 +37,7 @@ render_messages()
 if user_input := st.chat_input("Send a message", key="current_user_message"):
     st.chat_message("user").markdown(user_input)
     st.session_state.messages.append(
-        {"role": "user", "content": user_input, "name": st.session_state.user["name"]},
+        {"role": "user", "content": user_input, "name": st.session_state.user["user"]},
     )
 
     with st.chat_message("assistant"):
