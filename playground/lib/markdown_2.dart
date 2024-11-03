@@ -86,37 +86,60 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _handleSendPressed(types.PartialText message) {
-    if (message.text.trim().isEmpty) return;
+    //if (message.text.trim().isEmpty) return;
 
-    final markdownMessage = types.CustomMessage(
+    final current_message = types.CustomMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
+      //text: message.text,
       metadata: {'markdown': message.text},
     );
-    _addMessage(markdownMessage);
+    //CustomMarkDown markdownMessage = _buildMarkdownMessage();
+    _addMessage(current_message);
   }
 
   Widget _buildMarkdownMessage(types.CustomMessage message,
       {required int messageWidth}) {
     final markdownText = message.metadata?['markdown'] as String? ?? '';
 
-    return Markdown(
-      data: markdownText,
-      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+    return SizedBox(
+      height: 100,
+      width: messageWidth.toDouble(),
+      child: Markdown(
+        data: markdownText,
+      ),
     );
   }
 }
-  //void _handleSendPressed(types.PartialText message) {
-  //  // if the enter or send button is pressed
-  //  // we accept a PartialText message because our text may be empty, or it may not
-  //  final textMessage = types.TextMessage(
-  //    author: _user,
-  //    createdAt: DateTime.now()
-  //        .millisecondsSinceEpoch, // this is a time format that is independent of the time zone
-  //    id: randomString(), // this is the id of the text message, a 16 character 8-bit ascii id
-  //    text: message.text,
-  //  );
-  //  _addMessage(textMessage);
-  //}
-
+//
+//class CustomMarkDown extends StatefulWidget {
+//  const CustomMarkDown({
+//    super.key,
+//    this.width,
+//    this.height,
+//    required this.inputString,
+//  });
+//
+//  final double? width;
+//  final double? height;
+//  final String inputString;
+//
+//  @override
+//  State<CustomMarkDown> createState() => _CustomMarkDownState();
+//}
+//
+//class _CustomMarkDownState extends State<CustomMarkDown> {
+//  @override
+//  Widget build(BuildContext context) {
+//    return Container(
+//      width: widget.width,
+//      height: widget.height,
+//      padding: const EdgeInsets.all(8.0),
+//      child: Markdown(
+//        data: widget.inputString,
+//        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+//      ),
+//    );
+//  }
+//}
