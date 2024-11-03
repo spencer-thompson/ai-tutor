@@ -123,8 +123,10 @@ async def ingest_data(user_data: CanvasData):
 @app.post("/v1/chat")
 async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_key)):
     completion = await app.openai.chat.completions.create(
-        messages=messages,
+        messages=SYSTEM_MESSAGE + messages,
         model=CHAT_MODEL,
+        temperature=0.7,
+        top_p=0.9,
     )
     return completion.choices[0].message
 
@@ -137,7 +139,8 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
             model=CHAT_MODEL,
             logprobs=True,
             stream=True,
-            top_p=0.5,
+            temperature=0.7,
+            top_p=0.9,
             # stream_options={"include_usage": True}, # currently errors out
         )
         async for chunk in completion:
