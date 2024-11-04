@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:http/http.dart' as http;
 
 // it would be cool to have the user press a key for which 'version' of main they want to run. That way I could have multiple
 // main.dart's within the same flutter project. I'm thinking of adding a terminal command of sorts
@@ -18,23 +19,12 @@ String randomString() {
   return base64UrlEncode(values); // this converts ascii numbers to ascii values
 }
 
-//void main() {
-//  // start here and do the thing
-//  runApp(const MyApp());
-//}
-//
-
-//body: SafeArea(
-///           child: Markdown(
-///             data: _markdownData,
-///           ),
-///         ),
-
 class BasicApp extends StatelessWidget {
   const BasicApp({super.key}); //inherit everything from the statelesswidget
 
   @override
   Widget build(BuildContext context) => const MaterialApp(
+        debugShowCheckedModeBanner: false,
         // the build context will now render the MaterialApp
         home: MyHomePage(), // the default page is the MyHomePage() widget
       );
@@ -92,11 +82,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _handleSendPressed(types.PartialText message) {
+  void _handleSendPressed(types.PartialText message) async {
     //if (message.text.trim().isEmpty) return;
 
-    print(message.text);
-    print(message.text.length);
+    //print(message.text);
+    //print(message.text.length);
     final current_message = types.CustomMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -106,26 +96,71 @@ class _MyHomePageState extends State<MyHomePage> {
       //text: message.text,
       metadata: {'markdown': message.text},
     );
-    final repliedMessage = types.CustomMessage(
+    //final repliedMessage = types.CustomMessage(
+    //  author: _user2,
+    //  createdAt: DateTime.now().millisecondsSinceEpoch,
+    //  id: randomString(),
+    //  showStatus: true,
+    //  status: types.Status.sent,
+    //  //text: message.text,
+    //  metadata: {'markdown': ''},
+    //);
+    _addMessage(current_message);
+    //_addMessage(repliedMessage);
+
+    await _sendMessageToSpencer(message.text, current_message.id);
+  }
+
+  Future<void> _sendMessageToSpencer(
+      String userMessage, String messageId) async {
+    final body = jsonEncode([
+      {"role": "user", "content": userMessage, "name": "test_user"}
+    ]);
+
+    final headers = {
+      "Content-Type": "application/json",
+      "AITUTOR-API-KEY": "test_key"
+    };
+
+    print("$headers $body");
+    final response = await http.post(
+      Uri.parse("http://localhost:8080/v1/chat"),
+      headers: headers,
+      body: body,
+    );
+
+    print("${response.body}");
+
+    final parsedJson = jsonDecode(response.body);
+    final role = parsedJson['role'];
+    final content = parsedJson['content'];
+    print(role);
+    print(content);
+
+    final ai_message = types.CustomMessage(
       author: _user2,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
       showStatus: true,
       status: types.Status.sent,
       //text: message.text,
-      metadata: {'markdown': message.text},
+      metadata: {'markdown': content},
     );
-    _addMessage(current_message);
-    _addMessage(repliedMessage);
+
+    _addMessage(ai_message);
+
+    //print("${jsonDecode(response.body)['role']}");
+
+    return Future.value();
   }
 
   Widget _buildMarkdownMessage(types.CustomMessage message,
       {required int messageWidth}) {
     final markdownText = message.metadata?['markdown'] as String? ?? '';
 
-    print(markdownText);
-    print(markdownText.length / messageWidth);
-    print(messageWidth);
+    //print(markdownText);
+    //print(markdownText.length / messageWidth);
+    //print(messageWidth);
     return SizedBox(
       height: 100,
       width: messageWidth.toDouble(),
