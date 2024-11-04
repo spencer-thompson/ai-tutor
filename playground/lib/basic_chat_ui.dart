@@ -67,10 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
           customMessageBuilder: _buildMarkdownMessage,
           bubbleRtlAlignment: BubbleRtlAlignment.left,
           showUserAvatars: true,
+          //avatarBuilder: _avatarBuilder(),
 
           showUserNames: true,
         ),
       );
+
+  Widget _avatarBuilder() {
+    return Scaffold();
+  }
 
   void _addMessage(types.Message message) {
     // change the state of the private _messages variable
@@ -87,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     //print(message.text);
     //print(message.text.length);
-    final current_message = types.CustomMessage(
+    final currentMessage = types.CustomMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
@@ -96,23 +101,17 @@ class _MyHomePageState extends State<MyHomePage> {
       //text: message.text,
       metadata: {'markdown': message.text},
     );
-    //final repliedMessage = types.CustomMessage(
-    //  author: _user2,
-    //  createdAt: DateTime.now().millisecondsSinceEpoch,
-    //  id: randomString(),
-    //  showStatus: true,
-    //  status: types.Status.sent,
-    //  //text: message.text,
-    //  metadata: {'markdown': ''},
-    //);
-    _addMessage(current_message);
-    //_addMessage(repliedMessage);
+    _addMessage(currentMessage);
 
-    await _sendMessageToSpencer(message.text, current_message.id);
+    _sendUserMessage(message.text, currentMessage.id);
   }
 
-  Future<void> _sendMessageToSpencer(
-      String userMessage, String messageId) async {
+  void _sendUserMessage(String userMessage, String messageId) async {
+    String response = await _sendToGPT(userMessage, messageId);
+    _displayGPTMessage(response);
+  }
+
+  Future<String> _sendToGPT(String userMessage, String messageId) async {
     final body = jsonEncode([
       {"role": "user", "content": userMessage, "name": "test_user"}
     ]);
@@ -122,22 +121,27 @@ class _MyHomePageState extends State<MyHomePage> {
       "AITUTOR-API-KEY": "test_key"
     };
 
-    print("$headers $body");
+    //print("$headers $body");
     final response = await http.post(
       Uri.parse("http://localhost:8080/v1/chat"),
+      //Uri.parse("http://10.22.68.3:8080/v1/chat"),
       headers: headers,
       body: body,
     );
 
-    print("${response.body}");
+    return response.body;
+  }
 
-    final parsedJson = jsonDecode(response.body);
-    final role = parsedJson['role'];
+  Future<void> _displayGPTMessage(String response) {
+    //print("${response}");
+
+    final parsedJson = jsonDecode(response);
+    //final role = parsedJson['role'];
     final content = parsedJson['content'];
-    print(role);
-    print(content);
+    //print(role);
+    //print(content);
 
-    final ai_message = types.CustomMessage(
+    final aiMessage = types.CustomMessage(
       author: _user2,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
@@ -147,10 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
       metadata: {'markdown': content},
     );
 
-    _addMessage(ai_message);
-
-    //print("${jsonDecode(response.body)['role']}");
-
+    _addMessage(aiMessage);
     return Future.value();
   }
 
