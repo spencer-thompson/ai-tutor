@@ -64,7 +64,7 @@ async def db_lifespan(app: FastAPI):
 app = FastAPI(lifespan=db_lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://uvu.instructure.com"],  # List the allowed origins
+    allow_origins=["https://uvu.instructure.com", "http://localhost:8080", "http://localhost:5555"],  # List the allowed origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
