@@ -34,6 +34,7 @@ SYSTEM_MESSAGE = [
     """,
     }
 ]
+# Query params can be read by extension
 
 
 # --- INIT ---
