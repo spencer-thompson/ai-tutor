@@ -55,6 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // types.Message refers to the Message type fro the flutter_chat_types.dart imported package
   final _user = const types.User(
       id: '82091008-a484-4a89-ae75-a22bf8d6f3ac'); // _user is a private variable that won't change
+
+  final _user2 = const types.User(
+      id: '82091008-a484-4a89-ae75-a22bf8d6f20v'); // _user is a private variable that won't change
   // we have a 'User' type in types.User. The id is a UUID which is a Universally Unique Identifier is a 32 character
   // string with 4 hyphens in it. This means that it is 128 bits, or 32x4 bits because it is in hex.
   @override
@@ -72,7 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
           user:
               _user, // probably a necessary element for the chat ui is the user's id (the UUID) seen earlier
           customMessageBuilder: _buildMarkdownMessage,
+          bubbleRtlAlignment: BubbleRtlAlignment.left,
           showUserAvatars: true,
+
           showUserNames: true,
         ),
       );
@@ -101,7 +106,17 @@ class _MyHomePageState extends State<MyHomePage> {
       //text: message.text,
       metadata: {'markdown': message.text},
     );
+    final repliedMessage = types.CustomMessage(
+      author: _user2,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: randomString(),
+      showStatus: true,
+      status: types.Status.sent,
+      //text: message.text,
+      metadata: {'markdown': message.text},
+    );
     _addMessage(current_message);
+    _addMessage(repliedMessage);
   }
 
   Widget _buildMarkdownMessage(types.CustomMessage message,
@@ -113,8 +128,8 @@ class _MyHomePageState extends State<MyHomePage> {
     print(messageWidth);
     return SizedBox(
       height: 100,
-      //width: messageWidth.toDouble(),
-      width: 150,
+      width: messageWidth.toDouble(),
+      //width: 150,
       child: Markdown(
         data: markdownText,
       ),
