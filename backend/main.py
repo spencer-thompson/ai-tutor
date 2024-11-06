@@ -11,7 +11,7 @@ THOUGHTS:
 import json
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging import info
 from typing import List
 
@@ -20,7 +20,7 @@ from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
-from models import CanvasData, Message
+from models import CanvasData, Message, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
@@ -38,14 +38,6 @@ SYSTEM_MESSAGE = [
     }
 ]
 # Query params can be read by extension
-
-
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=30)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm="HS256")
-    return encoded_jwt
 
 
 # --- INIT ---
@@ -100,6 +92,40 @@ async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
         )
 
 
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(minutes=30)
+    to_encode.update({"exp": expire, "iat": now})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
+
+
+async def get_user_from_token(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+        id = payload.get("sub")
+        uni = payload.get("uni")
+        if id is None or uni is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
+        return user
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # return {
+    #     "first_name": user.get("first_name"),
+    #     "last_name": user.get("last_name"),
+    #     "avatar_url": user.get("avatar_url"),
+    #     "courses": user.get("courses"),
+    # }
+
+
 # --- V1 ENDPOINTS --- #
 
 # NOTE: we will put all end points for now under the subdirectory `v1`
@@ -128,28 +154,18 @@ async def test_user():
     return users
 
 
-# @app.post("/token")  # copied from chatgpt
-# async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-#     # Replace with your own authentication logic
-#     if form_data.username == "user" and form_data.password == "password":
-#         access_token = create_access_token(data={"sub": form_data.username})
-#         return {"access_token": access_token, "token_type": "bearer"}
-#     else:
-#         raise HTTPException(status_code=400, detail="Incorrect username or password")
-#
-#
-# @app.get("/users/me")  # copied from chatgpt
-# async def read_users_me(token: str = Depends(oauth2_scheme)):
-#     try:
-#         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
-#         username = payload.get("sub")
-#         if username is None:
-#             raise HTTPException(status_code=401, detail="Invalid token")
-#         return {"username": username}
-#     except jwt.ExpiredSignatureError:
-#         raise HTTPException(status_code=401, detail="Token has expired")
-#     except jwt.InvalidTokenError:
-#         raise HTTPException(status_code=401, detail="Invalid token")
+@app.post("/token")  # copied from chatgpt
+async def create_token(token_data: Token, api_key_value: dict = Depends(check_api_key)):
+    """
+    Returns base64 encoded JSON Web Token
+    """
+    access_token = create_access_token(data={"sub": Token.sub, "unv": Token.unv})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/user")  # copied from chatgpt
+async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+    return await get_user_from_token(token)
 
 
 @app.post("/v1/ingest")

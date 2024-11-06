@@ -13,13 +13,9 @@ from pydantic import BaseModel
 # id: Optional[PyObjectId] = Field(alias="_id", default=None)
 
 
-class User(BaseModel):
-    first_name: str
-    last_name: str
-    middle_name: Optional[str] = None  # Make middle name optional
-    email_address: str
-    phone_number: str
-    # roles: List[Role]  # user can have several roles
+class Token(BaseModel):
+    sub: int  # canvas_id
+    uni: Literal["uvu"]  # can add more universities here
 
 
 class Message(BaseModel):
@@ -32,6 +28,13 @@ class Course(BaseModel):
     id: int
     name: str
     role: str
+
+
+class User(BaseModel):
+    first_name: str
+    last_name: str
+    avatar_url: str
+    courses: List[Course]
 
 
 class SubmissionComment(BaseModel):
