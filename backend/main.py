@@ -11,18 +11,21 @@ THOUGHTS:
 import json
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
 from logging import info
 from typing import List
 
+import jwt
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from models import CanvasData, Message
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 SYSTEM_MESSAGE = [
@@ -35,6 +38,14 @@ SYSTEM_MESSAGE = [
     }
 ]
 # Query params can be read by extension
+
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=30)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
 
 
 # --- INIT ---
@@ -65,12 +76,17 @@ async def db_lifespan(app: FastAPI):
 app = FastAPI(lifespan=db_lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://uvu.instructure.com", "http://localhost:8080", "http://localhost:5555"],  # List the allowed origins
+    allow_origins=[
+        "https://uvu.instructure.com",
+        "http://localhost:8080",
+        "http://localhost:5555",
+    ],  # List the allowed origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
 header_scheme = APIKeyHeader(name=BACKEND_API_KEY_NAME)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
@@ -110,6 +126,30 @@ async def test_user():
         # This is just a workaround for now
         user["_id"] = str(user["_id"])
     return users
+
+
+# @app.post("/token")  # copied from chatgpt
+# async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+#     # Replace with your own authentication logic
+#     if form_data.username == "user" and form_data.password == "password":
+#         access_token = create_access_token(data={"sub": form_data.username})
+#         return {"access_token": access_token, "token_type": "bearer"}
+#     else:
+#         raise HTTPException(status_code=400, detail="Incorrect username or password")
+#
+#
+# @app.get("/users/me")  # copied from chatgpt
+# async def read_users_me(token: str = Depends(oauth2_scheme)):
+#     try:
+#         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+#         username = payload.get("sub")
+#         if username is None:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+#         return {"username": username}
+#     except jwt.ExpiredSignatureError:
+#         raise HTTPException(status_code=401, detail="Token has expired")
+#     except jwt.InvalidTokenError:
+#         raise HTTPException(status_code=401, detail="Invalid token")
 
 
 @app.post("/v1/ingest")
