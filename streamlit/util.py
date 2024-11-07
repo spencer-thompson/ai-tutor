@@ -5,10 +5,15 @@ Various Utilities
 import logging
 import pathlib
 import shutil
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 
 import streamlit as st
+
+# import streamlit.components.v1.html as html
+
+html = st.components.v1.html
 
 NEW_HEAD_ID = "custom-head-tag"
 
@@ -46,6 +51,36 @@ def style(filename: str = "./styles/main.css"):
     with open(filename, "r") as f:
         css = f.read()
     return f"<style>{css}</style>"
+
+
+def set_cookie(key: str, value: str, days: int):
+    current_date = datetime.now()
+    expiration = current_date + timedelta(days=days)
+    cookie_expiration = expiration.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    html(f"<script>document.cookie = '{key}={value}; expires={cookie_expiration}; path=/';</script>", width=0, height=0)
+
+
+def delete_cookie(key: str):
+    current_date = datetime.now()
+    expiration = current_date - timedelta(days=100)
+    cookie_expiration = expiration.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    html(f"<script>document.cookie = '{key}=; expires={cookie_expiration}; path=/';</script>", width=0, height=0)
+
+
+def set_storage(key: str, value: str):
+    html(f"<script>localStorage.setItem('{key}', '{value}')</script>", width=0, height=0)
+
+
+# def get_storage(key: str):
+#     html(f"<script>localStorage.setItem('{key}', '{value}')</script>", width=0, height=0)
+
+
+def remove_storage():
+    pass
+
+
+def clear_storage():
+    pass
 
 
 if __name__ == "__main__":

@@ -24,6 +24,10 @@ class Message(BaseModel):
     content: str
 
 
+class Chat(BaseModel):
+    messages: List[Message]
+
+
 class Course(BaseModel):
     id: int
     name: str
@@ -31,6 +35,8 @@ class Course(BaseModel):
 
 
 class User(BaseModel):
+    institution: str
+    canvas_id: int
     first_name: str
     last_name: str
     avatar_url: str

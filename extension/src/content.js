@@ -31,24 +31,6 @@ async function postData(url, data) {
   return resp;
 }
 
-function printDataTypes(obj, prefix = "") {
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      const value = obj[key];
-      const type = typeof value;
-
-      if (type === "object" && value !== null) {
-        console.log(
-          `${prefix}${key}: ${Array.isArray(value) ? "array" : "object"}`,
-        );
-        printDataTypes(value, `${prefix}  `);
-      } else {
-        console.log(`${prefix}${key}: ${type}`);
-      }
-    }
-  }
-}
-
 async function getContext() {
   let user_data = await getData(`${domain}/api/v1/users/self`);
   let courses_data = await getData(

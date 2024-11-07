@@ -95,7 +95,7 @@ async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
 def create_access_token(data: dict):
     to_encode = data.copy()
     now = datetime.now(timezone.utc)
-    expire = now + timedelta(minutes=30)
+    expire = now + timedelta(days=1)
     to_encode.update({"exp": expire, "iat": now})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm="HS256")
     return encoded_jwt
@@ -159,11 +159,16 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
     """
     Returns base64 encoded JSON Web Token
     """
-    access_token = create_access_token(data={"sub": Token.sub, "unv": Token.unv})
+    access_token = create_access_token(data={"sub": token_data.sub, "uni": token_data.uni})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/user")  # copied from chatgpt
+# @app.get("/user")  # copied from chatgpt
+# async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+#     return await get_user_from_token(token)
+
+
+@app.get("/user", response_model=User)
 async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
     return await get_user_from_token(token)
 
@@ -204,6 +209,78 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
             delta = chunk.choices[0].delta
             if delta.content:
                 yield json.dumps({"content": chunk.choices[0].delta.content})
+
+    return StreamingResponse(iter_response(messages), media_type="application/json")
+
+
+@app.post("/v1/smart_chat_stream")
+async def smart_chat_stream(
+    messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
+):
+    user = await get_user_from_token(token)
+
+    fields = ["kind", "title", "html_url"]
+    context = [{f: a[f]} for f in fields for a in user["activity_stream"]]
+    formatted_context = [
+        {
+            "role": "user",
+            "content": f"Recent canvas updates at {user["institution"]}: {json.dumps(context)}",
+        }
+    ]
+
+    async def iter_response(messages):
+        response = await app.openai.chat.completions.create(
+            messages=SYSTEM_MESSAGE + formatted_context + messages,
+            model=CHAT_MODEL,
+            logprobs=True,
+            stream=True,
+            temperature=0.7,
+            top_p=0.9,
+            # stream_options={"include_usage": True}, # currently errors out
+        )
+
+        completion = ""
+        tool_calls = []
+        async for chunk in response:
+            delta = chunk.choices[0].delta
+            if delta and delta.content:
+                completion += delta.content
+                yield json.dumps({"content": chunk.choices[0].delta.content})
+
+            elif delta and delta.tool_calls:
+                for tool in delta.tool_calls:
+                    if len(tool_calls) <= tool.index:
+                        tool_calls.append(
+                            {
+                                "id": "",
+                                "type": "function",
+                                "function": {"name": "", "arguments": ""},
+                            }
+                        )
+
+                        tc = tool_calls[tool.index]
+
+                        if tool.id:
+                            tc["id"] += tool.id
+
+                        if tool.function.name:
+                            tc["function"]["name"] += tool.function.name
+
+                        if tool.function.arguments:
+                            tc["function"]["arguments"] += tool.function.arguments
+
+        if tool_calls:
+            messages.append({"role": "assistant", "content": completion, "tool_calls": tool_calls})
+
+            for tc in tool_calls:
+                function_name = tc["function"]["name"]
+
+                if tc["function"]["arguments"]:
+                    function_args = json.loads(tc["function"]["arguments"])
+                else:
+                    function_args = {}
+
+                # TODO: Call functions
 
     return StreamingResponse(iter_response(messages), media_type="application/json")
 

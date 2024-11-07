@@ -3,7 +3,7 @@ import streamlit as st
 
 def runner():
     completion = ""
-    for chunk in st.session_state.backend.post_stream("v1/chat_stream", st.session_state.messages):
+    for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", st.session_state.messages):
         yield chunk["content"]
         completion += chunk["content"]
 
@@ -32,12 +32,19 @@ st.title("AI Tutor :sparkles:")
 st.caption("* Keep in mind responses may be inaccurate.")
 st.write("---")
 
+st.pills(
+    "test",
+    options=[c["name"] for c in st.session_state.user["courses"]],
+    format_func=lambda x: " ".join(x.split("|")[0].split("-")[0:2]),
+    label_visibility="collapsed",
+)
+
 render_messages()
 
 if user_input := st.chat_input("Send a message", key="current_user_message"):
     st.chat_message("user").markdown(user_input)
     st.session_state.messages.append(
-        {"role": "user", "content": user_input, "name": st.session_state.user["user"]},
+        {"role": "user", "content": user_input, "name": st.session_state.user["first_name"]},
     )
 
     with st.chat_message("assistant"):

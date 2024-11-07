@@ -29,11 +29,10 @@ footer {
   display: none;
 }
 
-.st-af,
-.st-ae {
-  /* stupid stars */
-  justify-content: center;
-}
+/* .st-af, */
+/* .st-ae { */
+/*   justify-content: center; */
+/* } */
 
 /* fonts */
 textarea,
