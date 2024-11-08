@@ -65,27 +65,34 @@ if "backend" not in st.session_state:  # maybe change to a class?
 #     st.session_state.cookie = namedtuple("Cookie", ["set", "delete"])(set_cookie, delete_cookie)
 
 
-if "user" not in st.session_state:
-    default_user = {
-        "role": "dev",  # TODO: change
-        "mobile": False,
-    }
-    # TODO: probably add try except here
-    st.session_state.user = default_user | st.session_state.backend.get("user")
-
-if "user_settings" not in st.session_state:
-    st.session_state.user_settings = {"show_courses": True}
-
-
 if "patterns" not in st.session_state:
     st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
         re.compile(r"[mM]obile|iPhone|iPad|iPod|Android|webOS")
     )  # check mobile
 
 
+if "user" not in st.session_state:
+    default_user = {
+        "role": "dev",  # TODO: change
+        "mobile": True if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) else False,
+        "authenticated": False,
+    }
+    try:
+        st.session_state.user = default_user | st.session_state.backend.get("user")
+        st.session_state.user["authenticated"] = True
+    except requests.exceptions.HTTPError:
+        st.session_state.user = default_user  # figure out how to tell a user to login
+
+
+if "user_settings" not in st.session_state:
+    st.session_state.user_settings = {
+        "show_courses": True,
+        "shown_courses": {c["id"]: False for c in st.session_state.user["courses"]},
+    }
+
+
 if "layout" not in st.session_state:
     if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]):
-        st.session_state.user["mobile"] = True
         st.session_state.layout = "wide"
     else:
         st.session_state.layout = "centered"
@@ -105,25 +112,17 @@ st.set_page_config(
 
 
 def login():
-    # if st.session_state
-    # st.write(st.session_state.backend.get("user"))
-    try:
-        user = st.session_state.backend.get("user")
-        st.session_state.user = st.session_state.user | user
-
-    except requests.exceptions.HTTPError:
-        st.error("HTTP error")
-
-        # st.json(user)
-        # user["courses"] = [{"id": c["id"], "name": c["name"], "role": c["role"]} for c in user["courses"]]
-        # user["courses"] = [{**c.items()} for c in user["courses"]]
-        # st.write(user["courses"][0])
+    if not st.session_state.user["authenticated"]:
         st.header("Log In")
         if st.button("login"):
             st.session_state.user["role"] = "dev"
             st.rerun()
         else:
             st.stop()
+
+    st.title("You need to log in")
+    st.write("got to link and refresh the page")
+    st.stop()
 
 
 def logout():
@@ -148,15 +147,15 @@ dev_pages = [
 
 pages = {}
 
-if st.session_state.user["role"] in ["normal", "admin"]:
-    pages["AI"] = user_pages
-    pages["INFO"] = info_pages
+if st.session_state.user["authenticated"]:
+    if st.session_state.user["role"] in ["normal", "admin"]:
+        pages["AI"] = user_pages
+        pages["INFO"] = info_pages
 
-
-if st.session_state.user["role"] in ["dev"]:
-    pages["AI"] = user_pages
-    pages["INFO"] = info_pages
-    pages["DEV"] = dev_pages
+    if st.session_state.user["role"] in ["dev"]:
+        pages["AI"] = user_pages
+        pages["INFO"] = info_pages
+        pages["DEV"] = dev_pages
 
 
 if len(pages) > 0:

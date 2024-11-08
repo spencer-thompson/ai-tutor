@@ -33,8 +33,10 @@ st.caption("* Keep in mind responses may be inaccurate.")
 st.write("---")
 
 st.pills(
-    "test",
-    options=[c["name"] for c in st.session_state.user["courses"]],
+    "Courses",
+    options=[
+        c["name"] for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]
+    ],
     format_func=lambda x: " ".join(x.split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
 )
@@ -50,5 +52,5 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
     with st.chat_message("assistant"):
         st.write_stream(runner())
 
-if st.session_state.messages:
-    st.feedback(options="stars")  # TODO: Hook up
+# if st.session_state.messages:
+#     st.feedback(options="stars")  # TODO: Hook up
