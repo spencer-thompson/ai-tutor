@@ -126,6 +126,14 @@ async def get_user_from_token(token: str):
     # }
 
 
+# async def fetch_data():
+#     """
+#     Grab data from Mongo
+#     """
+#     user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
+#     return user
+
+
 # --- V1 ENDPOINTS --- #
 
 # NOTE: we will put all end points for now under the subdirectory `v1`
@@ -176,10 +184,11 @@ async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = De
 @app.post("/v1/ingest")
 async def ingest_data(user_data: CanvasData):
     user_dict = user_data.dict(exclude_none=True)
-    users = await app.mongodb["users"].update_one(
-        {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]}, {"$set": user_dict}, upsert=True
+    app.mongodb["users"].update_one(
+        {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
+        {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
+        upsert=True,
     )
-    print(users)
 
 
 @app.post("/v1/chat")

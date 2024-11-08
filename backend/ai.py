@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from typing import List
@@ -17,28 +18,77 @@ SYSTEM_MESSAGE = [
 
 openai = AsyncOpenAI()
 
+tools = [
+    {
+        # "name": "test",
+        # "func":
+        # "tool":
+    }
+]
+
 
 async def agent():
     pass
 
 
-async def need_tools():
+async def need_tools(messages: List[dict[str:str]]):
     """
     Check if tools are needed
     """
-    pass
+    response = await openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        tools=[
+            {
+                "type": "function",
+                "function": {
+                    "name": "need_tools",
+                    "strict": True,
+                    "description": "True if more information is needed",  # TODO:
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "tools": {
+                                "type": "boolean",
+                                # "description": "todo",
+                            },
+                        },
+                        "additionalProperties": False,
+                        "required": [
+                            "tools",
+                        ],
+                    },
+                },
+            }
+        ],
+        tool_choice="required",
+    )
+
+    return json.loads(response.choices[0].message.tool_calls[0].function.arguments)["tools"]
 
 
-async def moderate(text: str):
+async def moderate(messages: List[dict[str:str]]):
     response = await openai.moderations.create(
         model="omni-moderation-latest",
-        input=text,
+        input=messages[-1]["content"],
     )
+
+    return response.results[0]
 
 
 async def smart_chat(messages: List[dict[str:str]], context: List[dict[str:str]] = []):
+    mod, tool = await asyncio.gather(moderate(messages), need_tools(messages))
+
+    if mod.flagged:
+        yield json.dumps({"flagged": mod.flagged})
+        return
+
+    if tool:
+        print("need tools\n")
+
     response = await openai.chat.completions.create(
         messages=SYSTEM_MESSAGE + context + messages,
+        tools=tools if tool else None,
         model=CHAT_MODEL,
         logprobs=True,
         stream=True,
@@ -92,10 +142,14 @@ async def smart_chat(messages: List[dict[str:str]], context: List[dict[str:str]]
 
 
 if __name__ == "__main__":
-    import asyncio
 
     async def main():
-        async for token in smart_chat([{"role": "user", "content": "tell me a joke"}]):
+        # res = await need_tools([{"role": "user", "content": "hello"}])
+        # print(res)
+        # print(res.flagged)
+        async for token in smart_chat([{"role": "user", "content": "kill them all"}]):
             print(json.loads(token).get("content"), end="")
+            print(json.loads(token).get("flagged"), end="")
+            print()
 
     asyncio.run(main())

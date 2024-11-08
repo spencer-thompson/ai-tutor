@@ -36,9 +36,32 @@ async function getContext() {
   let courses_data = await getData(
     `${domain}/api/v1/users/self/courses?enrollment_state=active`,
   );
+  // TODO: loop through course ids and make requests to canvas
+  // then send all data back to server probably need new endpoints
   let activity_stream = await getData(
     `${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
   );
+
+  let grades = await getData(
+    `${domain}/api/v1/courses?enrollment_state=active&include[]=concluded&include[]=total_scores&include[]=computed_current_score&per_page=100`,
+  );
+  // NOTE: enrollments: (example)
+  // computed_current_grade: null
+  // computed_current_letter_grade: null
+  // computed_current_score: 97.3
+  // computed_final_grade: null
+  // computed_final_score: 52.17
+  // enrollment_state: "active"
+  // limit_privileges_to_course_section: false
+  // role: "StudentEnrollment"
+  // role_id: 626
+  // type: "student"
+  // user_id: 1948325
+
+  // let weekAgo = new Date(new Date() - 604800000);
+  // let assignments = await getData(
+  //   `${domain}/api/v1/planner/items?start_date=${weekAgo.toISOString()}&per_page=75`,
+  // );
 
   let cleaned_data = {
     institution: institution,
