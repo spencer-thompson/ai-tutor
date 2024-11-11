@@ -6,70 +6,55 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 
-// it would be cool to have the user press a key for which 'version' of main they want to run. That way I could have multiple
-// main.dart's within the same flutter project. I'm thinking of adding a terminal command of sorts
-//flutter run -d chrome web-server --web-port 1234
-// Enum to define different message types
-
 String randomString() {
-  final random = Random
-      .secure(); // create a cryptographicall secure random number generator
+  final random = Random.secure();
   final values = List<int>.generate(16, (i) => random.nextInt(255));
-  // generate a list of 16 integers that are all between 0 and 255
-  return base64UrlEncode(values); // this converts ascii numbers to ascii values
+  return base64UrlEncode(values);
 }
 
 class BasicApp extends StatelessWidget {
-  const BasicApp({super.key}); //inherit everything from the statelesswidget
+  const BasicApp({super.key});
 
   @override
   Widget build(BuildContext context) => const MaterialApp(
         debugShowCheckedModeBanner: false,
-        // the build context will now render the MaterialApp
-        home: MyHomePage(), // the default page is the MyHomePage() widget
+        home: MyHomePage(),
       );
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage(
-      {super.key}); // inherit all the stuff from the statefulwidget class
+  const MyHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() =>
-      _MyHomePageState(); // all of the State (mutable) values will be in the _MyHomePageState() class
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<types.Message> _messages =
-      []; // _messages can't be changed once it is initialized
-  // types.Message refers to the Message type fro the flutter_chat_types.dart imported package
-  final _user = const types.User(
-      id: '82091008-a484-4a89-ae75-a22bf8d6f3ac'); // _user is a private variable that won't change
+  final List<types.Message> _messages = [];
+  final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
+  final _user2 = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f20v');
+  double screen_width = 0.0;
 
-  final _user2 = const types.User(
-      id: '82091008-a484-4a89-ae75-a22bf8d6f20v'); // _user is a private variable that won't change
-  // we have a 'User' type in types.User. The id is a UUID which is a Universally Unique Identifier is a 32 character
-  // string with 4 hyphens in it. This means that it is 128 bits, or 32x4 bits because it is in hex.
+  final myCustomTheme = DefaultChatTheme(messageMaxWidth: double.infinity);
   @override
   Widget build(BuildContext context) => Scaffold(
-        //the build method defines the UI of the widget
-        // the BuildContext specifies where the Widget lies in the widget tree
-        // the Scaffold provides a structure with special parameters to recognize other widgets and there places within the UI
-        body: Chat(
-          //this is a custom widget from the flutter_chat_ui.dart package
-          // the Chat has specific parameter fields as it is designed to make the Chat interfaces easy to work with
-          messages:
-              _messages, // messages contain the most recent list of types.Message
-          onSendPressed:
-              _handleSendPressed, // this is what we do when the button is pressed. Enter also works by default
-          user:
-              _user, // probably a necessary element for the chat ui is the user's id (the UUID) seen earlier
-          customMessageBuilder: _buildMarkdownMessage,
-          bubbleRtlAlignment: BubbleRtlAlignment.left,
-          showUserAvatars: true,
-          //avatarBuilder: _avatarBuilder(),
-
-          showUserNames: true,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return Chat(
+              theme: myCustomTheme,
+              messageWidthRatio: 10.0,
+              messages: _messages,
+              onSendPressed: _handleSendPressed,
+              user: _user,
+              customMessageBuilder: (message, {required messageWidth}) =>
+                  _buildMarkdownMessage(message,
+                      messageWidth: messageWidth,
+                      maxWidth: constraints.maxWidth),
+              bubbleRtlAlignment: BubbleRtlAlignment.left,
+              showUserAvatars: true,
+              showUserNames: true,
+            );
+          },
         ),
       );
 
@@ -78,20 +63,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addMessage(types.Message message) {
-    // change the state of the private _messages variable
     setState(() {
-      _messages.insert(
-          0, message); // we will insert this at the beginning of the list
-      // if the message is blank we are adding nothing to the messages I guess. Not really sure how we are filtering
-      // for empty texts
+      _messages.insert(0, message);
     });
   }
 
   void _handleSendPressed(types.PartialText message) async {
-    //if (message.text.trim().isEmpty) return;
-
-    //print(message.text);
-    //print(message.text.length);
     final currentMessage = types.CustomMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -113,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> _sendToGPT(String userMessage, String messageId) async {
     final body = jsonEncode([
-      {"role": "user", "content": userMessage, "name": "test_user"}
+      {"role": "user", "content": userMessage, "name": "Guts"}
     ]);
 
     final headers = {
@@ -121,10 +98,8 @@ class _MyHomePageState extends State<MyHomePage> {
       "AITUTOR-API-KEY": "test_key"
     };
 
-    //print("$headers $body");
     final response = await http.post(
       Uri.parse("http://localhost:8080/v1/chat"),
-      //Uri.parse("http://10.22.68.3:8080/v1/chat"),
       headers: headers,
       body: body,
     );
@@ -133,13 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _displayGPTMessage(String response) {
-    //print("${response}");
-
     final parsedJson = jsonDecode(response);
-    //final role = parsedJson['role'];
     final content = parsedJson['content'];
-    //print(role);
-    //print(content);
 
     final aiMessage = types.CustomMessage(
       author: _user2,
@@ -147,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
       id: randomString(),
       showStatus: true,
       status: types.Status.sent,
-      //text: message.text,
+      //text: content,
       metadata: {'markdown': content},
     );
 
@@ -156,17 +126,28 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildMarkdownMessage(types.CustomMessage message,
-      {required int messageWidth}) {
+      {required int messageWidth, required double maxWidth}) {
     final markdownText = message.metadata?['markdown'] as String? ?? '';
+    //final Size size = MediaQuery.sizeOf(context);
+    //final double width = size.width;
+    //final double height = size.height;
+    //print("${width * .72}");
+    //messageWidth = (messageWidth * 1.5).toInt();
+    //print("$messageWidth");
 
-    //print(markdownText);
-    //print(markdownText.length / messageWidth);
-    //print(messageWidth);
-    return SizedBox(
-      height: 100,
-      width: messageWidth.toDouble(),
-      //width: 150,
-      child: Markdown(
+    double bubbleWidth = maxWidth * 0.75;
+
+    if (bubbleWidth > 1000) bubbleWidth = 1000;
+
+    if (bubbleWidth < 200) bubbleWidth = 200;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: bubbleWidth,
+      ),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      child: MarkdownBody(
         data: markdownText,
       ),
     );
