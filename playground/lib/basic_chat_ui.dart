@@ -38,6 +38,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final myCustomTheme = DefaultChatTheme(messageMaxWidth: double.infinity);
   @override
   Widget build(BuildContext context) => Scaffold(
+        //LayoutBuilder adjusts width baseed on the current size of the window...
+        //this changes the constraints.maxWidth
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
@@ -128,12 +130,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildMarkdownMessage(types.CustomMessage message,
       {required int messageWidth, required double maxWidth}) {
     final markdownText = message.metadata?['markdown'] as String? ?? '';
-    //final Size size = MediaQuery.sizeOf(context);
-    //final double width = size.width;
-    //final double height = size.height;
-    //print("${width * .72}");
-    //messageWidth = (messageWidth * 1.5).toInt();
-    //print("$messageWidth");
 
     double bubbleWidth = maxWidth * 0.75;
 
@@ -147,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.symmetric(vertical: 5),
+      // MarkdownBody widget knows how to size the height properly
       child: MarkdownBody(
         data: markdownText,
       ),
