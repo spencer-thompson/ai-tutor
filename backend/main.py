@@ -20,7 +20,7 @@ from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
-from models import CanvasData, Message, Token, User
+from models import CanvasCourse, CanvasData, Chat, Message, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
@@ -110,6 +110,8 @@ async def get_user_from_token(token: str):
             raise HTTPException(status_code=401, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
+        courses = await app.mongodb["courses"].find({"id": {"$in": [c["id"] for c in user["courses"]]}}).to_list(None)
+        # user["courses"] = [u | c for u in user["courses"] for c in courses]  # NOTE: not tested
         return user
 
     except jwt.ExpiredSignatureError:
@@ -117,13 +119,6 @@ async def get_user_from_token(token: str):
 
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
-
-    # return {
-    #     "first_name": user.get("first_name"),
-    #     "last_name": user.get("last_name"),
-    #     "avatar_url": user.get("avatar_url"),
-    #     "courses": user.get("courses"),
-    # }
 
 
 # async def fetch_data():
@@ -151,17 +146,6 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
     return api_key_value
 
 
-@app.get("/test_user")
-async def test_user():
-    users = await app.mongodb["users"].find().to_list(None)
-    # Convert ObjectId to string
-    for user in users:
-        # TODO: implement modeling to avoid this
-        # This is just a workaround for now
-        user["_id"] = str(user["_id"])
-    return users
-
-
 @app.post("/token")  # copied from chatgpt
 async def create_token(token_data: Token, api_key_value: dict = Depends(check_api_key)):
     """
@@ -179,6 +163,27 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
 @app.get("/user", response_model=User)
 async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
     return await get_user_from_token(token)
+
+
+@app.post("/user")
+async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_api_key)):
+    user_dict = user_data.dict(exclude_none=True)
+    app.mongodb["users"].update_one(
+        {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
+        {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
+        upsert=True,
+    )
+
+
+@app.post("/course")
+async def post_courses(course_data: CanvasCourse):
+    course_dict = course_data.dict(exclude_none=True)
+    app.mongodb["courses"].update_one(
+        {"id": course_dict["canvas_id"], "institution": course_dict["institution"]},
+        {"$set": course_dict},
+        upsert=True,
+    )
+    # app.mongodb["courses"].update
 
 
 @app.post("/v1/ingest")
@@ -224,18 +229,23 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
 
 @app.post("/v1/smart_chat_stream")
 async def smart_chat_stream(
-    messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
+    chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
 ):
     user = await get_user_from_token(token)
+    messages = chat.messages
 
     fields = ["kind", "title", "html_url"]
-    context = [{f: a[f]} for f in fields for a in user["activity_stream"]]
-    formatted_context = [
-        {
-            "role": "user",
-            "content": f"Recent canvas updates at {user["institution"]}: {json.dumps(context)}",
-        }
-    ]
+    context = [{f: a[f]} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses]
+    formatted_context = (
+        [
+            {
+                "role": "user",
+                "content": f"Recent canvas updates at {user["institution"]}: {json.dumps(context)}",
+            }
+        ]
+        if chat.courses
+        else []
+    )
 
     async def iter_response(messages):
         response = await app.openai.chat.completions.create(

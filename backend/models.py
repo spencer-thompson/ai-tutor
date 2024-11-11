@@ -26,12 +26,22 @@ class Message(BaseModel):
 
 class Chat(BaseModel):
     messages: List[Message]
+    courses: Optional[List[int]] = None
 
 
 class Course(BaseModel):
     id: int
     name: str
     role: str
+    current_score: float
+    # TODO: Add institution
+
+
+class CanvasCourse(BaseModel):
+    id: int
+    name: str
+    institution: str
+    syllabus_body: Optional[str] = None
 
 
 class User(BaseModel):

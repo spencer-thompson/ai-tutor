@@ -33,17 +33,17 @@ async function postData(url, data) {
 
 async function getContext() {
   let user_data = await getData(`${domain}/api/v1/users/self`);
-  let courses_data = await getData(
-    `${domain}/api/v1/users/self/courses?enrollment_state=active`,
-  );
+  // let courses_data = await getData(
+  //   `${domain}/api/v1/users/self/courses?enrollment_state=active`,
+  // );
   // TODO: loop through course ids and make requests to canvas
   // then send all data back to server probably need new endpoints
   let activity_stream = await getData(
     `${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
   );
 
-  let grades = await getData(
-    `${domain}/api/v1/courses?enrollment_state=active&include[]=concluded&include[]=total_scores&include[]=computed_current_score&per_page=100`,
+  let courses_data = await getData(
+    `${domain}/api/v1/courses?enrollment_state=active&include[]=concluded&include[]=total_scores&include[]=computed_current_score&include[]=syllabus_body&include[]=public_description&per_page=100`,
   );
   // NOTE: enrollments: (example)
   // computed_current_grade: null
@@ -63,7 +63,23 @@ async function getContext() {
   //   `${domain}/api/v1/planner/items?start_date=${weekAgo.toISOString()}&per_page=75`,
   // );
 
-  let cleaned_data = {
+  let ccd = courses_data.map(({ id, name, syllabus_body }) => ({
+    institution: institution,
+    id,
+    name,
+    ...(syllabus_body !== null && { syllabus_body }),
+  }));
+
+  for (let i = 0; i < ccd.length; i++) {
+    let assignments = await getData(
+      `${domain}/api/v1/courses/${ccd[i].id}/assignments?bucket=upcoming&order_by=due_at&include[]=score_statistics`,
+    );
+    // TODO: Add assignments
+
+    postData(`${aitutorUrl}course`, ccd);
+  }
+
+  let cleaned_user_data = {
     institution: institution,
     canvas_id: user_data.id,
     first_name: user_data.first_name,
@@ -73,6 +89,7 @@ async function getContext() {
       id,
       name,
       role: enrollments[0].type,
+      current_score: enrollments[0].computed_current_score,
     })),
     activity_stream: activity_stream.map(
       ({
@@ -118,9 +135,9 @@ async function getContext() {
       }),
     ),
   };
-  console.log(cleaned_data);
+  // console.log(cleaned_user_data);
 
-  postData(`${aitutorUrl}v1/ingest`, cleaned_data);
+  postData(`${aitutorUrl}v1/ingest`, cleaned_user_data);
 }
 
 getContext();

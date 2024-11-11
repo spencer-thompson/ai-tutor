@@ -1,9 +1,10 @@
 import streamlit as st
 
 
-def runner():
+def runner(courses):
+    data = {"messages": st.session_state.messages, "courses": [c["id"] for c in courses]}
     completion = ""
-    for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", st.session_state.messages):
+    for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", data):
         yield chunk["content"]
         completion += chunk["content"]
 
@@ -32,12 +33,11 @@ st.title("AI Tutor :sparkles:")
 st.caption("* Keep in mind responses may be inaccurate.")
 st.write("---")
 
-st.pills(
+selected_courses = st.pills(
     "Courses",
-    options=[
-        c["name"] for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]
-    ],
-    format_func=lambda x: " ".join(x.split("|")[0].split("-")[0:2]),
+    options=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
+    selection_mode="multi",
+    format_func=lambda c: " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
 )
 
@@ -50,7 +50,7 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
     )
 
     with st.chat_message("assistant"):
-        st.write_stream(runner())
+        st.write_stream(runner(selected_courses))
 
 # if st.session_state.messages:
 #     st.feedback(options="stars")  # TODO: Hook up

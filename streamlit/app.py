@@ -84,7 +84,7 @@ if "user" not in st.session_state:
         st.session_state.user = default_user  # figure out how to tell a user to login
 
 
-if "user_settings" not in st.session_state:
+if "user_settings" not in st.session_state and st.session_state.user.get("authenticated"):
     st.session_state.user_settings = {
         "show_courses": True,
         "shown_courses": {c["id"]: False for c in st.session_state.user["courses"]},
@@ -114,6 +114,7 @@ st.set_page_config(
 def login():
     if not st.session_state.user["authenticated"]:
         st.header("Log In")
+        st.write("go to link and refresh the page")
         if st.button("login"):
             st.session_state.user["role"] = "dev"
             st.rerun()

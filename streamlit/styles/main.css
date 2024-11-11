@@ -34,7 +34,27 @@ footer {
 /*   justify-content: center; */
 /* } */
 
+stElementContainer {
+  justify-content: center;
+}
+
 /* fonts */
+
+stChatInput,
+code,
+pre,
+/* .token, */
+h1,
+h2,
+h3,
+/* [class|="st"], */
+span,
+kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-optical-sizing: auto;
+  /* font-style: normal; */
+}
+
 textarea,
 strong,
 .st-ax,
@@ -48,15 +68,7 @@ p {
   font-family: "Montserrat";
 }
 
-code,
-pre,
-/* .token, */
-h1,
-h2,
-.st-b8,
-span,
-kbd {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
-  /* font-style: normal; */
-}
+/* [class|="st-emotion"] { */
+/*   font-family: "Material Symbols Rounded"; */
+/*   font-weight: 400; */
+/* } */
