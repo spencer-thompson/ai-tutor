@@ -129,3 +129,41 @@
 - **Data Latency**: Time for data to be processed and appear on the mobile app.
 - **User Experience**: Potential issues with users needing to download multiple apps.
 
+---
+# Weekly Meeting - AI Tutor Project  
+**Date:** November 3rd  
+
+## Agenda  
+
+### 1. Extension Download Process  
+- Streamline the process for users to easily download and set up the AI Tutor extension.
+
+### 2. User Experience  
+- Improve overall user interaction flow to make the app more intuitive and accessible.
+
+### 3. Tutor Abilities  
+- **Feedback Based on Teacher Comments:** Provide feedback tailored to teacher-provided comments.
+- **Performance Insights:** Inform students about their latest assignment performance.
+- **Teacher Analysis Tools:**
+  - Identify students behind on assignments.
+  - Filter students with grades under a certain threshold.
+  - **Student-Specific Emails:** Generate personalized emails for students, offering actionable steps to improve grades.
+    - **Automation:** Option to automate email sending to students as needed.
+
+### 4. Phone App Features  
+- **Login Functionality:** Allow login via QR code scanning.
+- **Class Identification:**
+  - Enable the app to automatically recognize the current class, or
+  - Provide an interface displaying a list of classes for students to select.
+- **Mobile Analytics Integration:** Discuss strategies to implement analytics tracking in the mobile app.
+
+### 5. New Database Setup  
+- Establish a new database to support app functionality and data management.
+
+---
+
+**Action Items:**  
+- Finalize database setup.
+- Refine user experience based on feedback.
+- Begin implementation of the outlined tutor abilities.
+- Develop mobile app login and class identification features.
