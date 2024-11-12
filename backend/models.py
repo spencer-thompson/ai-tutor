@@ -33,7 +33,7 @@ class Course(BaseModel):
     id: int
     name: str
     role: str
-    current_score: float
+    # current_score: float
     # TODO: Add institution
 
 

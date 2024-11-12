@@ -234,8 +234,8 @@ async def smart_chat_stream(
     user = await get_user_from_token(token)
     messages = chat.messages
 
-    fields = ["kind", "title", "html_url"]
-    context = [{f: a[f]} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses]
+    fields = ["kind", "title", "message", "html_url", "score", "points_possible", "submission_comments"]
+    context = [{f: a.get(f)} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses]
     formatted_context = (
         [
             {

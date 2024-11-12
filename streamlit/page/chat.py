@@ -33,6 +33,8 @@ st.title("AI Tutor :sparkles:")
 st.caption("* Keep in mind responses may be inaccurate.")
 st.write("---")
 
+render_messages()
+
 selected_courses = st.pills(
     "Courses",
     options=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
@@ -40,8 +42,6 @@ selected_courses = st.pills(
     format_func=lambda c: " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
 )
-
-render_messages()
 
 if user_input := st.chat_input("Send a message", key="current_user_message"):
     st.chat_message("user").markdown(user_input)
