@@ -36,8 +36,6 @@ async function getContext() {
   // let courses_data = await getData(
   //   `${domain}/api/v1/users/self/courses?enrollment_state=active`,
   // );
-  // TODO: loop through course ids and make requests to canvas
-  // then send all data back to server probably need new endpoints
   let activity_stream = await getData(
     `${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
   );
@@ -45,18 +43,6 @@ async function getContext() {
   let courses_data = await getData(
     `${domain}/api/v1/courses?enrollment_state=active&include[]=concluded&include[]=total_scores&include[]=computed_current_score&include[]=syllabus_body&include[]=public_description&per_page=100`,
   );
-  // NOTE: enrollments: (example)
-  // computed_current_grade: null
-  // computed_current_letter_grade: null
-  // computed_current_score: 97.3
-  // computed_final_grade: null
-  // computed_final_score: 52.17
-  // enrollment_state: "active"
-  // limit_privileges_to_course_section: false
-  // role: "StudentEnrollment"
-  // role_id: 626
-  // type: "student"
-  // user_id: 1948325
 
   // let weekAgo = new Date(new Date() - 604800000);
   // let assignments = await getData(
@@ -64,7 +50,6 @@ async function getContext() {
   // );
 
   let ccd = courses_data.map(({ id, name, syllabus_body }) => ({
-    institution: institution,
     id,
     name,
     ...(syllabus_body !== null && { syllabus_body }),
@@ -74,9 +59,48 @@ async function getContext() {
     let assignments = await getData(
       `${domain}/api/v1/courses/${ccd[i].id}/assignments?bucket=upcoming&order_by=due_at&include[]=score_statistics`,
     );
-    // TODO: Add assignments
 
-    postData(`${aitutorUrl}course`, ccd);
+    let asg = assignments.map(
+      ({
+        id,
+        name,
+        description,
+        due_at,
+        updated_at,
+        points_possible,
+        html_url,
+        rubric,
+        lock_at,
+        unlock_at,
+        locked_for_user,
+        submission_types,
+      }) => ({
+        id,
+        name,
+        description,
+        ...(due_at !== null && { due_at }),
+        updated_at,
+        ...(points_possible !== null && { points_possible }),
+        html_url,
+        ...(rubric?.length > 0 && {
+          rubric: rubric.map(({ description, points }) => ({
+            description,
+            points,
+          })),
+        }),
+        ...(lock_at !== null && { lock_at }),
+        ...(unlock_at !== null && { unlock_at }),
+        locked_for_user,
+        submission_types,
+      }),
+    );
+
+    ccd[i].assignments = asg;
+    ccd[i].institution = institution;
+
+    console.log(ccd[i]);
+
+    postData(`${aitutorUrl}course`, ccd[i]);
   }
 
   let cleaned_user_data = {
@@ -86,10 +110,16 @@ async function getContext() {
     last_name: user_data.last_name,
     avatar_url: user_data.avatar_url,
     courses: courses_data.map(({ id, name, enrollments }) => ({
+      institution: institution,
       id,
       name,
       role: enrollments[0].type,
-      current_score: enrollments[0].computed_current_score,
+      ...(enrollments[0].computed_current_score != null && {
+        current_score: enrollments[0].computed_current_score,
+      }),
+      // ...(enrollments[0]?.points_possible !== undefined && {
+      //   points_possible: enrollments[0].points_possible,
+      // }),
     })),
     activity_stream: activity_stream.map(
       ({
@@ -135,9 +165,9 @@ async function getContext() {
       }),
     ),
   };
-  // console.log(cleaned_user_data);
+  console.log(cleaned_user_data);
 
-  postData(`${aitutorUrl}v1/ingest`, cleaned_user_data);
+  postData(`${aitutorUrl}user`, cleaned_user_data);
 }
 
 getContext();

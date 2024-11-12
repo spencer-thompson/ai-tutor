@@ -29,12 +29,35 @@ class Chat(BaseModel):
     courses: Optional[List[int]] = None
 
 
+class Rubric(BaseModel):
+    description: str
+    points: float
+
+
+class Assignment(BaseModel):
+    id: int
+    name: str
+    description: str
+    due_at: Optional[str] = None
+    updated_at: str
+    points_possible: Optional[int] = None
+    html_url: str
+    rubric: Optional[List[Rubric]] = None
+    lock_at: Optional[str] = None
+    unlock_at: Optional[str] = None
+    locked_for_user: bool
+    submission_types: List[str]
+
+
 class Course(BaseModel):
     id: int
     name: str
     role: str
-    # current_score: float
-    # TODO: Add institution
+    institution: str
+    current_score: Optional[float] = None
+    # syllabus_body: Optional[str] = None
+    # assignments: Optional[List[Assignment]] = None
+    # NOTE: can include more info
 
 
 class CanvasCourse(BaseModel):
@@ -42,6 +65,7 @@ class CanvasCourse(BaseModel):
     name: str
     institution: str
     syllabus_body: Optional[str] = None
+    assignments: Optional[List[Assignment]] = None
 
 
 class User(BaseModel):

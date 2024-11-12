@@ -38,6 +38,7 @@ render_messages()
 selected_courses = st.pills(
     "Courses",
     options=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
+    default=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
     selection_mode="multi",
     format_func=lambda c: " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",

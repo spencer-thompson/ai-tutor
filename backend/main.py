@@ -20,6 +20,7 @@ from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
+from markdownify import markdownify as md
 from models import CanvasCourse, CanvasData, Chat, Message, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
@@ -43,15 +44,15 @@ SYSTEM_MESSAGE = [
 # --- INIT ---
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
-    # Startup
+    """
+    This just safely starts and stops FastAPI with mongo
+    """
 
-    # setup mongo
-    app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)
+    app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)  # setup mongo
     app.mongodb = app.mongodb_client.get_database("aitutor")
     ping_response = await app.mongodb.command("ping")
 
-    # Setup OpenAI
-    app.openai = AsyncOpenAI()
+    app.openai = AsyncOpenAI()  # Setup OpenAI
 
     if int(ping_response["ok"]) != 1:
         raise Exception("Problem connecting to database cluster.")
@@ -61,8 +62,7 @@ async def db_lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
-    app.mongodb_client.close()
+    app.mongodb_client.close()  # Shutdown
 
 
 app = FastAPI(lifespan=db_lifespan)
@@ -77,6 +77,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
 header_scheme = APIKeyHeader(name=BACKEND_API_KEY_NAME)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -111,7 +112,7 @@ async def get_user_from_token(token: str):
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
         courses = await app.mongodb["courses"].find({"id": {"$in": [c["id"] for c in user["courses"]]}}).to_list(None)
-        # user["courses"] = [u | c for u in user["courses"] for c in courses]  # NOTE: not tested
+        user["courses"] = [u | c for u in user["courses"] for c in courses if u["id"] == c["id"]]  # NOTE: not tested
         return user
 
     except jwt.ExpiredSignatureError:
@@ -121,19 +122,7 @@ async def get_user_from_token(token: str):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-# async def fetch_data():
-#     """
-#     Grab data from Mongo
-#     """
-#     user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
-#     return user
-
-
 # --- V1 ENDPOINTS --- #
-
-# NOTE: we will put all end points for now under the subdirectory `v1`
-# for example:
-# https://api.aitutor.live/v1/login
 
 
 @app.get("/")  # this is a test endpoint just to see if it working
@@ -149,25 +138,30 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
 @app.post("/token")  # copied from chatgpt
 async def create_token(token_data: Token, api_key_value: dict = Depends(check_api_key)):
     """
-    Returns base64 encoded JSON Web Token
+    Returns a valid JSON Web Token.
+    Currently, tokens expire after 1 day.
     """
     access_token = create_access_token(data={"sub": token_data.sub, "uni": token_data.uni})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# @app.get("/user")  # copied from chatgpt
-# async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
-#     return await get_user_from_token(token)
-
-
 @app.get("/user", response_model=User)
 async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+    """
+    Returns the currently logged in user (from JWT)
+    Strips away tons of course information.
+    """
     return await get_user_from_token(token)
 
 
 @app.post("/user")
 async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_api_key)):
     user_dict = user_data.dict(exclude_none=True)
+
+    for activity in user_dict["activity_stream"]:
+        if message := activity.get("message"):
+            activity["message"] = md(message)
+
     app.mongodb["users"].update_one(
         {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
         {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
@@ -176,22 +170,19 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
 
 
 @app.post("/course")
-async def post_courses(course_data: CanvasCourse):
+async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(check_api_key)):
     course_dict = course_data.dict(exclude_none=True)
+
+    if syllabus := course_dict.get("syllabus_body"):
+        course_dict["syllabus_body"] = md(syllabus)
+
+    if course_dict.get("assignments"):
+        for assignment in course_dict["assignments"]:
+            assignment["description"] = md(assignment["description"])
+
     app.mongodb["courses"].update_one(
-        {"id": course_dict["canvas_id"], "institution": course_dict["institution"]},
+        {"id": course_dict["id"], "institution": course_dict["institution"]},
         {"$set": course_dict},
-        upsert=True,
-    )
-    # app.mongodb["courses"].update
-
-
-@app.post("/v1/ingest")
-async def ingest_data(user_data: CanvasData):
-    user_dict = user_data.dict(exclude_none=True)
-    app.mongodb["users"].update_one(
-        {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
-        {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
         upsert=True,
     )
 
@@ -231,16 +222,35 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
 async def smart_chat_stream(
     chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
 ):
+    """
+    Sends back chunks as they are generated from the AI.
+    Response is an iterator in the form of:
+    `{"content": "the ai response"}` or `{"flagged": bool}`
+    """
     user = await get_user_from_token(token)
     messages = chat.messages
 
     fields = ["kind", "title", "message", "html_url", "score", "points_possible", "submission_comments"]
     context = [{f: a.get(f)} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses]
+    course_context = [
+        {
+            "name": " ".join(c.get("name").split("|")[0].split("-")[0:2]),
+            "role": c.get("role"),
+            "score": c.get("current_score"),
+        }
+        for c in user["courses"]
+        if c["id"] in chat.courses
+    ]
+
     formatted_context = (
         [
             {
                 "role": "user",
-                "content": f"Recent canvas updates at {user["institution"]}: {json.dumps(context)}",
+                "content": f"""Canvas updates for {user.get("first_name")} at {user.get("institution")}: 
+                {json.dumps(context)}, 
+                
+                Course Info:
+                {json.dumps(course_context)}""",
             }
         ]
         if chat.courses
@@ -302,14 +312,3 @@ async def smart_chat_stream(
                 # TODO: Call functions
 
     return StreamingResponse(iter_response(messages), media_type="application/json")
-
-
-# NOTE: we need to define the data that the endpoint takes, just like a function call
-# we need to figure out the required and not required parameters for each
-
-# TODO: | /v1/login
-#       | /v1/logout
-# just an endpoint(s) to login/logout
-
-# TODO: | /v1/message
-# get a message from the tutor aka send a message to the tutor and get a response back
