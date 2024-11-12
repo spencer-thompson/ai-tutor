@@ -36,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double screen_width = 0.0;
 
   final myCustomTheme = DefaultChatTheme(messageMaxWidth: double.infinity);
+
   @override
   Widget build(BuildContext context) => Scaffold(
         //LayoutBuilder adjusts width baseed on the current size of the window...
@@ -69,6 +70,29 @@ class _MyHomePageState extends State<MyHomePage> {
       _messages.insert(0, message);
     });
   }
+  //
+  //void _handleSendPressed(types.PartialText message) async {
+  //  final currentMessage = types.CustomMessage(
+  //    author: _user,
+  //    createdAt: DateTime.now().millisecondsSinceEpoch,
+  //    id: randomString(),
+  //    showStatus: true,
+  //    status: types.Status.sent,
+  //    //text: message.text,
+  //    metadata: {'markdown': message.text},
+  //  );
+  //  _addMessage(currentMessage);
+  //  print('Made it here');
+  //
+  //  runner().listen((data) {
+  //    print(data.runtimeType);
+  //    print('Received data: $data');
+  //  });
+  //  //await runner();
+  //
+  //  //_sendToGPT(message.text, currentMessage.id);
+  //}
+  //
 
   void _handleSendPressed(types.PartialText message) async {
     final currentMessage = types.CustomMessage(
@@ -77,36 +101,146 @@ class _MyHomePageState extends State<MyHomePage> {
       id: randomString(),
       showStatus: true,
       status: types.Status.sent,
-      //text: message.text,
       metadata: {'markdown': message.text},
     );
     _addMessage(currentMessage);
 
-    _sendUserMessage(message.text, currentMessage.id);
+    final aiMessage = types.CustomMessage(
+      author: _user2,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      //id: randomString(),
+      id: '234932',
+      showStatus: true,
+      status: types.Status.sent,
+      metadata: {'markdown': ''},
+    );
+    _addMessage(aiMessage);
+
+    String accumulatedResponse = '';
+
+    runner().listen((chunk) {
+      accumulatedResponse += chunk;
+      setState(() {
+        _messages[0] = (_messages[0] as types.CustomMessage).copyWith(
+          metadata: {'markdown': accumulatedResponse},
+          status: types.Status.sent,
+        );
+      });
+    });
   }
 
-  void _sendUserMessage(String userMessage, String messageId) async {
-    String response = await _sendToGPT(userMessage, messageId);
-    _displayGPTMessage(response);
-  }
+  Stream<String> runner() async* {
+    // Get all messages except the empty AI message we just added
+    final messages = _messages.reversed
+        .map((message) {
+          if (message is types.CustomMessage) {
+            return {
+              "role": message.author.id == _user.id ? "user" : "assistant",
+              "content": message.metadata?['markdown'] ?? '',
+              "name": message.author.id == _user.id ? "Guts" : "Assistant"
+            };
+          }
+          return null;
+        })
+        .whereType<Map<String, dynamic>>()
+        .toList();
 
-  Future<String> _sendToGPT(String userMessage, String messageId) async {
-    final body = jsonEncode([
-      {"role": "user", "content": userMessage, "name": "Guts"}
-    ]);
-
+    final data = jsonEncode(messages);
     final headers = {
       "Content-Type": "application/json",
       "AITUTOR-API-KEY": "test_key"
     };
 
-    final response = await http.post(
-      Uri.parse("http://localhost:8080/v1/chat"),
-      headers: headers,
-      body: body,
+    final request = http.Request(
+      'POST',
+      Uri.parse("http://localhost:8080/v1/chat_stream"),
     );
 
-    return response.body;
+    request.headers.addAll(headers);
+    request.body = data;
+
+    final streamedResponse = await request.send();
+
+    if (streamedResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to connect to server: ${streamedResponse.statusCode}');
+    }
+
+    await for (final chunk in streamedResponse.stream.transform(utf8.decoder)) {
+      try {
+        // Try to parse as JSON
+        final jsonData = jsonDecode(chunk);
+        if (jsonData['content'] != null) {
+          yield jsonData['content'];
+        }
+      } catch (e) {
+        // If it's not valid JSON, try to extract content from the chunk
+        final contentMatch =
+            RegExp(r'"content":\s*"([^"]*)"').firstMatch(chunk);
+        if (contentMatch != null && contentMatch.group(1) != null) {
+          yield contentMatch.group(1)!;
+        } else {
+          // If we can't extract content, just yield the raw chunk
+          yield chunk;
+        }
+      }
+    }
+  }
+
+  //
+  //Stream<String> runner() async* {
+  //  final messages = _messages.reversed
+  //      .map((message) {
+  //        if (message is types.CustomMessage) {
+  //          return {
+  //            "role": message.author.id == _user.id ? "user" : "assistant",
+  //            "content": message.metadata?['markdown'] ?? '',
+  //            "name": message.author.id == _user.id ? "Guts" : "Assistant"
+  //          };
+  //        }
+  //        return null;
+  //      })
+  //      .whereType<Map<String, dynamic>>()
+  //      .toList();
+  //  final data = jsonEncode(messages);
+  //  final headers = {
+  //    "Content-Type": "application/json",
+  //    "AITUTOR-API-KEY": "test_key"
+  //  };
+  //  final request = http.Request(
+  //    'POST',
+  //    Uri.parse("http://localhost:8080/v1/chat_stream"),
+  //  );
+  //
+  //  request.headers.addAll(headers);
+  //  request.body = data;
+  //
+  //  final streamedResponse = await request.send();
+  //  Stream<String> stream = streamedResponse.stream.transform(utf8.decoder);
+  //
+  //  await for (final chunk in stream) {
+  //    print(chunk);
+  //    yield chunk;
+  //  }
+  //}
+
+  Widget _buildMarkdownMessage(types.CustomMessage message,
+      {required int messageWidth, required double maxWidth}) {
+    final markdownText = message.metadata?['markdown'] as String? ?? '';
+    double bubbleWidth = maxWidth * 0.75;
+    if (bubbleWidth > 1000) bubbleWidth = 1000;
+    if (bubbleWidth < 200) bubbleWidth = 200;
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: bubbleWidth,
+      ),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      // MarkdownBody widget knows how to size the height properly
+      child: MarkdownBody(
+        data: markdownText,
+      ),
+    );
   }
 
   Future<void> _displayGPTMessage(String response) {
@@ -126,27 +260,126 @@ class _MyHomePageState extends State<MyHomePage> {
     _addMessage(aiMessage);
     return Future.value();
   }
-
-  Widget _buildMarkdownMessage(types.CustomMessage message,
-      {required int messageWidth, required double maxWidth}) {
-    final markdownText = message.metadata?['markdown'] as String? ?? '';
-
-    double bubbleWidth = maxWidth * 0.75;
-
-    if (bubbleWidth > 1000) bubbleWidth = 1000;
-
-    if (bubbleWidth < 200) bubbleWidth = 200;
-
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: bubbleWidth,
-      ),
-      padding: const EdgeInsets.all(10),
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      // MarkdownBody widget knows how to size the height properly
-      child: MarkdownBody(
-        data: markdownText,
-      ),
-    );
-  }
 }
+//
+//  void _handleSendPressed(types.PartialText message) async {
+//    final currentMessage = types.CustomMessage(
+//      author: _user,
+//      createdAt: DateTime.now().millisecondsSinceEpoch,
+//      id: randomString(),
+//      showStatus: true,
+//      status: types.Status.sent,
+//      metadata: {'markdown': message.text},
+//    );
+//    _addMessage(currentMessage);
+//
+//    final aiMessage = types.CustomMessage(
+//      author: _user2,
+//      createdAt: DateTime.now().millisecondsSinceEpoch,
+//      id: randomString(),
+//      showStatus: true,
+//      status: types.Status.sending,
+//      metadata: {'markdown': ''},
+//    );
+//    _addMessage(aiMessage);
+//
+//    String completion = '';
+//    await for (final chunk in runner()) {
+//      completion += chunk;
+//      setState(() {
+//        _messages[0] = (_messages[0] as types.CustomMessage).copyWith(
+//          metadata: {'markdown': completion},
+//          status: types.Status.sent,
+//        );
+//      });
+//    }
+//  }
+//
+//  Stream<String> runner() async* {
+//    final messages = _messages.reversed
+//        .map((message) {
+//          if (message is types.CustomMessage) {
+//            return {
+//              "role": message.author.id == _user.id ? "user" : "assistant",
+//              "content": message.metadata?['markdown'] ?? '',
+//              "name": message.author.id == _user.id ? "Guts" : "Assistant"
+//            };
+//          }
+//          return null;
+//        })
+//        .whereType<Map<String, dynamic>>()
+//        .toList();
+//    final data = jsonEncode(messages);
+//    final headers = {
+//      "Content-Type": "application/json",
+//      "AITUTOR-API-KEY": "test_key"
+//    };
+//    final request = http.Request(
+//      'POST',
+//      Uri.parse("http://localhost:8080/v1/chat_stream"),
+//    );
+//
+//    request.headers.addAll(headers);
+//    request.body = data;
+//
+//    final streamedResponse = await request.send();
+//    final stream = streamedResponse.stream.transform(utf8.decoder);
+//
+//    await for (var chunk in stream) {
+//      try {
+//        print(chunk);
+//        final parsedChunk = jsonDecode(chunk);
+//        print(parsedChunk);
+//        yield parsedChunk;
+//        //if (parsedChunk['content'] != null) {
+//        //  yield parsedChunk['content'];
+//        //}
+//      } catch (e) {
+//        yield chunk;
+//      }
+//    }
+//  }
+//
+//  Future<void> _displayGPTMessage(String response) {
+//    final parsedJson = jsonDecode(response);
+//    final content = parsedJson['content'];
+//
+//    final aiMessage = types.CustomMessage(
+//      author: _user2,
+//      createdAt: DateTime.now().millisecondsSinceEpoch,
+//      //id: randomString(),
+//      id: "1309854jsladkf",
+//      showStatus: true,
+//      status: types.Status.sent,
+//      //text: content,
+//      metadata: {'markdown': content},
+//    );
+//
+//    _addMessage(aiMessage);
+//    return Future.value();
+//  }
+//
+//  Widget _buildMarkdownMessage(types.CustomMessage message,
+//      {required int messageWidth, required double maxWidth}) {
+//    final markdownText = message.metadata?['markdown'] as String? ?? '';
+//
+//    double bubbleWidth = maxWidth * 0.75;
+//
+//    if (bubbleWidth > 1000) bubbleWidth = 1000;
+//
+//    if (bubbleWidth < 200) bubbleWidth = 200;
+//
+//    return Container(
+//      constraints: BoxConstraints(
+//        maxWidth: bubbleWidth,
+//      ),
+//      padding: const EdgeInsets.all(10),
+//      margin: const EdgeInsets.symmetric(vertical: 5),
+//      // MarkdownBody widget knows how to size the height properly
+//      child: MarkdownBody(
+//        data: markdownText,
+//      ),
+//    );
+//  }
+//}
+
