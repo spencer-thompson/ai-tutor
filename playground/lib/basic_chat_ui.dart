@@ -37,7 +37,23 @@ class _MyHomePageState extends State<MyHomePage> {
   double screen_width = 0.0;
   final cur_time = DateTime.now().millisecondsSinceEpoch;
 
-  final myCustomTheme = DefaultChatTheme(messageMaxWidth: double.infinity);
+  //final myCustomTheme = DefaultChatTheme(
+  //  messageMaxWidth: double.infinity,
+  //  inputBackgroundColor: Colors.red,
+  //  inputTextColor: Colors.white,
+  //  inputTextCursorColor: Colors.yellow,
+  //  primaryColor: Colors.blue,
+  //  secondaryColor: Colors.purple,
+  //  userAvatarImageBackgroundColor: Colors.red,
+  //);
+
+  final myCustomTheme = DarkChatTheme(
+    userAvatarNameColors: [Colors.red],
+    backgroundColor: Colors.black,
+    messageMaxWidth: double.infinity,
+    primaryColor: Colors.blue,
+    secondaryColor: Colors.cyanAccent,
+  );
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -156,3 +172,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+// LayoutBuilder --> if you are writing a build method but want to know/specify how big it will be.
