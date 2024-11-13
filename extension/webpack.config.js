@@ -4,7 +4,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const commonConfig = {
   entry: {
-    // background: "./src/background.js",
+    background: "./src/background.js",
     content: "./src/content.js",
     // popup: "./src/popup.js",
     // css: "./src/styles.css",

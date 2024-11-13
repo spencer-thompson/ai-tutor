@@ -1,0 +1,69 @@
+include:
+  - path: ./compose/traefik.yaml
+    project_directory: .
+  - path: ./compose/mongo.yaml
+    project_directory: .
+
+services:
+  fastapi:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    command: fastapi run main.py --host 0.0.0.0 --port 8080
+    environment:
+      CHAT_MODEL: ${CHAT_MODEL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    depends_on:
+      - mongo
+      - traefik
+    ports:
+      - "8080:8080"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.streamlit.entrypoints=websecure
+      - traefik.http.routers.streamlit.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.streamlit.tls=true
+      - traefik.http.routers.streamlit.tls.certresolver=production
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+
+  streamlit:
+    build:
+      context: ./streamlit/
+      dockerfile: Dockerfile
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      DOMAIN: ${DOMAIN}
+      BACKEND: ${BACKEND}
+      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
+    develop:
+      watch:
+        - action: sync
+          path: ./streamlit
+          target: /app
+          ignore:
+            - __pycache__/
+    depends_on:
+      - fastapi
+    ports:
+      - "8501:8501"
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      # - traefik.http.routers.streamlit.entrypoints=web,websecure
+      - traefik.http.routers.streamlit.entrypoints=websecure
+      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)
+      - traefik.http.routers.streamlit.tls=true
+      - traefik.http.routers.streamlit.tls.certresolver=production
+      - traefik.http.services.streamlit.loadbalancer.server.port=8501
+
+networks:
+  web:
+    external: false

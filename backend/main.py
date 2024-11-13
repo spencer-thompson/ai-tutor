@@ -72,6 +72,7 @@ app.add_middleware(
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
+        "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
     ],  # List the allowed origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
@@ -135,14 +136,37 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
     return api_key_value
 
 
-@app.post("/token")  # copied from chatgpt
+@app.get("/token")
+async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+    """
+    Returns a valid JSON Web Token.
+    Uses the current token to generate, or refresh, a new one.
+    """
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+        id = payload.get("sub")
+        uni = payload.get("uni")
+        if id is None or uni is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        new_token = create_access_token(data={"sub": id, "uni": uni})
+        return {"token": new_token}
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+@app.post("/token")
 async def create_token(token_data: Token, api_key_value: dict = Depends(check_api_key)):
     """
     Returns a valid JSON Web Token.
     Currently, tokens expire after 1 day.
     """
     access_token = create_access_token(data={"sub": token_data.sub, "uni": token_data.uni})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"token": access_token}
 
 
 @app.get("/user", response_model=User)
@@ -231,7 +255,9 @@ async def smart_chat_stream(
     messages = chat.messages
 
     fields = ["kind", "title", "message", "html_url", "score", "points_possible", "submission_comments"]
-    context = [{f: a.get(f)} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses]
+    activity_context = [
+        {f: a.get(f)} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses
+    ]
     course_context = [
         {
             "name": " ".join(c.get("name").split("|")[0].split("-")[0:2]),
@@ -242,24 +268,24 @@ async def smart_chat_stream(
         if c["id"] in chat.courses
     ]
 
-    formatted_context = (
+    context = (
         [
             {
                 "role": "user",
                 "content": f"""Canvas updates for {user.get("first_name")} at {user.get("institution")}: 
-                {json.dumps(context)}, 
+                {json.dumps(activity_context)}, 
                 
                 Course Info:
                 {json.dumps(course_context)}""",
             }
         ]
-        if chat.courses
+        if chat.courses and len(messages) == 1
         else []
     )
 
     async def iter_response(messages):
         response = await app.openai.chat.completions.create(
-            messages=SYSTEM_MESSAGE + formatted_context + messages,
+            messages=SYSTEM_MESSAGE + context + messages,
             model=CHAT_MODEL,
             logprobs=True,
             stream=True,

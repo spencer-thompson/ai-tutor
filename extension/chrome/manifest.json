@@ -4,7 +4,7 @@
   "description": "AI Tutor extension for Canvas.",
   "version": "1.0",
   "background": {
-    "service_worker": "service-worker.js"
+    "service_worker": "background.bundle.js"
   },
   "content_scripts": [
     {
@@ -15,5 +15,6 @@
   "side_panel": {
     "default_path": "sidepanel.html"
   },
-  "permissions": ["sidePanel", "storage"]
+  "host_permissions": ["http://localhost:8501/*", "https://localhost:8501/*"],
+  "permissions": ["sidePanel", "storage", "cookies", "scripting"]
 }

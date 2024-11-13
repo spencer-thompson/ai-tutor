@@ -11,8 +11,6 @@ import requests
 
 import streamlit as st
 
-# import streamlit.components.v1.html as html
-
 VERSION = 1.000
 
 if "token" not in st.session_state:
@@ -60,9 +58,6 @@ if "backend" not in st.session_state:  # maybe change to a class?
         backend_post,
         backend_post_stream,
     )
-
-# if "cookie" not in st.session_state:
-#     st.session_state.cookie = namedtuple("Cookie", ["set", "delete"])(set_cookie, delete_cookie)
 
 
 if "patterns" not in st.session_state:
@@ -135,6 +130,7 @@ def logout():
 account_pages = [
     st.Page(logout, title="Log Out", icon=":material/logout:"),
     st.Page("./page/settings.py", title="Settings", icon=":material/settings:"),
+    st.Page("./page/mobile.py", title="Mobile", icon=":material/smartphone:"),
 ]
 user_pages = [
     st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
