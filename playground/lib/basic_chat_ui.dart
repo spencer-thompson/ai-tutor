@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:core';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -34,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
   final _user2 = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f20v');
   double screen_width = 0.0;
+  final cur_time = DateTime.now().millisecondsSinceEpoch;
 
   final myCustomTheme = DefaultChatTheme(messageMaxWidth: double.infinity);
 
@@ -120,10 +122,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     runner().listen((chunk) {
       accumulatedResponse += chunk;
+      print(chunk);
       setState(() {
         _messages[0] = (_messages[0] as types.CustomMessage).copyWith(
           metadata: {'markdown': accumulatedResponse},
-          status: types.Status.sent,
         );
       });
     });
@@ -176,12 +178,21 @@ class _MyHomePageState extends State<MyHomePage> {
       } catch (e) {
         // If it's not valid JSON, try to extract content from the chunk
         final contentMatch =
-            RegExp(r'"content":\s*"([^"]*)"').firstMatch(chunk);
-        if (contentMatch != null && contentMatch.group(1) != null) {
-          yield contentMatch.group(1)!;
-        } else {
-          // If we can't extract content, just yield the raw chunk
-          yield chunk;
+            RegExp(r'"content":\s*"([^"]*)"').allMatches(chunk);
+        //print(chunk);
+        for (final match in contentMatch) {
+          print(match.group(1));
+          final aiMessage = types.CustomMessage(
+            author: _user2,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+            id: randomString(),
+            showStatus: true,
+            status: types.Status.sent,
+            metadata: {'markdown': match.group(1)},
+          );
+          _addMessage(aiMessage);
+
+          yield match.group(1)!;
         }
       }
     }
@@ -249,13 +260,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final aiMessage = types.CustomMessage(
       author: _user2,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
+      //createdAt: DateTime.now().millisecondsSinceEpoch,
+      createdAt: cur_time,
       id: randomString(),
       showStatus: true,
       status: types.Status.sent,
       //text: content,
       metadata: {'markdown': content},
     );
+    setState(() {
+      _messages.removeAt(0);
+    });
 
     _addMessage(aiMessage);
     return Future.value();
