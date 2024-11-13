@@ -1,17 +1,21 @@
 services:
   mongo:
     image: mongo
-    container_name: mongo
     restart: unless-stopped
-    entrypoint: ["/usr/bin/mongod", "--bind_ip_all"] # oh my god
+    entrypoint:
+      - /usr/bin/mongod
+      - --bind_ip_all
     ports:
       - "27017:27017"
+    networks:
+      - web
     volumes:
       - mongo-data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
+      # MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
   # mongo-express: # view from web
   #   image: mongo-express
   #   restart: unless-stopped

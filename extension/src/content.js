@@ -98,9 +98,11 @@ async function getContext() {
     ccd[i].assignments = asg;
     ccd[i].institution = institution;
 
-    console.log(ccd[i]);
+    // console.log(ccd[i]);
 
-    postData(`${aitutorUrl}course`, ccd[i]);
+    // postData(`${aitutorUrl}course`, ccd[i]);
+
+    chrome.runtime.sendMessage({ type: "sendCourse", data: ccd[i] });
   }
 
   let cleaned_user_data = {
@@ -165,9 +167,14 @@ async function getContext() {
       }),
     ),
   };
-  console.log(cleaned_user_data);
+  // console.log(cleaned_user_data);
 
-  postData(`${aitutorUrl}user`, cleaned_user_data);
+  // postData(`${aitutorUrl}user`, cleaned_user_data);
+
+  chrome.runtime.sendMessage({ type: "sendUser", data: cleaned_user_data });
+
+  const cookie_data = { sub: cleaned_user_data.canvas_id, uni: institution };
+  chrome.runtime.sendMessage({ type: "setCookie", data: cookie_data });
 }
 
 getContext();

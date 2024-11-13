@@ -23,11 +23,17 @@ def render_messages():
             st.chat_message(name=message["role"]).markdown(message["content"])
 
 
+def clear_messages():
+    st.session_state.messages = []
+
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 if st.sidebar.button("New Chat", use_container_width=True):
-    st.session_state.messages = []
+    clear_messages()
+
 
 st.title("AI Tutor :sparkles:")
 st.caption("* Keep in mind responses may be inaccurate.")
@@ -40,6 +46,7 @@ selected_courses = st.pills(
     options=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
     default=[c for c in st.session_state.user["courses"] if st.session_state.user_settings["shown_courses"][c["id"]]],
     selection_mode="multi",
+    on_change=clear_messages,
     format_func=lambda c: " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
 )
