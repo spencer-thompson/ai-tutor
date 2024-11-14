@@ -3,6 +3,24 @@ const aitutorDomain = process.env.DOMAIN;
 const apiKey = process.env.API_KEY;
 const apiKeyName = process.env.API_KEY_NAME;
 
+// if (typeof browser === "undefined") {
+//   // firefox
+//   // var browser = chrome;
+//   console.log("idk");
+// } else {
+//   // chrome
+//   chrome.sidePanel
+//     .setPanelBehavior({ openPanelOnActionClick: true })
+//     .catch((error) => console.error(error));
+// }
+
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
+
+const isFirefox = typeof browser !== "undefined" && browser.sidebarAction;
+const isChrome = typeof chrome !== "undefined" && !isFirefox;
+
 async function getData(url) {
   let response = await fetch(url, {
     method: "GET",
@@ -52,6 +70,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         value: token_data.token,
         expirationDate: Math.floor(Date.now() / 1000) + 86400, // 3600, // Expires in 1 hour
         // NOTE: 86400 - 1 day
+        // sameSite: "no_restriction", // SameSite=None
+        // secure: false, // Secure attribute // only https
       },
       () => {
         console.log(`Cookie set for aitutor.live: ${message.data}`);

@@ -193,6 +193,12 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
     )
 
 
+@app.get("/user_count")
+async def get_user_count(api_key_value: dict = Depends(check_api_key)):
+    total_users = len(await app.mongodb["users"].find().to_list(None))
+    return {"total_users": total_users}
+
+
 @app.post("/course")
 async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(check_api_key)):
     course_dict = course_data.dict(exclude_none=True)

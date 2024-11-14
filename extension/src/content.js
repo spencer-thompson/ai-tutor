@@ -1,9 +1,6 @@
 const domain = window.location.origin;
 const current_page = window.location.pathname;
 const institution = window.location.hostname.split(".")[0];
-const aitutorUrl = process.env.REQUEST_URL;
-const apiKey = process.env.API_KEY;
-const apiKeyName = process.env.API_KEY_NAME;
 
 async function getData(url) {
   let response = await fetch(url, {
@@ -12,20 +9,6 @@ async function getData(url) {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-  });
-  let resp = await response.json();
-  return resp;
-}
-
-async function postData(url, data) {
-  let response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "AITUTOR-API-KEY": apiKey,
-      Accept: "application/json",
-    },
-    body: JSON.stringify(data),
   });
   let resp = await response.json();
   return resp;
@@ -100,8 +83,6 @@ async function getContext() {
 
     // console.log(ccd[i]);
 
-    // postData(`${aitutorUrl}course`, ccd[i]);
-
     chrome.runtime.sendMessage({ type: "sendCourse", data: ccd[i] });
   }
 
@@ -168,8 +149,6 @@ async function getContext() {
     ),
   };
   // console.log(cleaned_user_data);
-
-  // postData(`${aitutorUrl}user`, cleaned_user_data);
 
   chrome.runtime.sendMessage({ type: "sendUser", data: cleaned_user_data });
 

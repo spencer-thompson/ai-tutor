@@ -19,20 +19,37 @@ def render_messages():
         elif message["role"] == "tool":
             continue
 
+        elif message.get("name") == "system":
+            continue
+
         else:
             st.chat_message(name=message["role"]).markdown(message["content"])
+
+
+if "chat_control" not in st.session_state:
+    st.session_state.chat_control = None
 
 
 def clear_messages():
     st.session_state.messages = []
 
 
+def think():
+    pass
+
+
+def control():
+    func = st.session_state.chat_control.get("func")
+    if func:
+        func()
+
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
-if st.sidebar.button("New Chat", use_container_width=True):
-    clear_messages()
+# if st.sidebar.button("New Chat", use_container_width=True):
+#     clear_messages()
 
 
 st.title("AI Tutor :sparkles:")
@@ -40,6 +57,7 @@ st.caption("* Keep in mind responses may be inaccurate.")
 st.write("---")
 
 render_messages()
+
 
 selected_courses = st.pills(
     "Courses",
@@ -59,6 +77,22 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
 
     with st.chat_message("assistant"):
         st.write_stream(runner(selected_courses))
+
+    st.rerun()
+
+
+if st.session_state.messages:
+    st.segmented_control(
+        "Control",
+        [{"display": "New Chat", "func": clear_messages}, {"display": "Think about it", "func": think}],
+        key="chat_control",
+        on_change=control,
+        format_func=lambda o: o["display"],
+        label_visibility="collapsed",
+    )
+    # if st.feedback() is False:
+    #     st.write("test")
+
 
 # if st.session_state.messages:
 #     st.feedback(options="stars")  # TODO: Hook up

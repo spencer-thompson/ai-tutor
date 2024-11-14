@@ -29,10 +29,14 @@ footer {
   display: none;
 }
 
-/* .st-af, */
-/* .st-ae { */
+/* [data-baseweb="button-group"] { */
 /*   justify-content: center; */
 /* } */
+.stButtonGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 stElementContainer {
   justify-content: center;
@@ -47,6 +51,8 @@ pre,
 h1,
 h2,
 h3,
+h4,
+h5,
 /* [class|="st"], */
 span,
 kbd {

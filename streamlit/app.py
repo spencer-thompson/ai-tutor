@@ -70,11 +70,13 @@ if "user" not in st.session_state:
     default_user = {
         "role": "dev",  # TODO: change
         "mobile": True if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) else False,
+        # "logged_in": False,
         "authenticated": False,
     }
     try:
         st.session_state.user = default_user | st.session_state.backend.get("user")
         st.session_state.user["authenticated"] = True
+        # st.session_state.user["logged_in"] = True
     except requests.exceptions.HTTPError:
         st.session_state.user = default_user  # figure out how to tell a user to login
 
@@ -82,8 +84,11 @@ if "user" not in st.session_state:
 if "user_settings" not in st.session_state and st.session_state.user.get("authenticated"):
     st.session_state.user_settings = {
         "show_courses": True,
-        "shown_courses": {c["id"]: False for c in st.session_state.user["courses"]},
+        "shown_courses": {c["id"]: True for c in st.session_state.user["courses"]},
     }
+
+if "user_count" not in st.session_state:
+    st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
 
 
 if "layout" not in st.session_state:
@@ -91,6 +96,9 @@ if "layout" not in st.session_state:
         st.session_state.layout = "wide"
     else:
         st.session_state.layout = "centered"
+
+if "accepted_cookie" not in st.session_state:
+    st.session_state.accepted_cookie = False
 
 
 st.set_page_config(
@@ -108,27 +116,74 @@ st.set_page_config(
 
 def login():
     if not st.session_state.user["authenticated"]:
-        st.header("Log In")
-        st.write("go to link and refresh the page")
-        if st.button("login"):
-            st.session_state.user["role"] = "dev"
-            st.rerun()
-        else:
-            st.stop()
+        st.title("Log In")
+        st.caption(
+            "* If you have previously logged in and are seeing this, visit the canvas page and refresh this page"
+        )
+        st.write("---")
+        if not st.session_state.accepted_cookie:
+            st.write("""
+            First things first, we need to talk about cookies :cookie: 
 
-    st.title("You need to log in")
-    st.write("got to link and refresh the page")
-    st.stop()
+            We all know the annoying popups usually saying something like:
+
+            ### ```This website utilizes technologies such as cookies to enable essential site functionality...```
+            
+            *blah blah blah*
 
 
-def logout():
+            **Anyway**, Instead of making everyone create a new account and remember a password,
+            I decided I would prefer to store logging in and loggin out as a cookie.
+
+            This has a lot of benefits, and streamlines the process of logging in and out *a lot*.
+
+            ---
+
+            **TLDR:** I need you to accept a cookies to let you use the AI Tutor
+            """)
+            if not st.button("Accept Cookie", use_container_width=True, type="primary"):
+                st.stop()
+            else:
+                st.session_state.accepted_cookie = True
+                st.rerun()
+                # st.toast("Thank you!", icon=":material/sentiment_very_satisfied:")
+
+        st.toast("Thank you!", icon=":material/sentiment_very_satisfied:")
+        st.balloons()
+
+        st.write("""
+        Next, in order to log in, you need to install our **Browser Extension**.
+
+        * [Google Chrome](www.google.com)
+        
+        * [Microsoft Edge](www.google.com)
+
+        * [Firefox](www.google.com)
+
+        ---
+
+        After downloading the browser extension, if for some reason you are not automatically redirected,
+        visit your universities canvas homepage.
+
+        * [UVU](https://uvu.instructure.com/)
+        
+        ---
+
+        **Lastly**, refresh the page and you should be good to go!
+        """)
+        st.caption("* Sometimes it can take a second while for canvas to load :material/sentiment_dissatisfied:")
+
+        st.stop()
+
+
+def logout():  # currently unused
     del st.session_state.user
     # st.session_state.cookies.delete("somethiing")
     st.rerun()
 
 
 account_pages = [
-    st.Page(logout, title="Log Out", icon=":material/logout:"),
+    # st.Page(logout, title="Log Out", icon=":material/logout:"),
     st.Page("./page/settings.py", title="Settings", icon=":material/settings:"),
     st.Page("./page/mobile.py", title="Mobile", icon=":material/smartphone:"),
 ]
@@ -144,7 +199,7 @@ dev_pages = [
 
 pages = {}
 
-if st.session_state.user["authenticated"]:
+if st.session_state.user.get("authenticated"):
     if st.session_state.user["role"] in ["normal", "admin"]:
         pages["AI"] = user_pages
         pages["INFO"] = info_pages
@@ -153,6 +208,9 @@ if st.session_state.user["authenticated"]:
         pages["AI"] = user_pages
         pages["INFO"] = info_pages
         pages["DEV"] = dev_pages
+
+else:
+    pages = {}
 
 
 if len(pages) > 0:
@@ -163,4 +221,13 @@ else:
 
 pg.run()
 
-st.sidebar.caption(f"* AI Tutor Version: :green-background[{VERSION}]")
+with st.sidebar:
+    # st.metric("Users", f"{st.session_state.user_count} Users", "1", label_visibility="collapsed")
+    if feedback := st.feedback("stars"):
+        # st.write(feedback)
+        st.write("implement")
+
+# if feedback := st.sidebar.feedback("stars"):
+#     st.sidebar.text_area("stuff", label_visibility="collapsed")
+
+# st.sidebar.caption(f"* AI Tutor Version: :green-background[{VERSION}]")
