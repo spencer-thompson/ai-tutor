@@ -33,19 +33,13 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.sizeOf(context).center(Offset(0, -70)),
-      width: 240,
-      height: 240,
+      width: 270,
+      height: 270,
     );
 
     return Scaffold(
-      ////backgroundColor: const Color.fromRGBO(12, 109, 21, .75),
-      //backgroundColor: const Color(0x00FF0080),
-      //backgroundColor: Colors.black,
-      //backgroundColor: const Color(0xFFFFFFFF),
-      //backgroundColor:
-      //    SweepGradient(colors: <Color>[Color(0xFFFFFFFF), Color(0x00000000)]),
       appBar: AppBar(
-        title: const Text('Scanner with Overlay Example app'),
+        title: const Center(child: Text('Scan QR Code from Extension')),
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -160,27 +154,51 @@ class ScannerOverlay extends CustomPainter {
       bottomRight: Radius.circular(borderRadius),
     );
 
-    final myGradient = RadialGradient(
-        center: Alignment.center,
-        radius: 0.5,
-        colors: [Colors.transparent, Colors.orange]);
+    final topGradient = LinearGradient(
+        colors: [Colors.transparent, Colors.black],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter);
 
-    final myBorderPaint = Paint()
-      ..shader = myGradient.createShader(Rect.fromLTWH(0, 0, 400, 100));
-    //..color = Colors.white.withOpacity(.5)
-    //..style = PaintingStyle.fill
-    //..strokeWidth = 1.0;
+    final bottomGradient = LinearGradient(
+        colors: [Colors.black, Colors.transparent],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter);
 
-    final myBorderRect = RRect.fromRectAndCorners(
-      const Rect.fromLTRB(00, 00, 1000, 100),
+    const double gradientHeight = 200.0;
+    final double gradientWidth = size.width;
+
+    final gradientBorderPaintTop = Paint()
+      ..shader = topGradient
+          .createShader(Rect.fromLTWH(0, 0, gradientWidth, gradientHeight));
+
+    final gradientBorderPaintBottom = Paint()
+      ..shader = bottomGradient.createShader(Rect.fromLTWH(
+          0, size.height - 400, size.width, gradientHeight + 100));
+
+    final topBorderRect = RRect.fromRectAndCorners(
+      Rect.fromLTRB(0, 0, gradientWidth, gradientHeight),
     );
+
+    final bottomBorderRect = RRect.fromRectAndCorners(
+      Rect.fromLTRB(0, size.height, gradientWidth, -gradientHeight - 300),
+    );
+
+    final rect = RRect.fromRectAndCorners(Rect.fromLTRB(
+        0, size.height, gradientWidth, size.height - gradientHeight));
+
+    final painting = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 1.0;
 
     // First, draw the background,
     // with a cutout area that is a bit larger than the scan window.
     // Finally, draw the scan window itself.
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
     canvas.drawRRect(borderRect, borderPaint);
-    canvas.drawRRect(myBorderRect, myBorderPaint);
+    canvas.drawRRect(topBorderRect, gradientBorderPaintTop);
+    canvas.drawRRect(bottomBorderRect, gradientBorderPaintBottom);
+    //canvas.drawRRect(rect, painting);
   }
 
   @override
