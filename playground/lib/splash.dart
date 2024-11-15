@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playground/basic_chat_ui.dart';
-import 'package:playground/qr_code.dart';
+import 'package:playground/qr_code/qr_code.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});

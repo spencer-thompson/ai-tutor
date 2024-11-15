@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:playground/qr_files/scanned_barcode_label.dart';
-import 'package:playground/qr_files/scanner_button_widgets.dart';
-import 'package:playground/qr_files/scanner_error_widget.dart';
+import 'package:playground/qr_code/scanned_barcode_label.dart';
+import 'package:playground/qr_code/scanner_button_widgets.dart';
+import 'package:playground/qr_code/scanner_error_widget.dart';
 
 class QrApp extends StatelessWidget {
   const QrApp({super.key});
@@ -30,13 +30,18 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.sizeOf(context).center(Offset.zero),
-      width: 200,
-      height: 200,
+      center: MediaQuery.sizeOf(context).center(Offset(0, -70)),
+      width: 240,
+      height: 240,
     );
 
     return Scaffold(
+      //backgroundColor: const Color.fromRGBO(12, 109, 21, .75),
+      //backgroundColor: const Color(0x00FF0080),
       backgroundColor: Colors.black,
+      //backgroundColor: const Color(0xFFFFFFFF),
+      //backgroundColor:
+      //    SweepGradient(colors: <Color>[Color(0xFFFFFFFF), Color(0x00000000)]),
       appBar: AppBar(
         title: const Text('Scanner with Overlay Example app'),
       ),
@@ -45,7 +50,8 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
         children: [
           Center(
             child: MobileScanner(
-              fit: BoxFit.contain,
+              //fit: BoxFit.contain,
+              fit: BoxFit.fitWidth,
               controller: controller,
               scanWindow: scanWindow,
               errorBuilder: (context, error, child) {
