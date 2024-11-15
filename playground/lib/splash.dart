@@ -8,7 +8,7 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //final bool isLoggedIn = accessToken != null && accessToken!.isNotEmpty;
-    final bool isLoggedIn = false;
+    final bool isLoggedIn = true;
     final Widget goToPage = isLoggedIn ? BasicApp() : QrApp();
     return goToPage;
   }

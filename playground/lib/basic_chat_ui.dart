@@ -6,6 +6,7 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
+import 'package:playground/drawer.dart';
 
 String randomString() {
   final random = Random.secure();
@@ -47,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //  userAvatarImageBackgroundColor: Colors.red,
   //);
 
-  final myCustomTheme = DarkChatTheme(
+  final myCustomTheme = const DarkChatTheme(
     userAvatarNameColors: [Colors.red],
     backgroundColor: Colors.black,
     messageMaxWidth: double.infinity,
@@ -59,6 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) => Scaffold(
         //LayoutBuilder adjusts width baseed on the current size of the window...
         //this changes the constraints.maxWidth
+        appBar: AppBar(title: const Text("Chat")),
+
+        drawer: SideDrawer(),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
