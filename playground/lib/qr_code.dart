@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:playground/qr_code/scanned_barcode_label.dart';
-import 'package:playground/qr_code/scanner_button_widgets.dart';
-import 'package:playground/qr_code/scanner_error_widget.dart';
+import 'package:playground/qr_files/scanned_barcode_label.dart';
+import 'package:playground/qr_files/scanner_button_widgets.dart';
+import 'package:playground/qr_files/scanner_error_widget.dart';
 
 class QrApp extends StatelessWidget {
   const QrApp({super.key});
