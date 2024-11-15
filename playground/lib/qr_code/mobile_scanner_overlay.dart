@@ -4,16 +4,6 @@ import 'package:playground/qr_code/scanned_barcode_label.dart';
 import 'package:playground/qr_code/scanner_button_widgets.dart';
 import 'package:playground/qr_code/scanner_error_widget.dart';
 
-class QrApp extends StatelessWidget {
-  const QrApp({super.key});
-
-  @override
-  Widget build(BuildContext context) => const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: BarcodeScannerWithOverlay(),
-      );
-}
-
 class BarcodeScannerWithOverlay extends StatefulWidget {
   const BarcodeScannerWithOverlay({super.key});
 
