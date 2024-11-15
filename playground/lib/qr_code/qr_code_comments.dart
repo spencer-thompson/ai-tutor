@@ -110,7 +110,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
 class ScannerOverlay extends CustomPainter {
   const ScannerOverlay({
     required this.scanWindow,
-    this.borderRadius = 12.0,
+    this.borderRadius = 1114.0,
   });
 
   final Rect scanWindow;
@@ -145,9 +145,9 @@ class ScannerOverlay extends CustomPainter {
     );
 
     final borderPaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.red
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
+      ..strokeWidth = 11.0;
 
     final borderRect = RRect.fromRectAndCorners(
       scanWindow,
