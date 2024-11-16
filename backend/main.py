@@ -16,6 +16,7 @@ from logging import info
 from typing import List
 
 import jwt
+from anthropic import AsyncAnthropic
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -55,6 +56,7 @@ async def db_lifespan(app: FastAPI):
     ping_response = await app.mongodb.command("ping")
 
     app.openai = AsyncOpenAI()  # Setup OpenAI
+    app.anthropic = AsyncAnthropic()
 
     if int(ping_response["ok"]) != 1:
         raise Exception("Problem connecting to database cluster.")
@@ -71,6 +73,7 @@ app = FastAPI(lifespan=db_lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://aitutor.live",
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
@@ -80,6 +83,14 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+
+@app.middleware("http")
+async def add_csp_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'self' https://aitutor.live"
+    return response
+
 
 header_scheme = APIKeyHeader(name=BACKEND_API_KEY_NAME)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -291,6 +302,22 @@ async def smart_chat_stream(
         else []
     )
 
+    async def anthropic_iter_response(messages):
+        messages = [{"role": m.role, "content": m.content} for m in messages]
+        response = await app.anthropic.messages.create(
+            max_tokens=8192,
+            system=SYSTEM_MESSAGE[0].get("content"),
+            messages=context + messages,
+            model="claude-3-5-sonnet-20241022",
+            stream=True,
+            temperature=0.7,
+            top_p=0.9,
+        )
+
+        async for event in response:
+            if event.type == "content_block_delta":
+                yield json.dumps({"content": event.delta.text})
+
     async def iter_response(messages):
         response = await app.openai.chat.completions.create(
             messages=SYSTEM_MESSAGE + context + messages,
@@ -345,4 +372,4 @@ async def smart_chat_stream(
 
                 # TODO: Call functions
 
-    return StreamingResponse(iter_response(messages), media_type="application/json")
+    return StreamingResponse(anthropic_iter_response(messages), media_type="application/json")

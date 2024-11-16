@@ -70,8 +70,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         value: token_data.token,
         expirationDate: Math.floor(Date.now() / 1000) + 86400, // 3600, // Expires in 1 hour
         // NOTE: 86400 - 1 day
-        // sameSite: "no_restriction", // SameSite=None
-        // secure: false, // Secure attribute // only https
+        sameSite: "no_restriction", // SameSite=None
+        secure: true, // Secure attribute // only https
       },
       () => {
         console.log(`Cookie set for aitutor.live: ${message.data}`);

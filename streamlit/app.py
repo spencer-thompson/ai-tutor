@@ -92,8 +92,10 @@ if "user_count" not in st.session_state:
 
 
 if "layout" not in st.session_state:
-    if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]):
+    if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):
         st.session_state.layout = "wide"
+    # elif st.query_params.get("extension"):
+    #     st.session_state.layout = "wide"
     else:
         st.session_state.layout = "centered"
 
