@@ -7,6 +7,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:playground/drawer.dart';
+import 'package:flutter/services.dart';
 
 String randomString() {
   final random = Random.secure();
@@ -35,20 +36,55 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
   final _user2 = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f20v');
-  double screen_width = 0.0;
-  final cur_time = DateTime.now().millisecondsSinceEpoch;
+  bool _isLightMode = true;
 
-  //final myCustomTheme = DefaultChatTheme(
-  //  messageMaxWidth: double.infinity,
-  //  inputBackgroundColor: Colors.red,
-  //  inputTextColor: Colors.white,
-  //  inputTextCursorColor: Colors.yellow,
-  //  primaryColor: Colors.blue,
-  //  secondaryColor: Colors.purple,
-  //  userAvatarImageBackgroundColor: Colors.red,
-  //);
+  void _toggleTheme() {
+    setState(() {
+      _isLightMode = !_isLightMode;
+    });
+  }
 
-  final myCustomTheme = const DarkChatTheme(
+  final chatLightTheme = const DefaultChatTheme(
+    messageMaxWidth: double.infinity,
+    inputBackgroundColor: Colors.red,
+    inputTextColor: Colors.white,
+    inputTextCursorColor: Colors.yellow,
+    primaryColor: Colors.blue,
+    secondaryColor: Colors.purple,
+    userAvatarImageBackgroundColor: Colors.red,
+  );
+
+  AppBar appBarLight(bool isLightMode, Function toggleTheme) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      toolbarHeight: 50.0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+      actions: <Widget>[
+        IconButton(
+          icon: _isLightMode
+              ? const Icon(Icons.light_mode)
+              : const Icon(Icons.dark_mode),
+          onPressed: () => toggleTheme(),
+        ),
+      ],
+      title: const Text(
+        "Chat",
+        style: TextStyle(
+          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+
+  final chatDarkTheme = const DarkChatTheme(
     userAvatarNameColors: [Colors.red],
     backgroundColor: Colors.black,
     messageMaxWidth: double.infinity,
@@ -56,17 +92,54 @@ class _MyHomePageState extends State<MyHomePage> {
     secondaryColor: Colors.cyanAccent,
   );
 
+  AppBar appBarDark(bool isLightMode, Function toggleTheme) {
+    return AppBar(
+      backgroundColor: Colors.black,
+      toolbarHeight: 50.0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.red,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      actions: <Widget>[
+        IconButton(
+          icon: _isLightMode
+              ? const Icon(Icons.light_mode)
+              : const Icon(Icons.dark_mode),
+          //tooltip: 'Show Snackbar',
+          onPressed: () {
+            setState(() {
+              _isLightMode = !_isLightMode;
+            });
+          },
+        ),
+      ],
+      title: const Text(
+        "Chat",
+        style: TextStyle(
+          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         //LayoutBuilder adjusts width baseed on the current size of the window...
         //this changes the constraints.maxWidth
-        appBar: AppBar(title: const Text("Chat")),
-
+        appBar: _isLightMode
+            ? appBarLight(_isLightMode, _toggleTheme)
+            : appBarDark(_isLightMode, _toggleTheme),
         drawer: SideDrawer(),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
-              theme: myCustomTheme,
+              theme: _isLightMode ? chatLightTheme : chatDarkTheme,
+              //typingIndicatorOptions: TypingIndicatorOptions(customTypingIndicatorBuilder({required BubbleRtlAlignment}),
               messageWidthRatio: 10.0,
               messages: _messages,
               onSendPressed: _handleSendPressed,

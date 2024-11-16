@@ -6,6 +6,7 @@ import 'package:playground/basic_chat_ui.dart';
 import 'package:playground/qr_code/qr_code.dart';
 import 'package:playground/splash.dart';
 import 'package:playground/drawer.dart';
+import 'package:flutter/services.dart';
 
 //import 'package:playground/markdown_2.dart';
 
@@ -20,6 +21,11 @@ String randomString() {
 }
 
 void main() {
+  //SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  //  //statusBarColor: Colors.pink,
+  //  systemNavigationBarColor: Colors.black,
+  //  systemNavigationBarIconBrightness: Brightness.light,
+  //));
   //runApp(const MyApp());
   //runApp(const BasicApp());
   //runApp(QrApp());
