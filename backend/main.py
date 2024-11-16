@@ -77,6 +77,7 @@ app.add_middleware(
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
+        "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
     ],  # List the allowed origins
     allow_credentials=True,
