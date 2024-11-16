@@ -10,9 +10,17 @@ services:
       context: ./backend/
       dockerfile: Dockerfile
     command: fastapi run main.py --host 0.0.0.0 --port 8080
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/
+          target: /app
+          ignore:
+            - __pycache__/
     environment:
       CHAT_MODEL: ${CHAT_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MONGO_USERNAME: ${MONGO_USERNAME}
@@ -20,16 +28,16 @@ services:
     depends_on:
       # - mongo
       - traefik
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     networks:
       - web
     labels:
       - traefik.enable=true
-      - traefik.http.routers.streamlit.entrypoints=websecure
-      - traefik.http.routers.streamlit.rule=Host(`api.${DOMAIN}`)
-      - traefik.http.routers.streamlit.tls=true
-      - traefik.http.routers.streamlit.tls.certresolver=production
+      - traefik.http.routers.fastapi.entrypoints=websecure
+      - traefik.http.routers.fastapi.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.fastapi.tls=true
+      - traefik.http.routers.fastapi.tls.certresolver=production
       - traefik.http.services.backend.loadbalancer.server.port=8080
 
   streamlit:
@@ -51,8 +59,8 @@ services:
             - __pycache__/
     depends_on:
       - fastapi
-    ports:
-      - "8501:8501"
+    # ports:
+    #   - "8501:8501"
     networks:
       - web
     labels:

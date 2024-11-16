@@ -3,6 +3,7 @@ rsync -avrPluxz \
     --include='develop.yaml' \
     --include='test.yaml' \
     --include='.env' \
+    --include='mongo/***' \
     --include='backend/***' \
     --include='compose/***' \
     --include='streamlit/***' \

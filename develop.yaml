@@ -121,6 +121,8 @@ services:
       - web
     labels:
       - traefik.enable=true
+      - traefik.http.routers.streamlit.entrypoints=web
+      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`)
       - traefik.http.services.streamlit.loadbalancer.server.port=8501
 
 networks:

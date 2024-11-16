@@ -1,6 +1,10 @@
 .envrc
 .venv/
 
+### MONGO ###
+
+mongo-init.js
+
 ### JS ###
 node_modules/
 
