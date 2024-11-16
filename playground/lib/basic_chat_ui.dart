@@ -106,9 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
       actions: <Widget>[
         IconButton(
           icon: _isLightMode
-              ? const Icon(Icons.light_mode)
-              : const Icon(Icons.dark_mode),
-          //tooltip: 'Show Snackbar',
+              ? const Icon(
+                  Icons.light_mode,
+                )
+              : const Icon(Icons.dark_mode, color: Colors.white),
           onPressed: () {
             setState(() {
               _isLightMode = !_isLightMode;
@@ -134,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: _isLightMode
             ? appBarLight(_isLightMode, _toggleTheme)
             : appBarDark(_isLightMode, _toggleTheme),
-        drawer: SideDrawer(),
+        drawer: _isLightMode ? SideDrawerLight() : SideDrawerDark(),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
@@ -176,8 +177,6 @@ class _MyHomePageState extends State<MyHomePage> {
       metadata: {'markdown': message.text},
     );
     _addMessage(currentMessage);
-
-    //print(_messages);
 
     await _sendToGPT(message.text);
   }
