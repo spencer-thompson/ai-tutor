@@ -10,7 +10,7 @@ class AnalyzeImageFromGalleryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      color: Colors.white,
+      color: Colors.red,
       icon: const Icon(Icons.image),
       iconSize: 32.0,
       onPressed: () async {

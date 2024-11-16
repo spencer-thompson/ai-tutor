@@ -27,25 +27,28 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
     formats: const [BarcodeFormat.qrCode],
   );
 
+  bool isCameraActive = false;
+
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.sizeOf(context).center(Offset.zero),
-      width: 200,
-      height: 200,
+      center: MediaQuery.sizeOf(context).center(Offset(0, -70)),
+      width: 270,
+      height: 270,
     );
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Scanner with Overlay Example app'),
+        title: const Center(child: Text('Scan QR Code from Extension')),
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Center(
             child: MobileScanner(
-              fit: BoxFit.contain,
+              //fit: BoxFit.contain,
+              fit: BoxFit.cover,
+              //fit: BoxFit.fitWidth,
               controller: controller,
               scanWindow: scanWindow,
               errorBuilder: (context, error, child) {
@@ -104,7 +107,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
 class ScannerOverlay extends CustomPainter {
   const ScannerOverlay({
     required this.scanWindow,
-    this.borderRadius = 12.0,
+    this.borderRadius = 20.0,
   });
 
   final Rect scanWindow;
@@ -128,7 +131,7 @@ class ScannerOverlay extends CustomPainter {
       );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = Colors.black.withOpacity(0.3)
       ..style = PaintingStyle.fill
       ..blendMode = BlendMode.dstOver;
 
@@ -141,7 +144,7 @@ class ScannerOverlay extends CustomPainter {
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
+      ..strokeWidth = 1.0;
 
     final borderRect = RRect.fromRectAndCorners(
       scanWindow,
@@ -151,11 +154,51 @@ class ScannerOverlay extends CustomPainter {
       bottomRight: Radius.circular(borderRadius),
     );
 
+    final topGradient = LinearGradient(
+        colors: [Colors.transparent, Colors.black],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter);
+
+    final bottomGradient = LinearGradient(
+        colors: [Colors.black, Colors.transparent],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter);
+
+    const double gradientHeight = 200.0;
+    final double gradientWidth = size.width;
+
+    final gradientBorderPaintTop = Paint()
+      ..shader = topGradient
+          .createShader(Rect.fromLTWH(0, 0, gradientWidth, gradientHeight));
+
+    final gradientBorderPaintBottom = Paint()
+      ..shader = bottomGradient.createShader(Rect.fromLTWH(
+          0, size.height - 400, size.width, gradientHeight + 100));
+
+    final topBorderRect = RRect.fromRectAndCorners(
+      Rect.fromLTRB(0, 0, gradientWidth, gradientHeight),
+    );
+
+    final bottomBorderRect = RRect.fromRectAndCorners(
+      Rect.fromLTRB(0, size.height, gradientWidth, -gradientHeight - 300),
+    );
+
+    final rect = RRect.fromRectAndCorners(Rect.fromLTRB(
+        0, size.height, gradientWidth, size.height - gradientHeight));
+
+    final painting = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 1.0;
+
     // First, draw the background,
     // with a cutout area that is a bit larger than the scan window.
     // Finally, draw the scan window itself.
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
     canvas.drawRRect(borderRect, borderPaint);
+    canvas.drawRRect(topBorderRect, gradientBorderPaintTop);
+    canvas.drawRRect(bottomBorderRect, gradientBorderPaintBottom);
+    //canvas.drawRRect(rect, painting);
   }
 
   @override
