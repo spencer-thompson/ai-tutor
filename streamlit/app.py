@@ -118,6 +118,7 @@ st.set_page_config(
 
 def login():
     if not st.session_state.user["authenticated"]:
+        st.warning(":material/engineering: The AI Tutor is currently in development. Full release coming soon")
         st.title("Log In")
         st.caption(
             "* If you have previously logged in and are seeing this, visit the canvas page and refresh this page"
