@@ -14,16 +14,16 @@ String randomString() {
   final values = List<int>.generate(16, (i) => random.nextInt(255));
   return base64UrlEncode(values);
 }
-
-class BasicApp extends StatelessWidget {
-  const BasicApp({super.key});
-
-  @override
-  Widget build(BuildContext context) => const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: MyHomePage(),
-      );
-}
+//
+//class BasicApp extends StatelessWidget {
+//  const BasicApp({super.key});
+//
+//  @override
+//  Widget build(BuildContext context) => const MaterialApp(
+//        debugShowCheckedModeBanner: false,
+//        home: MyHomePage(),
+//      );
+//}
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -200,7 +200,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final headers = {
       "Content-Type": "application/json",
-      "AITUTOR-API-KEY": "test_key"
+      "AITUTOR-API-KEY": "test_key",
+      //"Authorization: "$Bearer ${qr_token}"
     };
 
     final response = await http.post(

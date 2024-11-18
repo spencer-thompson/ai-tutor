@@ -1,28 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:playground/basic_chat_ui.dart';
 import 'package:playground/qr_code/scanned_barcode_label.dart';
 import 'package:playground/qr_code/scanner_button_widgets.dart';
 import 'package:playground/qr_code/scanner_error_widget.dart';
 
 class QrApp extends StatelessWidget {
-  final String? qrToken;
-  final Function(String) onQrTokenUpdate;
-
-  const QrApp({super.key, this.qrToken, required this.onQrTokenUpdate});
+  const QrApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BarcodeScannerWithOverlay(
-      onQrCodeScanned: onQrTokenUpdate,
-    );
-  }
+  Widget build(BuildContext context) => const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: BarcodeScannerWithOverlay(),
+      );
 }
 
 class BarcodeScannerWithOverlay extends StatefulWidget {
-  final Function(String) onQrCodeScanned;
-
-  const BarcodeScannerWithOverlay({super.key, required this.onQrCodeScanned});
+  const BarcodeScannerWithOverlay({super.key});
 
   @override
   _BarcodeScannerWithOverlayState createState() =>
@@ -34,45 +27,30 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
     formats: const [BarcodeFormat.qrCode],
   );
 
+  bool isCameraActive = false;
+
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      //center: MediaQuery.sizeOf(context).center(Offset.zero),
-      center: MediaQuery.sizeOf(context).center(const Offset(0, -70)),
+      center: MediaQuery.sizeOf(context).center(Offset(0, -70)),
       width: 270,
       height: 270,
     );
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Scanner with Overlay Example app'),
+        title: const Center(child: Text('Scan QR Code from Extension')),
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Center(
             child: MobileScanner(
+              //fit: BoxFit.contain,
               fit: BoxFit.cover,
+              //fit: BoxFit.fitWidth,
               controller: controller,
               scanWindow: scanWindow,
-              onDetect: (BarcodeCapture capture) async {
-                final List<Barcode> barcodes = capture.barcodes;
-                for (final barcode in barcodes) {
-                  final String? code = barcode.rawValue;
-                  if (code != null) {
-                    await controller.stop();
-
-                    //widget.onQrCodeScanned(code);
-                    //Navigator.pop(context);
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => MyHomePage()),
-                    );
-                    break;
-                  }
-                }
-                ;
-              },
               errorBuilder: (context, error, child) {
                 return ScannerErrorWidget(error: error);
               },
@@ -129,7 +107,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
 class ScannerOverlay extends CustomPainter {
   const ScannerOverlay({
     required this.scanWindow,
-    this.borderRadius = 12.0,
+    this.borderRadius = 20.0,
   });
 
   final Rect scanWindow;
@@ -153,7 +131,7 @@ class ScannerOverlay extends CustomPainter {
       );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = Colors.black.withOpacity(0.3)
       ..style = PaintingStyle.fill
       ..blendMode = BlendMode.dstOver;
 
@@ -166,7 +144,7 @@ class ScannerOverlay extends CustomPainter {
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
+      ..strokeWidth = 1.0;
 
     final borderRect = RRect.fromRectAndCorners(
       scanWindow,

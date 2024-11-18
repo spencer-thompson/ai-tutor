@@ -16,19 +16,33 @@ class ScannedBarcodeLabel extends StatelessWidget {
       builder: (context, snapshot) {
         final scannedBarcodes = snapshot.data?.barcodes ?? [];
 
-        if (scannedBarcodes.isEmpty) {
-          return const Text(
-            'Scan something!',
-            overflow: TextOverflow.fade,
-            style: TextStyle(color: Colors.white),
-          );
-        }
-
-        return Text(
-          scannedBarcodes.first.displayValue ?? 'No display value.',
-          overflow: TextOverflow.fade,
-          style: const TextStyle(color: Colors.white),
-        );
+        //if (scannedBarcodes.isEmpty) {
+        //  WidgetsBinding.instance.addPostFrameCallback(
+        //    (_) {
+        //      ScaffoldMessenger.of(context).showSnackBar(
+        //        const SnackBar(
+        //          content: Text('No barcode scanned!'),
+        //          backgroundColor: Colors.redAccent,
+        //          duration: Duration(seconds: 2),
+        //        ),
+        //      );
+        //    },
+        //  );
+        //  return const SizedBox.shrink();
+        //}
+        //
+        //final displayValue =
+        //    scannedBarcodes.first.displayValue ?? 'No display value.';
+        //WidgetsBinding.instance.addPostFrameCallback((_) {
+        //  ScaffoldMessenger.of(context).showSnackBar(
+        //    SnackBar(
+        //      content: Text(displayValue),
+        //      backgroundColor: Colors.green,
+        //      duration: const Duration(seconds: 200),
+        //    ),
+        //  );
+        //});
+        return const SizedBox.shrink();
       },
     );
   }

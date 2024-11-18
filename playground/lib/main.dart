@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:playground/basic_chat_ui.dart';
-import 'package:playground/qr_code/qr_code.dart';
 import 'package:playground/splash.dart';
-import 'package:playground/drawer.dart';
-import 'package:flutter/services.dart';
+
+//import 'package:playground/qr_code/qr_code.dart';
 
 //import 'package:playground/markdown_2.dart';
 
@@ -31,5 +29,22 @@ void main() {
   //runApp(QrApp());
 
   //runApp(const SideDrawer());
-  runApp(const SplashPage());
+  //runApp(const SplashPage());
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: '!RScanner App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const SplashPage(),
+    );
+  }
 }
