@@ -24,6 +24,9 @@ const commonConfig = {
       patterns: [
         { from: "./src/styles.css", to: "./styles.css" },
         { from: "./src/sidepanel.html", to: "./sidepanel.html" },
+        { from: "./src/README.md", to: "./README.md" },
+        { from: "./src/128.png", to: "./128.png" },
+        { from: "./src/32.png", to: "./32.png" },
       ],
     }),
   ],

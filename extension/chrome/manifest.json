@@ -16,5 +16,9 @@
     "default_path": "sidepanel.html"
   },
   "host_permissions": ["https://aitutor.live/*"],
-  "permissions": ["sidePanel", "cookies"]
+  "permissions": ["sidePanel", "cookies"],
+  "icons": {
+    "32": "32.png",
+    "128": "128.png"
+  }
 }
