@@ -10,19 +10,22 @@ THOUGHTS:
 
 import json
 import os
+import re
+from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from logging import info
 from typing import List
 
 import jwt
+from ai import openai_iter_response
 from anthropic import AsyncAnthropic
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from markdownify import markdownify as md
-from models import CanvasCourse, CanvasData, Chat, Message, Token, User
+from models import CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
@@ -57,6 +60,8 @@ async def db_lifespan(app: FastAPI):
 
     app.openai = AsyncOpenAI()  # Setup OpenAI
     app.anthropic = AsyncAnthropic()
+
+    app.patterns = namedtuple("Pattern", ["clean_markdown"])(re.compile(r"(\n){2,}"))
 
     if int(ping_response["ok"]) != 1:
         raise Exception("Problem connecting to database cluster.")
@@ -141,6 +146,27 @@ async def get_user_from_token(token: str):
         raise HTTPException(status_code=403, detail="Invalid token")
 
 
+async def get_user_id_from_token(token: str):
+    """
+    Returns a tuple of id, uni
+    """
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+        id = payload.get("sub")
+        id = int(id)  # fix updated pyjwt
+        uni = payload.get("uni")
+        if id is None or uni is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        return id, uni
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=403, detail="Invalid token")
+
+
 # --- V1 ENDPOINTS --- #
 
 
@@ -202,11 +228,24 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
 
     for activity in user_dict["activity_stream"]:
         if message := activity.get("message"):
-            activity["message"] = md(message)
+            activity["message"] = app.patterns.clean_markdown.subn(r"\n\n", md(message))[0]
 
     app.mongodb["users"].update_one(
         {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
         {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
+        upsert=True,
+    )
+
+
+@app.post("/user_settings")
+async def update_user_settings(
+    settings: Settings, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
+):
+    id, uni = await get_user_id_from_token(token)
+
+    app.mongodb["users"].update_one(
+        {"canvas_id": id, "institution": uni},
+        {"$set": {"settings": settings.dict(exclude_none=True)}},
         upsert=True,
     )
 
@@ -222,11 +261,11 @@ async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(
     course_dict = course_data.dict(exclude_none=True)
 
     if syllabus := course_dict.get("syllabus_body"):
-        course_dict["syllabus_body"] = md(syllabus)
+        course_dict["syllabus_body"] = app.patterns.clean_markdown.subn(r"\n\n", md(syllabus))[0]
 
     if course_dict.get("assignments"):
         for assignment in course_dict["assignments"]:
-            assignment["description"] = md(assignment["description"])
+            assignment["description"] = app.patterns.clean_markdown.subn(r"\n\n", md(assignment["description"]))[0]
 
     app.mongodb["courses"].update_one(
         {"id": course_dict["id"], "institution": course_dict["institution"]},
@@ -264,6 +303,15 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
                 yield json.dumps({"content": chunk.choices[0].delta.content})
 
     return StreamingResponse(iter_response(messages), media_type="application/json")
+
+
+@app.post("/v1/smart_chat")
+async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+    """
+    Sends full response with smart features
+    `{"content": "the ai response"}` or `{"flagged": bool}`
+    """
+    return {"content": "Not implemented yet"}
 
 
 @app.post("/v1/smart_chat_stream")
@@ -307,74 +355,4 @@ async def smart_chat_stream(
         else []
     )
 
-    async def anthropic_iter_response(messages):
-        messages = [{"role": m.role, "content": m.content} for m in messages]
-        response = await app.anthropic.messages.create(
-            max_tokens=8192,
-            system=SYSTEM_MESSAGE[0].get("content"),
-            messages=context + messages,
-            model="claude-3-5-sonnet-20241022",
-            stream=True,
-            temperature=0.7,
-            top_p=0.9,
-        )
-
-        async for event in response:
-            if event.type == "content_block_delta":
-                yield json.dumps({"content": event.delta.text})
-
-    async def iter_response(messages):
-        response = await app.openai.chat.completions.create(
-            messages=SYSTEM_MESSAGE + context + messages,
-            model=CHAT_MODEL,
-            logprobs=True,
-            stream=True,
-            temperature=0.7,
-            top_p=0.9,
-            # stream_options={"include_usage": True}, # currently errors out
-        )
-
-        completion = ""
-        tool_calls = []
-        async for chunk in response:
-            delta = chunk.choices[0].delta
-            if delta and delta.content:
-                completion += delta.content
-                yield json.dumps({"content": chunk.choices[0].delta.content})
-
-            elif delta and delta.tool_calls:
-                for tool in delta.tool_calls:
-                    if len(tool_calls) <= tool.index:
-                        tool_calls.append(
-                            {
-                                "id": "",
-                                "type": "function",
-                                "function": {"name": "", "arguments": ""},
-                            }
-                        )
-
-                        tc = tool_calls[tool.index]
-
-                        if tool.id:
-                            tc["id"] += tool.id
-
-                        if tool.function.name:
-                            tc["function"]["name"] += tool.function.name
-
-                        if tool.function.arguments:
-                            tc["function"]["arguments"] += tool.function.arguments
-
-        if tool_calls:
-            messages.append({"role": "assistant", "content": completion, "tool_calls": tool_calls})
-
-            for tc in tool_calls:
-                function_name = tc["function"]["name"]
-
-                if tc["function"]["arguments"]:
-                    function_args = json.loads(tc["function"]["arguments"])
-                else:
-                    function_args = {}
-
-                # TODO: Call functions
-
-    return StreamingResponse(anthropic_iter_response(messages), media_type="application/json")
+    return StreamingResponse(openai_iter_response(messages, context), media_type="application/json")

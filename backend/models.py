@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -68,6 +68,11 @@ class CanvasCourse(BaseModel):
     assignments: Optional[List[Assignment]] = None
 
 
+class Settings(BaseModel):
+    show_courses: Optional[bool] = True
+    shown_courses: Optional[Dict[str, bool]] = None
+
+
 class User(BaseModel):
     institution: str
     canvas_id: int
@@ -75,6 +80,7 @@ class User(BaseModel):
     last_name: str
     avatar_url: str
     courses: List[Course]
+    settings: Optional[Settings] = None
 
 
 class SubmissionComment(BaseModel):

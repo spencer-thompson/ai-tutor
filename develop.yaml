@@ -40,12 +40,15 @@ services:
       MONGO_PASSWORD: ${MONGO_PASSWORD}
     depends_on:
       - mongo
+      - traefik
     ports:
       - "8080:8080"
     networks:
       - web
     labels:
       - traefik.enable=true
+      - traefik.http.routers.fastapi.entrypoints=web
+      - traefik.http.routers.fastapi.rule=Host(`api.${DOMAIN}`)
       - traefik.http.services.backend.loadbalancer.server.port=8080
 
   mongo:
@@ -69,8 +72,8 @@ services:
     #   mongoimport -d aitutor -c keys --file /tmp/keys.json --drop;
     #   mongosh --file /tmp/mongo-dev-init.js;
     #   "
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
     networks:
       - web
     volumes:
@@ -83,6 +86,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
 
       # MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
   # mongo-express: # view from web
@@ -115,8 +119,8 @@ services:
             - __pycache__/
     depends_on:
       - fastapi
-    ports:
-      - "8501:8501"
+    # ports:
+    #   - "8501:8501"
     networks:
       - web
     labels:

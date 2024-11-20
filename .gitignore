@@ -7,6 +7,7 @@ mongo-init.js
 
 ### JS ###
 node_modules/
+bootstrap_db.js
 
 ### PYTHON ###
 
