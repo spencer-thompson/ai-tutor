@@ -76,16 +76,15 @@ if "user" not in st.session_state:
     try:
         st.session_state.user = default_user | st.session_state.backend.get("user")
         st.session_state.user["authenticated"] = True
+        if not st.session_state.user.get("settings"):
+            st.session_state.user["settings"] = {
+                "show_courses": True,
+                "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
+            }
         # st.session_state.user["logged_in"] = True
     except requests.exceptions.HTTPError:
         st.session_state.user = default_user  # figure out how to tell a user to login
 
-
-if "user_settings" not in st.session_state and st.session_state.user.get("authenticated"):
-    st.session_state.user_settings = {
-        "show_courses": True,
-        "shown_courses": {c["id"]: True for c in st.session_state.user["courses"]},
-    }
 
 if "user_count" not in st.session_state:
     st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
@@ -105,13 +104,16 @@ st.set_page_config(
     page_title="AI Tutor",
     page_icon=":mortar_board:",
     layout=st.session_state.layout,
-    initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "auto",
+    # initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "auto",
+    initial_sidebar_state="collapsed",
     menu_items={
         "Get Help": None,  # url
         "Report a bug": None,  # url
         "About": f"""# Version: {VERSION}""",
     },
 )
+
+st.logo("./512.png", size="large", icon_image="./512.png")
 
 
 def login():
@@ -194,7 +196,12 @@ user_pages = [
 info_pages = (
     [
         st.Page("./page/about.py", title="About", icon=":material/info:"),
-        st.Page("./page/privacy.py", title="Privacy Policy", icon=":material/policy:", default=True),
+        st.Page(
+            "./page/privacy.py",
+            title="Privacy Policy",
+            icon=":material/policy:",
+            default=False if st.session_state.user.get("authenticated") else True,
+        ),
     ]
     if st.query_params.get("privacy_policy")
     else [st.Page("./page/about.py", title="About", icon=":material/info:")]
@@ -221,12 +228,6 @@ if st.session_state.user.get("authenticated"):
 else:
     pg = st.navigation({"PROFILE": [st.Page(login, title="Log In", icon=":material/login:")]} | pages, expanded=True)
 
-
-# if len(pages) > 0:
-#     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
-#
-# else:
-#     pg = st.navigation([st.Page(login)], expanded=True)
 
 pg.run()
 
