@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 
 class Token(BaseModel):
-    sub: int  # canvas_id
+    sub: str | int  # canvas_id
     uni: Literal["uvu"]  # can add more universities here
 
 

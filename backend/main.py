@@ -122,20 +122,23 @@ async def get_user_from_token(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
         id = payload.get("sub")
+        id = int(id)  # fix updated pyjwt
         uni = payload.get("uni")
         if id is None or uni is None:
             raise HTTPException(status_code=401, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
-        courses = await app.mongodb["courses"].find({"id": {"$in": [c["id"] for c in user["courses"]]}}).to_list(None)
-        user["courses"] = [u | c for u in user["courses"] for c in courses if u["id"] == c["id"]]  # NOTE: not tested
+        courses = (
+            await app.mongodb["courses"].find({"id": {"$in": [c["id"] for c in user.get("courses")]}}).to_list(None)
+        )
+        user["courses"] = [u | c for u in user["courses"] for c in courses if u["id"] == c["id"]]
         return user
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=403, detail="Invalid token")
 
 
 # --- V1 ENDPOINTS --- #
@@ -180,7 +183,7 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
     Returns a valid JSON Web Token.
     Currently, tokens expire after 1 day.
     """
-    access_token = create_access_token(data={"sub": token_data.sub, "uni": token_data.uni})
+    access_token = create_access_token(data={"sub": str(token_data.sub), "uni": token_data.uni})
     return {"token": access_token}
 
 

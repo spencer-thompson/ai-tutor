@@ -94,8 +94,6 @@ if "user_count" not in st.session_state:
 if "layout" not in st.session_state:
     if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):
         st.session_state.layout = "wide"
-    # elif st.query_params.get("extension"):
-    #     st.session_state.layout = "wide"
     else:
         st.session_state.layout = "centered"
 
@@ -138,7 +136,7 @@ def login():
             **Anyway**, Instead of making everyone create a new account and remember a password,
             I decided I would prefer to store logging in and loggin out as a cookie.
 
-            This has a lot of benefits, and streamlines the process of logging in and out *a lot*.
+            * This has a lot of benefits, and streamlines the process of logging in and out *a lot*.
 
             ---
 
@@ -193,34 +191,42 @@ account_pages = [
 user_pages = [
     st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
 ]
-info_pages = [
-    st.Page("./page/about.py", title="About", icon=":material/info:"),
-]
+info_pages = (
+    [
+        st.Page("./page/about.py", title="About", icon=":material/info:"),
+        st.Page("./page/privacy.py", title="Privacy Policy", icon=":material/policy:", default=True),
+    ]
+    if st.query_params.get("privacy_policy")
+    else [st.Page("./page/about.py", title="About", icon=":material/info:")]
+)
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
 ]
 
 pages = {}
+pages["INFO"] = info_pages
 
 if st.session_state.user.get("authenticated"):
     if st.session_state.user["role"] in ["normal", "admin"]:
         pages["AI"] = user_pages
-        pages["INFO"] = info_pages
+        # pages["INFO"] = info_pages
 
     if st.session_state.user["role"] in ["dev"]:
         pages["AI"] = user_pages
-        pages["INFO"] = info_pages
+        # pages["INFO"] = info_pages
         pages["DEV"] = dev_pages
 
-else:
-    pages = {}
-
-
-if len(pages) > 0:
     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
 
 else:
-    pg = st.navigation([st.Page(login)], expanded=True)
+    pg = st.navigation({"PROFILE": [st.Page(login, title="Log In", icon=":material/login:")]} | pages, expanded=True)
+
+
+# if len(pages) > 0:
+#     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
+#
+# else:
+#     pg = st.navigation([st.Page(login)], expanded=True)
 
 pg.run()
 
