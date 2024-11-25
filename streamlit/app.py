@@ -12,6 +12,7 @@ import requests
 import streamlit as st
 
 VERSION = 1.000
+UNIVERSITIES = ["UVU"]
 
 if "token" not in st.session_state:
     st.session_state.token = st.context.cookies.get("token")
@@ -136,10 +137,11 @@ def login():
 
 
             **Anyway**, Instead of making everyone create a new account and remember a password,
-            I decided I would prefer to store logging in and loggin out as a cookie.
+            I decided I would prefer to store logging in and loggin out as a cookie.""")
 
-            * This has a lot of benefits, and streamlines the process of logging in and out *a lot*.
+            st.caption("* This has a lot of benefits, and streamlines the process of logging in and out *a lot*.")
 
+            st.write("""
             ---
 
             **TLDR:** I need you to accept a cookies to let you use the AI Tutor
@@ -157,19 +159,29 @@ def login():
         st.write("""
         Next, in order to log in, you need to install our **Browser Extension**.
 
-        * [Google Chrome](www.google.com)
+        * [Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
         
-        * [Microsoft Edge](www.google.com)
+        * Microsoft Edge - *Coming Soon*
 
-        * [Firefox](www.google.com)
+        * Firefox - *Coming Soon*
 
         ---
 
         After downloading the browser extension, if for some reason you are not automatically redirected,
-        visit your universities canvas homepage.
+        visit your university canvas homepage.
+        """)
 
-        * [UVU](https://uvu.instructure.com/)
-        
+        cols = st.columns(len(UNIVERSITIES))
+        for c, u in zip(cols, UNIVERSITIES):
+            c.link_button(u, f"https://{u.lower()}.instructure.com", type="primary", use_container_width=True)
+        # if uni := st.pills("Universities", UNIVERSITIES, default=UNIVERSITIES[0]):
+        #     st.switch_page("https://uvu.instructure.com")
+
+        st.caption(
+            "* I don't see [my university](mailto:ahmed.alsharif@uvu.edu?subject=AI%20Tutor%20University%20Request)..."
+        )
+
+        st.write("""
         ---
 
         **Lastly**, refresh the page and you should be good to go!

@@ -14,6 +14,7 @@ import re
 from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
+from itertools import zip_longest
 from logging import info
 from typing import List
 
@@ -85,6 +86,7 @@ app.add_middleware(
         "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
+        "chrome-extension://eoidpdhnopocccgnlclpmadnccolaman",
     ],  # List the allowed origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
@@ -134,9 +136,37 @@ async def get_user_from_token(token: str):
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
         courses = (
-            await app.mongodb["courses"].find({"id": {"$in": [c["id"] for c in user.get("courses")]}}).to_list(None)
+            await app.mongodb["courses"]
+            .find({"institution": uni, "id": {"$in": [c["id"] for c in user.get("courses")]}})
+            .to_list(None)
         )
-        user["courses"] = [u | c for u in user["courses"] for c in courses if u["id"] == c["id"]]
+
+        catalog_courses = (
+            await app.mongodb["catalog"]
+            .find(
+                {
+                    "institution": uni,
+                    "code": {"$in": [" ".join(c.get("name").split("-")[0:2]) for c in courses]},
+                }
+            )
+            .to_list(None)
+        )
+
+        merged_courses = [
+            {**c, **a} if " ".join(c.get("name").split("-")[0:2]) == a.get("code") else c
+            for c, a in zip_longest(courses[:], catalog_courses, fillvalue={})
+            # for a in catalog_courses
+            # if " ".join(c.get("name").split("-")[0:2]) == a.get("code")
+        ]
+
+        user["courses"] = [
+            u | c
+            # u | m if m.get("id") == u.get("id") else u | c
+            for u in user["courses"]
+            for c in merged_courses
+            # for m in merged_courses
+            if u["id"] == c["id"]  # or " ".join(u.get("name").split("-")[0:2]) == m["code"]
+        ]
         return user
 
     except jwt.ExpiredSignatureError:

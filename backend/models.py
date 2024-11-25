@@ -73,13 +73,23 @@ class Settings(BaseModel):
     shown_courses: Optional[Dict[str, bool]] = None
 
 
+class UserCourse(BaseModel):
+    id: int
+    name: str
+    role: str
+    institution: str
+    current_score: Optional[float] = None
+    # this is catalog stuff
+    code: Optional[str] = None
+
+
 class User(BaseModel):
     institution: str
     canvas_id: int
     first_name: str
     last_name: str
     avatar_url: str
-    courses: List[Course]
+    courses: List[UserCourse]
     settings: Optional[Settings] = None
 
 
