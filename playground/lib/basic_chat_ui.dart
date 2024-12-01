@@ -32,10 +32,27 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+//const factory User({
+//  int? createdAt,
+//  String? firstName,
+//  required String id,
+//  String? imageUrl,
+//  String? lastName,
+//  int? lastSeen,
+//  Map<String, dynamic>? metadata,
+//  Role? role,
+//  int? updatedAt,
+//}) = _User;
+//
+
 class _MyHomePageState extends State<MyHomePage> {
   final List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
-  final _user2 = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f20v');
+  final _user2 = const types.User(
+      id: '82091008-a484-4a89-ae75-a22bf8d6f20v',
+      firstName: 'Roofus',
+      lastName: 'hamburger',
+      role: types.Role.user);
   final List<types.User> typingUsers = [];
   bool _isLightMode = true;
 
@@ -146,7 +163,9 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: _isLightMode
             ? appBarLight(_isLightMode, _toggleTheme)
             : appBarDark(_isLightMode, _toggleTheme),
-        drawer: _isLightMode ? SideDrawerLight() : SideDrawerDark(),
+        drawer: _isLightMode
+            ? SideDrawerLight(_messages)
+            : SideDrawerDark(_messages),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
@@ -160,11 +179,45 @@ class _MyHomePageState extends State<MyHomePage> {
                   _buildMarkdownMessage(message,
                       messageWidth: messageWidth,
                       maxWidth: constraints.maxWidth),
-              bubbleRtlAlignment: BubbleRtlAlignment.left,
+              bubbleRtlAlignment: BubbleRtlAlignment.right,
               showUserAvatars: false,
               showUserNames: true,
-              typingIndicatorOptions:
-                  TypingIndicatorOptions(typingUsers: typingUsers),
+              typingIndicatorOptions: TypingIndicatorOptions(
+                typingUsers: typingUsers,
+                customTypingIndicator: const TypingIndicator(
+                  showIndicator: true,
+                  bubbleAlignment: BubbleRtlAlignment.right,
+                ),
+              ),
+              onMessageLongPress: (context, message) {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Message Options',
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 8.0),
+                          ListTile(
+                            leading: const Icon(Icons.copy),
+                            title: const Text('Copy Message'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Clipboard.setData(ClipboardData(
+                                  text: message.metadata?['markdown']));
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             );
           },
         ),
@@ -172,6 +225,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _avatarBuilder() {
     return Scaffold();
+  }
+
+  void _deleteAllMessages() {
+    setState(() {
+      _messages.clear();
+    });
   }
 
   void _addMessage(types.Message message) {

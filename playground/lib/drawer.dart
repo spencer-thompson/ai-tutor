@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
-Widget SideDrawerLight() {
+Widget SideDrawerLight(final List<types.Message> _messages) {
   return Drawer(
     width: 250.0,
     child: ListView(
@@ -25,12 +26,16 @@ Widget SideDrawerLight() {
           title: const Text('Item 2'),
           onTap: () {},
         ),
+        ListTile(
+          title: const Text('New Chat'),
+          onTap: _messages.clear,
+        ),
       ],
     ),
   );
 }
 
-Widget SideDrawerDark() {
+Widget SideDrawerDark(final List<types.Message> _messages) {
   return Drawer(
     width: 250.0,
     child: ListView(
