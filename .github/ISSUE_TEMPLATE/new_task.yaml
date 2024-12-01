@@ -1,0 +1,61 @@
+name: Create task for AI tutor
+description: Fill in details of the task.
+title: "[Task]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for hard work on the AI Tutor!
+  - type: input
+    id: task-title
+    attributes:
+      label: Task Summary
+      description: Provide a brief title or summary of the task.
+      placeholder: ex. "Fix user login issue" or "Research AI frameworks"
+    validations:
+      required: true
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      description: Select the type of task.
+      options:
+        - Bug/Issue
+        - Feature Request
+        - Research Task
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the task, issue, or request with any necessary context.
+      placeholder: "Provide background or details about what needs to be done."
+    validations:
+      required: true
+  - type: textarea
+    id: goals
+    attributes:
+      label: Goals and Objectives
+      description: Define what success looks like for this task or what objectives need to be met.
+      placeholder: "List specific objectives or acceptance criteria for the task."
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested Approach
+      description: Outline any initial ideas or steps for approaching this task (optional).
+      placeholder: "Any suggested steps or approach for the task."
+  - type: input
+    id: priority
+    attributes:
+      label: Priority
+      description: Define the priority level of this task.
+      placeholder: "Low, Medium, High"
+  - type: textarea
+    id: resources
+    attributes:
+      label: Relevant Links or Resources
+      description: Provide any links or resources that may help in completing the task.
+      placeholder: "Include URLs, documentation, or any relevant files."

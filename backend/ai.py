@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import re
+from datetime import datetime
 from typing import List
 
 import httpx
@@ -14,12 +15,31 @@ CHAT_MODEL = os.getenv("CHAT_MODEL")
 SYSTEM_MESSAGE = [
     {
         "role": "system",
-        "content": """
+        "content": f"""
     You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
     Respond in a concise and effictive manner. Format your response in github flavored markdown.
+
+    The current date and time is {datetime.now().strftime('%H:%M on %A, %Y-%m-%d')}
     """,
     }
 ]
+
+
+def system_message():
+    """
+    Includes the current date and time
+    """
+    return [
+        {
+            "role": "system",
+            "content": f"""
+    You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
+    Respond in a concise and effictive manner. Format your response in github flavored markdown.
+
+    The current date and time is {datetime.now().strftime('%H:%M on %A, %Y-%m-%d')}
+    """,
+        }
+    ]
 
 
 openai = AsyncOpenAI()
@@ -37,9 +57,6 @@ async def get_markdown_webpage(urls: list[str]) -> str:
             return {url: cleaned_text}
 
     return await asyncio.gather(*[get_page(u) for u in urls], return_exceptions=True)
-
-    #     r = await client.get(url)
-    # r = httpx.get(url)
 
 
 read_webpage = {
@@ -67,6 +84,43 @@ read_webpage = {
                 "additionalProperties": False,
                 "required": [
                     "urls",
+                ],
+            },
+        },
+    },
+}
+
+
+async def get_activity_stream(user):
+    pass
+
+
+updates = {
+    "name": "updates",
+    "func": get_activity_stream,
+    "tool": {
+        "type": "function",
+        "function": {
+            "name": "updates",
+            "strict": True,
+            "description": """If the user asks for updates, or information about
+            annoucements, messages, submissions, recent assignments, conversations or discussions""",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "activities": {
+                        "type": "array",
+                        "description": "The types of updates to get",
+                        "items": {
+                            "type": "string",
+                            "description": "The type of update to get",
+                            "enum": ["Announcment", "Message", "Submission", "Conversation", "DiscussionTopic"],
+                        },
+                    },
+                },
+                "additionalProperties": False,
+                "required": [
+                    "activities",
                 ],
             },
         },

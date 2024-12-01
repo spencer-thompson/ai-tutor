@@ -6,5 +6,6 @@ rsync -avrPluxz \
     --include='backend/***' \
     --include='compose/***' \
     --include='streamlit/***' \
+    --include='data/***' \
     --exclude='*' \
     . aitutor:/home/sthom/aitutor/
