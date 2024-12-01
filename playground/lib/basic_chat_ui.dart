@@ -36,7 +36,18 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
   final _user2 = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f20v');
+  final List<types.User> typingUsers = [];
   bool _isLightMode = true;
+
+  void _toggleBotTyping() {
+    setState(() {
+      if (typingUsers.isEmpty) {
+        typingUsers.add(_user2);
+      } else {
+        typingUsers.clear();
+      }
+    });
+  }
 
   void _toggleTheme() {
     setState(() {
@@ -150,8 +161,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       messageWidth: messageWidth,
                       maxWidth: constraints.maxWidth),
               bubbleRtlAlignment: BubbleRtlAlignment.left,
-              showUserAvatars: true,
+              showUserAvatars: false,
               showUserNames: true,
+              typingIndicatorOptions:
+                  TypingIndicatorOptions(typingUsers: typingUsers),
             );
           },
         ),
@@ -177,6 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
       metadata: {'markdown': message.text},
     );
     _addMessage(currentMessage);
+    _toggleBotTyping();
 
     await _sendToGPT(message.text);
   }
@@ -205,6 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
     };
 
     final response = await http.post(
+      //Uri.parse("http://localhost:8080/v1/chat"),
       Uri.parse("http://localhost:8080/v1/chat"),
       headers: headers,
       body: data,
@@ -227,6 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     _addMessage(aiMessage);
+    _toggleBotTyping();
     return Future.value();
   }
 
