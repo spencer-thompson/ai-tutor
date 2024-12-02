@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:playground/splash.dart';
+import 'package:playground/basic_chat_ui.dart';
 
 //import 'package:playground/qr_code/qr_code.dart';
 
@@ -25,9 +25,9 @@ void main() {
   //  systemNavigationBarIconBrightness: Brightness.light,
   //));
   //runApp(const MyApp());
-  //runApp(const BasicApp());
   //runApp(QrApp());
 
+  //runApp(const BasicApp());
   //runApp(const SideDrawer());
   //runApp(const SplashPage());
   runApp(const MyApp());
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SplashPage(),
+      home: const MyHomePage(),
     );
   }
 }

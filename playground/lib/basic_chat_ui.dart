@@ -14,6 +14,7 @@ String randomString() {
   final values = List<int>.generate(16, (i) => random.nextInt(255));
   return base64UrlEncode(values);
 }
+
 //
 //class BasicApp extends StatelessWidget {
 //  const BasicApp({super.key});
@@ -32,19 +33,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-//const factory User({
-//  int? createdAt,
-//  String? firstName,
-//  required String id,
-//  String? imageUrl,
-//  String? lastName,
-//  int? lastSeen,
-//  Map<String, dynamic>? metadata,
-//  Role? role,
-//  int? updatedAt,
-//}) = _User;
-//
-
 class _MyHomePageState extends State<MyHomePage> {
   final List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
@@ -55,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
       role: types.Role.user);
   final List<types.User> typingUsers = [];
   bool _isLightMode = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _toggleBotTyping() {
     setState(() {
@@ -72,32 +61,28 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  final chatLightTheme = const DefaultChatTheme(
-    messageMaxWidth: double.infinity,
-    inputBackgroundColor: Colors.red,
-    inputTextColor: Colors.white,
-    inputTextCursorColor: Colors.yellow,
-    primaryColor: Colors.blue,
-    secondaryColor: Colors.purple,
-    userAvatarImageBackgroundColor: Colors.red,
-  );
-
   AppBar appBarLight(bool isLightMode, Function toggleTheme) {
     return AppBar(
-      backgroundColor: Colors.white,
+      leading: IconButton(
+        icon: Icon(Icons.accessible,
+            color: isLightMode ? Colors.black : Colors.white),
+        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
+      backgroundColor: isLightMode ? Colors.white : Colors.black,
       toolbarHeight: 50.0,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: isLightMode ? Colors.white : Colors.red,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: isLightMode ? Colors.white : Colors.black,
+        systemNavigationBarIconBrightness:
+            isLightMode ? Brightness.dark : Brightness.light,
       ),
-      actions: <Widget>[
+      actions: [
         IconButton(
           icon: _isLightMode
-              ? const Icon(Icons.light_mode)
-              : const Icon(Icons.dark_mode),
+              ? const Icon(Icons.light_mode, color: Colors.blue)
+              : const Icon(Icons.dark_mode, color: Colors.white),
           onPressed: () => toggleTheme(),
         ),
       ],
@@ -113,59 +98,48 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   final chatDarkTheme = const DarkChatTheme(
+    backgroundColor: Colors.pink,
     userAvatarNameColors: [Colors.red],
-    backgroundColor: Colors.black,
     messageMaxWidth: double.infinity,
     primaryColor: Colors.blue,
     secondaryColor: Colors.cyanAccent,
   );
 
-  AppBar appBarDark(bool isLightMode, Function toggleTheme) {
-    return AppBar(
-      backgroundColor: Colors.black,
-      toolbarHeight: 50.0,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.red,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.black,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-      actions: <Widget>[
-        IconButton(
-          icon: _isLightMode
-              ? const Icon(
-                  Icons.light_mode,
-                )
-              : const Icon(Icons.dark_mode, color: Colors.white),
-          onPressed: () {
-            setState(() {
-              _isLightMode = !_isLightMode;
-            });
-          },
-        ),
-      ],
-      title: const Text(
-        "Chat",
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          fontWeight: FontWeight.bold,
-          color: Colors.red,
-        ),
-      ),
-    );
-  }
+  final chatLightTheme = const DefaultChatTheme(
+    //receivedEmojiMessageTextStyle: TextStyle(fontSize: 1000),
+    //receivedMessageBodyTextStyle: TextStyle(color: Colors.indigoAccent),
+    //sentMessageCaptionTextStyle: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w900),
+
+    typingIndicatorTheme: TypingIndicatorTheme(
+        bubbleBorder: BorderRadius.all(Radius.circular(20.0)),
+        bubbleColor: Colors.grey,
+        animatedCirclesColor: Colors.lime,
+        animatedCircleSize: 20.0,
+        multipleUserTextStyle: TextStyle(),
+        countTextColor: Colors.red,
+        countAvatarColor: Colors.black),
+    inputSurfaceTintColor: Colors.lime,
+    dateDividerTextStyle: TextStyle(
+        color: Colors.tealAccent, fontSize: 15, fontWeight: FontWeight.w800),
+    emptyChatPlaceholderTextStyle:
+        TextStyle(color: Colors.brown, fontSize: 200, height: 100.0),
+    backgroundColor: Colors.orange,
+    messageMaxWidth: double.infinity,
+    inputBackgroundColor: Colors.red,
+    inputTextColor: Colors.white,
+    inputTextCursorColor: Colors.yellow,
+    primaryColor: Colors.blue,
+    secondaryColor: Colors.purple,
+    userAvatarImageBackgroundColor: Colors.red,
+  );
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        key: _scaffoldKey,
         //LayoutBuilder adjusts width baseed on the current size of the window...
         //this changes the constraints.maxWidth
-        appBar: _isLightMode
-            ? appBarLight(_isLightMode, _toggleTheme)
-            : appBarDark(_isLightMode, _toggleTheme),
-        drawer: _isLightMode
-            ? SideDrawerLight(_messages)
-            : SideDrawerDark(_messages),
+        appBar: appBarLight(_isLightMode, _toggleTheme),
+        drawer: SideDrawerLight(_isLightMode, _deleteAllMessages),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Chat(
@@ -180,6 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       messageWidth: messageWidth,
                       maxWidth: constraints.maxWidth),
               bubbleRtlAlignment: BubbleRtlAlignment.right,
+              emptyState: Center(
+                  child: Text(
+                      "Welcome! I am your AI tutor: type '--help' for avaiable options")),
               showUserAvatars: false,
               showUserNames: true,
               typingIndicatorOptions: TypingIndicatorOptions(
