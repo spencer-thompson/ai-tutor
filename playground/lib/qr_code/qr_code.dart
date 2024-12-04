@@ -5,6 +5,11 @@ import 'package:playground/qr_code/scanned_barcode_label.dart';
 import 'package:playground/qr_code/scanner_button_widgets.dart';
 import 'package:playground/qr_code/scanner_error_widget.dart';
 
+import 'package:playground/header_manager.dart';
+import 'package:provider/provider.dart';
+
+import 'package:http/http.dart' as http;
+
 class QrApp extends StatelessWidget {
   final String? qrToken;
   final Function(String) onQrTokenUpdate;
@@ -36,6 +41,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final headerManager = Provider.of<HeaderManager>(context, listen: false);
     final scanWindow = Rect.fromCenter(
       //center: MediaQuery.sizeOf(context).center(Offset.zero),
       center: MediaQuery.sizeOf(context).center(const Offset(0, -70)),
@@ -60,31 +66,61 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                 final List<Barcode> barcodes = capture.barcodes;
                 for (final barcode in barcodes) {
                   final String? code = barcode.rawValue;
-                  if (code != null) {
-                    await controller.stop();
 
-                    //widget.onQrCodeScanned(code);
-                    //Navigator.pop(context);
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => MyHomePage()),
-                    );
-                    break;
+                  if (code == null) {
+                    continue;
+                  }
+
+                  try {
+                    final isValid = await isValidQr(code);
+
+                    if (isValid) {
+                      if (mounted) {
+                        await controller.stop();
+                        widget.onQrCodeScanned(code);
+                        headerManager.updateHeaders(code);
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => MyHomePage()),
+                        );
+                      }
+                      break;
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Invalid barcode scanned!'),
+                            backgroundColor: Colors.redAccent,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      print(e);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.redAccent,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   }
                 }
-                ;
               },
               errorBuilder: (context, error, child) {
                 return ScannerErrorWidget(error: error);
               },
-              overlayBuilder: (context, constraints) {
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ScannedBarcodeLabel(barcodes: controller.barcodes),
-                  ),
-                );
-              },
+              //overlayBuilder: (context, constraints) {
+              //  return Padding(
+              //    padding: const EdgeInsets.all(16.0),
+              //    child: Align(
+              //      alignment: Alignment.bottomCenter,
+              //      child: ScannedBarcodeLabel(barcodes: controller.barcodes),
+              //    ),
+              //  );
+              //},
             ),
           ),
           ValueListenableBuilder(
@@ -118,6 +154,30 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
       ),
     );
   }
+
+  Future<bool> isValidQr(String? qrCode) async {
+    if (qrCode == null) return false;
+    final headerManager = Provider.of<HeaderManager>(context, listen: false);
+    final apiKey = headerManager.apiKey ?? "";
+
+    print('Making request with:');
+    print('QR code: $qrCode');
+    print('API Key: $apiKey');
+
+    final response = await http.get(
+      Uri.parse("https://api.aitutor.live/user"),
+      //headers: {"Content-Type": "application/json"},
+      headers: {"AITUTOR-API-KEY": apiKey, "Authorization": "Bearer ${qrCode}"},
+      //body: jsonEncode({"name": "Guts"}),
+    );
+
+    print('Response status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    return response.statusCode == 200;
+  }
+
+//curl https://api.aitutor.live/user -H "AITUTOR-API-KEY: <the_key>" -H "Authorization: Bearer <the_token>"
 
   @override
   Future<void> dispose() async {

@@ -9,6 +9,9 @@ import 'package:http/http.dart' as http;
 import 'package:playground/drawer.dart';
 import 'package:flutter/services.dart';
 
+import 'package:playground/header_manager.dart';
+import 'package:provider/provider.dart';
+
 String randomString() {
   final random = Random.secure();
   final values = List<int>.generate(16, (i) => random.nextInt(255));
@@ -232,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _sendToGPT(String userMessage) async {
+    final headerManager = Provider.of<HeaderManager>(context, listen: false);
     final messages = _messages.reversed
         .map((message) {
           if (message is types.CustomMessage) {
@@ -245,24 +249,113 @@ class _MyHomePageState extends State<MyHomePage> {
         })
         .whereType<Map<String, dynamic>>()
         .toList();
+    //
+    //final courses = [
+    //  {
+    //    "id": 604972,
+    //    "name": "CS-439R-001 | 2024 Fall - Full Term",
+    //    "role": "st udent",
+    //    "institution": "uvu",
+    //    "current_score": null,
+    //    "code": "CS 439R"
+    //  }
+    //];
+    final courses = [101, 202];
 
-    final data = jsonEncode(messages);
+    final requestBody = jsonEncode({
+      "messages": messages,
+      "courses": courses,
+    });
 
     final headers = {
       "Content-Type": "application/json",
-      "AITUTOR-API-KEY": "test_key",
-      //"Authorization: "$Bearer ${qr_token}"
+      "AITUTOR-API-KEY": "${headerManager.apiKey}",
+      "Authorization": "Bearer ${headerManager.jwt}",
     };
 
-    final response = await http.post(
-      //Uri.parse("http://localhost:8080/v1/chat"),
-      Uri.parse("http://localhost:8080/v1/chat"),
-      headers: headers,
-      body: data,
+    final aiMessage = types.CustomMessage(
+      author: _user2,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: randomString(),
+      showStatus: true,
+      status: types.Status.sending,
+      metadata: {'markdown': ''},
     );
+    _addMessage(aiMessage);
 
-    _displayGPTMessage(response.body);
+    final request = http.Request(
+        'POST', Uri.parse("https://api.aitutor.live/v1/smart_chat_stream"));
+    request.headers.addAll(headers);
+    request.body = requestBody;
+
+    try {
+      final streamedResponse = await http.Client().send(request);
+      String accumulatedResponse = '';
+
+      await for (final chunk
+          in streamedResponse.stream.transform(utf8.decoder)) {
+        try {
+          final jsonData = jsonDecode(chunk);
+          if (jsonData['content'] != null) {
+            accumulatedResponse += jsonData['content'];
+            setState(() {
+              _messages[0] = (_messages[0] as types.CustomMessage).copyWith(
+                metadata: {'markdown': accumulatedResponse},
+                status: types.Status.sent,
+              );
+            });
+          }
+        } catch (e) {
+          print('Error processing chunk: $e');
+        }
+      }
+    } catch (e) {
+      print('Error with stream: $e');
+      setState(() {
+        _messages[0] = (_messages[0] as types.CustomMessage).copyWith(
+          metadata: {'markdown': 'Error: Failed to get response'},
+          status: types.Status.error,
+        );
+      });
+    }
+    _toggleBotTyping();
   }
+
+  //
+  //Future<void> _sendToGPT(String userMessage) async {
+  //  final headerManager = Provider.of<HeaderManager>(context, listen: false);
+  //  final messages = _messages.reversed
+  //      .map((message) {
+  //        if (message is types.CustomMessage) {
+  //          return {
+  //            "role": message.author.id == _user.id ? "user" : "assistant",
+  //            "content": message.metadata?['markdown'] ?? '',
+  //            "name": message.author.id == _user.id ? "Guts" : "Assistant"
+  //          };
+  //        }
+  //        return null;
+  //      })
+  //      .whereType<Map<String, dynamic>>()
+  //      .toList();
+  //
+  //  final data = jsonEncode(messages);
+  //
+  //  final headers = {
+  //    "Content-Type": "application/json",
+  //    "AITUTOR-API-KEY": "${headerManager.apiKey}",
+  //    //"AITUTOR-API-KEY": "test_key",
+  //    "Authorization": "Bearer ${headerManager.jwt}",
+  //  };
+  //
+  //  final response = await http.post(
+  //    Uri.parse("http://api.aitutor.live/v1/smart_chat_stream"),
+  //    //Uri.parse("http://localhost:8080/v1/chat"),
+  //    headers: headers,
+  //    body: data,
+  //  );
+  //
+  //  _displayGPTMessage(response.body);
+  //}
 
   Future<void> _displayGPTMessage(String response) {
     final parsedJson = jsonDecode(utf8.decode(response.runes.toList()));

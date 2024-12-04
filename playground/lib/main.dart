@@ -3,6 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:playground/splash.dart';
 import 'package:playground/basic_chat_ui.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:provider/provider.dart';
+import 'package:playground/header_manager.dart';
 
 //import 'package:playground/qr_code/qr_code.dart';
 
@@ -18,7 +22,7 @@ String randomString() {
   return base64UrlEncode(values);
 }
 
-void main() {
+void main() async {
   //SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
   //  //statusBarColor: Colors.pink,
   //  systemNavigationBarColor: Colors.black,
@@ -30,7 +34,9 @@ void main() {
   //runApp(const BasicApp());
   //runApp(const SideDrawer());
   //runApp(const SplashPage());
-  runApp(const MyApp());
+  await dotenv.load();
+  runApp(ChangeNotifierProvider(
+      create: (_) => HeaderManager(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -44,7 +50,22 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const SplashPage(),
     );
   }
 }
+
+//
+//curl https://api.aitutor.live/user -H "AITUTOR-API-KEY: <the_key>" -H "Authorization: Bearer <the_token>"
+//
+//the key is the key
+//L52XnyeWj9PfPVZ5Uef8scMr0XgYYrQ0PNm1V6w0gvs
+//
+//qr_code string is the token
+//
+//check out api.aitutor.live/docs
+//
+//Make a get request first with whatever jwt I have
+//
+//api.aitutor.live/v1/smart_chat_stream --> always include the same headers
+//--> This is the endpoint that

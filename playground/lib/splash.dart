@@ -20,8 +20,8 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    //final bool isLoggedIn = qrToken != null && qrToken!.isNotEmpty;
-    final bool isLoggedIn = true;
+    final bool isLoggedIn = qrToken != null && qrToken!.isNotEmpty;
+    //final bool isLoggedIn = true;
     print("WE ARE HERE\n\n\n\n\n\n\n\n\n\n\n\n#################!!!!!!");
     final Widget goToPage = isLoggedIn
         ? MyHomePage()

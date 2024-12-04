@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
 
-//this.backgroundColor,
-//    this.elevation,
-//    this.shadowColor,
-//    this.surfaceTintColor,
-//    this.shape,
-//
-
-//Widget SideDrawerLight(final List<types.Message> _messages) {
 Widget SideDrawerLight(bool _isLightMode, final Function clearMessages) {
   final controller = GroupButtonController();
 
@@ -47,20 +39,6 @@ Widget SideDrawerLight(bool _isLightMode, final Function clearMessages) {
         SizedBox(
           height: 10.0,
         ),
-        //ListTile(
-        //  title: const Text('Item 1'),
-        //  onTap: () {},
-        //),
-        //ListTile(
-        //  title: const Text('Item 2'),
-        //  onTap: () {},
-        //),
-        //ListTile(
-        //  title: const Text('New Chat'),
-        //  onTap: () {
-        //    clearMessages();
-        //  },
-        //),
         SizedBox(
           width: 200.0,
           height: 20.0,
@@ -134,57 +112,3 @@ Widget SideDrawerLight(bool _isLightMode, final Function clearMessages) {
     ),
   );
 }
-
- //Color? foregroundColor,
- //   Color? backgroundColor,
- //   Color? disabledForegroundColor,
- //   Color? disabledBackgroundColor,
- //   Color? shadowColor,
- //   Color? surfaceTintColor,
- //   Color? iconColor,
- //   double? iconSize,
- //   Color? disabledIconColor,
- //   Color? overlayColor,
- //   double? elevation,
- //   TextStyle? textStyle,
- //   EdgeInsetsGeometry? padding,
- //   Size? minimumSize,
- //   Size? fixedSize,
- //   Size? maximumSize,
- //   BorderSide? side,
- //   OutlinedBorder? shape,
- //   MouseCursor? enabledMouseCursor,
- //   MouseCursor? disabledMouseCursor,
- //   VisualDensity? visualDensity,
- //   MaterialTapTargetSize? tapTargetSize,
- //   Duration? animationDuration,
- //   bool? enableFeedback,
- //   AlignmentGeometry? alignment,
- //   InteractiveInkFeatureFactory? splashFactory,
- //   ButtonLayerBuilder? backgroundBuilder,
- //   ButtonLayerBuilder? foregroundBuilder,
- // })
- //
-//this.style,
-//    this.selectedColor,
-//    this.iconColor,
-//    this.textColor,
-//    this.titleTextStyle,
-//    this.subtitleTextStyle,
-//    this.leadingAndTrailingTextStyle,
-//    this.contentPadding,
-//    this.enabled = true,
-//    this.onTap,
-//    this.onLongPress,
-//    this.onFocusChange,
-//    this.mouseCursor,
-//    this.selected = false,
-//    this.focusColor,
-//    this.hoverColor,
-//    this.splashColor,
-//    this.focusNode,
-//    this.autofocus = false,
-//    this.tileColor,
-//    this.selectedTileColor,
-//
-//
