@@ -207,7 +207,7 @@ user_pages = [
 ]
 info_pages = (
     [
-        # st.Page("./page/about.py", title="About", icon=":material/info:"),
+        st.Page("./page/about.py", title="About", icon=":material/info:"),
         st.Page(
             "./page/privacy.py",
             title="Privacy Policy",
