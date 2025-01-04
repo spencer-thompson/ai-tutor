@@ -212,7 +212,7 @@ info_pages = (
             "./page/privacy.py",
             title="Privacy Policy",
             icon=":material/policy:",
-            default=False if st.session_state.user.get("authenticated") else True,
+            default=True if st.query_params.get("privacy_policy") else False,
         ),
     ]
     # if st.query_params.get("privacy_policy")
@@ -238,7 +238,20 @@ if st.session_state.user.get("authenticated"):
     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
 
 else:
-    pg = st.navigation({"PROFILE": [st.Page(login, title="Log In", icon=":material/login:")]} | pages, expanded=True)
+    pg = st.navigation(
+        {
+            "PROFILE": [
+                st.Page(
+                    login,
+                    title="Log In",
+                    icon=":material/login:",
+                    default=False if st.query_params.get("privacy_policy") else True,
+                )
+            ]
+        }
+        | pages,
+        expanded=True,
+    )
 
 
 pg.run()

@@ -3,6 +3,10 @@ include:
     project_directory: .
   - path: ./compose/mongo.yaml
     project_directory: .
+  - path: ./plausible/compose.yaml
+    project_directory: .
+  - path: ./compose/whoami.yaml
+    project_directory: .
 
 services:
   fastapi:
@@ -80,16 +84,6 @@ services:
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^https?://www\\.(.*)"
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://$1"
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
-
-  whoami:
-    image: traefik/whoami
-    environment:
-      DOMAIN: ${DOMAIN}
-    labels:
-      - traefik.enable=true
-      - "traefik.http.routers.whoami.rule=Host(`whoami.${DOMAIN}`)"
-      - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=production"
 
 networks:
   web:

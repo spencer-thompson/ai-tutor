@@ -1,5 +1,6 @@
-# include:
-#   - path: ./compose/mongo.yaml
+include:
+  - path: ./plausible/compose.yaml
+    project_directory: .
 
 services:
   traefik:
