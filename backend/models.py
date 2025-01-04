@@ -84,6 +84,7 @@ class UserCourse(BaseModel):
 
 
 class User(BaseModel):
+    role: str
     institution: str
     canvas_id: int
     first_name: str

@@ -32,6 +32,9 @@ def create_qrcode(data: str) -> BytesIO:
 if "qr" not in st.session_state:
     st.session_state.qr = create_qrcode(st.session_state.token)
 
+
+st.warning(":material/engineering: The AI Tutor Mobile App is currently in active development. Coming soon :eyes:")
+
 st.title("Log in with Mobile")
 st.write("---")
 st.image(

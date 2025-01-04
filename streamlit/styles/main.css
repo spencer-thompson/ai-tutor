@@ -40,6 +40,8 @@ footer {
 
 stElementContainer {
   justify-content: center;
+  /* margin-top: 0rem; */
+  /* margin-bottom: 2rem; */
 }
 
 /* fonts */
@@ -48,6 +50,7 @@ stChatInput,
 code,
 pre,
 /* .token, */
+[data-testid="stHeadingWithActionElements"] h1,
 h1,
 h2,
 h3,

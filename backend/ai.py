@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 import httpx
@@ -34,7 +34,7 @@ def system_message():
     You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
     Respond in a concise and effictive manner. Format your response in github flavored markdown.
 
-    The current date and time is {datetime.now().strftime('%H:%M on %A, %Y-%m-%d')}
+    The current date and time is {datetime.now(tz=timezone(timedelta(hours=-7))).strftime('%H:%M on %A, %Y-%m-%d')}
     """,
         }
     ]

@@ -353,6 +353,7 @@ async def smart_chat_stream(
     Response is an iterator in the form of:
     `{"content": "the ai response"}` or `{"flagged": bool}`
     """
+    # print("test test")
     user = await get_user_from_token(token)
     messages = chat.messages
 
@@ -377,11 +378,11 @@ async def smart_chat_stream(
                 "content": f"""Canvas updates for {user.get("first_name")} at {user.get("institution")}: 
                 {json.dumps(activity_context)}, 
                 
-                Course Info:
+                Enrolled Course(s) Info:
                 {json.dumps(course_context)}""",
             }
         ]
-        if chat.courses and len(messages) == 1
+        if chat.courses and len(messages) < 8
         else []
     )
 

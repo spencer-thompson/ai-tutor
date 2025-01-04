@@ -69,7 +69,7 @@ if "patterns" not in st.session_state:
 
 if "user" not in st.session_state:
     default_user = {
-        "role": "dev",  # TODO: change
+        "role": "normal",
         "mobile": True if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) else False,
         # "logged_in": False,
         "authenticated": False,
@@ -161,7 +161,7 @@ def login():
 
         * [Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
         
-        * Microsoft Edge - *Coming Soon*
+        * [Microsoft Edge](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
 
         * Firefox - *Coming Soon*
 
@@ -207,7 +207,7 @@ user_pages = [
 ]
 info_pages = (
     [
-        st.Page("./page/about.py", title="About", icon=":material/info:"),
+        # st.Page("./page/about.py", title="About", icon=":material/info:"),
         st.Page(
             "./page/privacy.py",
             title="Privacy Policy",
@@ -215,8 +215,8 @@ info_pages = (
             default=False if st.session_state.user.get("authenticated") else True,
         ),
     ]
-    if st.query_params.get("privacy_policy")
-    else [st.Page("./page/about.py", title="About", icon=":material/info:")]
+    # if st.query_params.get("privacy_policy")
+    # else [st.Page("./page/about.py", title="About", icon=":material/info:")]
 )
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
