@@ -52,6 +52,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
       BACKEND: ${BACKEND}
+      BASE_URL: ${BASE_URL}
       BACKEND_API_KEY: ${BACKEND_API_KEY}
       BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
     develop:

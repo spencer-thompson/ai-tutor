@@ -93,6 +93,8 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
         {"role": "user", "content": user_input, "name": st.session_state.user["first_name"]},
     )
 
+    st.session_state.track_event("simple_chat", page="chat", props={"length": len(st.session_state.messages)})
+
     with st.chat_message("assistant"):
         st.write_stream(runner(selected_courses))
 
@@ -102,7 +104,7 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
 if st.session_state.messages:
     st.segmented_control(
         "Control",
-        [{"display": "New Chat", "func": clear_messages}, {"display": "Think about it", "func": think}],
+        [{"display": "New Chat", "func": clear_messages}],  # , {"display": "Think about it", "func": think}
         key="chat_control",
         on_change=control,
         format_func=lambda o: o["display"],

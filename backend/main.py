@@ -132,7 +132,7 @@ async def get_user_from_token(token: str):
         id = int(id)  # fix updated pyjwt
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
         courses = (
@@ -186,7 +186,7 @@ async def get_user_id_from_token(token: str):
         id = int(id)  # fix updated pyjwt
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         return id, uni
 
@@ -221,7 +221,7 @@ async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict
         id = payload.get("sub")
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         new_token = create_access_token(data={"sub": id, "uni": uni})
         return {"token": new_token}
@@ -230,7 +230,7 @@ async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=403, detail="Invalid token")
 
 
 @app.post("/token")

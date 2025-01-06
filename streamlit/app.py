@@ -3,8 +3,10 @@ Entry point for streamlit
 """
 
 import json
+import logging
 import os
 import re
+import uuid
 from collections import namedtuple
 
 import requests
@@ -14,8 +16,31 @@ import streamlit as st
 VERSION = 1.000
 UNIVERSITIES = ["UVU"]
 
+
+def track_event(name: str, page: str, props: dict = {}):
+    analytics_url = os.getenv("BASE_URL")
+    analytics_headers = {
+        "User-Agent": st.context.headers.get("User-Agent"),
+        "X-Forwarded-For": st.context.headers.get("X-Forwarded-For"),
+        "Content-Type": "application/json",
+    }
+
+    domain = os.getenv("DOMAIN")
+    full_url = f"https://{domain}/{page}"
+
+    analytics_data = {"domain": domain, "name": name, "url": full_url, "props": props}
+
+    r = requests.post(url=analytics_url + "/api/event", headers=analytics_headers, json=analytics_data)
+    if r.status_code != 202:
+        #     return r.json()
+        # else:
+        logging.warning("Analytics Error")
+        # return r.json()
+
+
 if "token" not in st.session_state:
     st.session_state.token = st.context.cookies.get("token")
+
 
 if "backend" not in st.session_state:  # maybe change to a class?
     base_url = os.getenv("BACKEND")
@@ -60,6 +85,9 @@ if "backend" not in st.session_state:  # maybe change to a class?
         backend_post_stream,
     )
 
+if "track_event" not in st.session_state:
+    st.session_state.track_event = track_event
+
 
 if "patterns" not in st.session_state:
     st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
@@ -69,7 +97,7 @@ if "patterns" not in st.session_state:
 
 if "user" not in st.session_state:
     default_user = {
-        "role": "normal",
+        "role": "dev",
         "mobile": True if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) else False,
         # "logged_in": False,
         "authenticated": False,
@@ -77,18 +105,38 @@ if "user" not in st.session_state:
     try:
         st.session_state.user = default_user | st.session_state.backend.get("user")
         st.session_state.user["authenticated"] = True
+        if "session_id" not in st.session_state:
+            st.session_state.session_id = str(uuid.uuid4())
+
+        # st.session_state.analytics.event(
+        track_event(
+            "session",
+            page="",
+            props={
+                "id": st.session_state.session_id,
+                "role": st.session_state.user.get("role"),
+                "mobile": st.session_state.user.get("mobile"),
+                "institution": st.session_state.user.get("institution"),
+                "canvas_id": st.session_state.user.get("canvas_id"),
+                "first_name": st.session_state.user.get("first_name"),
+                "last_name": st.session_state.user.get("last_name"),
+            },
+        )
         if not st.session_state.user.get("settings"):
             st.session_state.user["settings"] = {
                 "show_courses": True,
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
             }
+
+        st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as e:
+        logging.warning(e)
         st.session_state.user = default_user  # figure out how to tell a user to login
 
 
-if "user_count" not in st.session_state:
-    st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
+# if "user_count" not in st.session_state:
+#     st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
 
 
 if "layout" not in st.session_state:
@@ -225,6 +273,11 @@ dev_pages = [
 pages = {}
 pages["INFO"] = info_pages
 
+# if st.session_state.user.get("role") == "dev":
+#     pages["DEV"] = dev_pages
+
+# st.session_state.analytics.event("test", "test")
+
 if st.session_state.user.get("authenticated"):
     if st.session_state.user["role"] in ["normal", "admin"]:
         pages["AI"] = user_pages
@@ -255,6 +308,7 @@ else:
 
 
 pg.run()
+
 
 with st.sidebar:
     # st.metric("Users", f"{st.session_state.user_count} Users", "1", label_visibility="collapsed")

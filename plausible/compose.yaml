@@ -102,7 +102,6 @@ services:
       - traefik.http.routers.plausible.rule=Host(`analytics.${DOMAIN}`)
       - traefik.http.routers.plausible.tls=true
       - traefik.http.routers.plausible.tls.certresolver=production
-      # - traefik.http.services.backend.loadbalancer.server.port=8080
 
 volumes:
   db-data:
