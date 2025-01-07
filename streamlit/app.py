@@ -169,22 +169,13 @@ def login():
     if not st.session_state.user["authenticated"]:
         st.warning(":material/engineering: The AI Tutor is currently in development. Full release coming soon")
         st.title("Log In")
-        st.caption(
-            "* If you have previously logged in and are seeing this, visit the canvas page and refresh this page"
-        )
+        st.caption("* If you have previously logged in and are seeing this, visit canvas and refresh this page")
         st.write("---")
         if not st.session_state.accepted_cookie:
             st.write("""
             First things first, we need to talk about cookies :cookie: 
 
-            We all know the annoying popups usually saying something like:
-
-            ### ```This website utilizes technologies such as cookies to enable essential site functionality...```
-            
-            *blah blah blah*
-
-
-            **Anyway**, Instead of making everyone create a new account and remember a password,
+            Instead of making everyone create a new account and remember a password,
             I decided I would prefer to store logging in and loggin out as a cookie.""")
 
             st.caption("* This has a lot of benefits, and streamlines the process of logging in and out *a lot*.")
@@ -205,15 +196,18 @@ def login():
         st.balloons()
 
         st.write("""
-        Next, in order to log in, you need to install our **Browser Extension**.
+        Next, in order to log in, you need to install our **Browser Extension**.""")
+        st.caption(
+            "The browser extension allows us to communicate with canvas.\n\nSadly, we can't provide this experience without it."
+        )
 
-        * [Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
+        st.write("""
+
+        * **[Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
         
-        * [Microsoft Edge](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
+        * **[Microsoft Edge](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
 
         * Firefox - *Coming Soon*
-
-        ---
 
         After downloading the browser extension, if for some reason you are not automatically redirected,
         visit your university canvas homepage.
@@ -241,7 +235,6 @@ def login():
 
 def logout():  # currently unused
     del st.session_state.user
-    # st.session_state.cookies.delete("somethiing")
     st.rerun()
 
 
@@ -272,11 +265,6 @@ dev_pages = [
 
 pages = {}
 pages["INFO"] = info_pages
-
-# if st.session_state.user.get("role") == "dev":
-#     pages["DEV"] = dev_pages
-
-# st.session_state.analytics.event("test", "test")
 
 if st.session_state.user.get("authenticated"):
     if st.session_state.user["role"] in ["normal", "admin"]:
@@ -314,7 +302,7 @@ with st.sidebar:
     # st.metric("Users", f"{st.session_state.user_count} Users", "1", label_visibility="collapsed")
     if feedback := st.feedback("stars"):
         # st.write(feedback)
-        st.write("implement")
+        st.write("haha it doesn't do anything but you still clicked :smirk: :blush:")
 
 # if feedback := st.sidebar.feedback("stars"):
 #     st.sidebar.text_area("stuff", label_visibility="collapsed")

@@ -1,12 +1,20 @@
+"""
+If function includes the `local` key,
+the first argument of the actual function must be `context`
+"""
+
 import asyncio
 import json
+import logging
 import os
 import re
 from datetime import datetime, timedelta, timezone
+from logging.config import dictConfig
 from typing import List
 
 import httpx
 from anthropic import AsyncAnthropic
+from config import LogConfig
 from markdownify import markdownify as md
 from models import Message
 from openai import AsyncOpenAI
@@ -22,17 +30,23 @@ SYSTEM_MESSAGE = [
     }
 ]
 
+dictConfig(LogConfig().dict())
+logger = logging.getLogger("aitutor")
 
-def system_message():
+
+def system_message(descriptions: str = ""):
     """
     Includes the current date and time
     """
+    addition = f"The courses you are a tutor for are: \n{descriptions}" if descriptions else ""
     return [
         {
             "role": "system",
             "content": f"""
     You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
     Respond in a concise and effictive manner. Format your response in github flavored markdown.
+
+    f"{addition}"
 
     The current date and time is {datetime.now(tz=timezone(timedelta(hours=-7))).strftime('%H:%M on %A, %Y-%m-%d')}
     """,
@@ -59,6 +73,7 @@ async def get_markdown_webpage(urls: list[str]) -> str:
 
 read_webpage = {
     "name": "read_webpages",
+    "local": False,
     "func": get_markdown_webpage,
     "tool": {
         "type": "function",
@@ -89,12 +104,18 @@ read_webpage = {
 }
 
 
-async def get_activity_stream(user):
-    pass
+async def get_activity_stream(context, activities):
+    matches = []
+    for activity in context.get("activity_stream"):
+        if activity["kind"] in activities:
+            matches.append(activity)
+
+    return json.dumps(matches)
 
 
 updates = {
     "name": "updates",
+    "local": True,
     "func": get_activity_stream,
     "tool": {
         "type": "function",
@@ -125,15 +146,45 @@ updates = {
     },
 }
 
-tools = [read_webpage]
 
-tools = {
-    tool.get("name"): {
-        "tool": tool.get("tool"),
-        "func": tool.get("func"),
-        "local": tool.get("local"),
-    }
-    for tool in tools
+async def get_assignments(context):
+    all_assignments = []
+    for course in context.get("courses"):
+        all_assignments.append(
+            [
+                {
+                    "name": a.get("name"),
+                    "description": a.get("description"),
+                    "due_at": (datetime.strptime(a.get("due_at"), "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=-7)).strftime(
+                        "%H:%M on %A, %Y-%m-%d"
+                    ),
+                    "updated_at": (
+                        datetime.strptime(a.get("updated_at"), "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=-7)
+                    ).strftime("%H:%M on %A, %Y-%m-%d"),
+                    "points_possible": a.get("points_possible"),
+                    "url": a.get("html_url"),
+                    "submission_types": a.get("submission_types"),
+                }
+                for a in course.get("assignments")
+            ]
+        )
+        # for assignment in course.get("assignments"):
+        # all_assignments.append({})
+
+    return json.dumps(all_assignments)
+
+
+assignments = {
+    "name": "assignments",
+    "local": True,
+    "func": get_assignments,
+    "tool": {
+        "type": "function",
+        "function": {
+            "name": "assignments",
+            "description": "If the user asks about upcoming assignments",
+        },
+    },
 }
 
 
@@ -186,15 +237,30 @@ async def moderate(messages: List[Message]):
     return response.results[0]
 
 
-async def openai_iter_response(messages, context):
+tools = [read_webpage, updates, assignments]
+
+tools = {
+    tool.get("name"): {
+        "tool": tool.get("tool"),
+        "func": tool.get("func"),
+        "local": tool.get("local"),
+    }
+    for tool in tools
+}
+
+
+async def openai_iter_response(messages, descriptions, context):
     mod = await moderate(messages)
 
     if mod.flagged:
+        logger.warning(
+            f"Chat Message Flagged: \n{messages[-1].content}\n\n For: {[c for c, f in mod.categories.dict().items() if f]}"
+        )
         yield json.dumps({"flagged": mod.flagged})
         return
 
     response = await openai.chat.completions.create(
-        messages=system_message() + context + messages,
+        messages=system_message(descriptions) + messages,
         model=CHAT_MODEL,
         tools=[t.get("tool") for t in tools.values()],
         tool_choice="auto",
@@ -246,7 +312,12 @@ async def openai_iter_response(messages, context):
             else:
                 function_args = {}
 
-            function_response = await tools[function_name]["func"](**function_args)
+            logger.info(f"Tool Call: {tc["function"]["name"]}")
+
+            if tools[function_name]["local"]:
+                function_response = await tools[function_name]["func"](context, **function_args)
+            else:
+                function_response = await tools[function_name]["func"](**function_args)
 
             messages.append(
                 {
@@ -258,7 +329,7 @@ async def openai_iter_response(messages, context):
             )
 
             response = await openai.chat.completions.create(
-                messages=system_message() + context + messages,
+                messages=system_message(descriptions) + messages,
                 # tools=tools if tool else None,
                 # tools=[t.get("tool") for t in tools.values()],
                 model=CHAT_MODEL,

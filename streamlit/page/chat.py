@@ -5,8 +5,13 @@ def runner(courses):
     data = {"messages": st.session_state.messages, "courses": [c["id"] for c in courses]}
     completion = ""
     for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", data):
-        yield chunk["content"]
-        completion += chunk["content"]
+        if c := chunk.get("content"):
+            yield c
+            completion += c
+
+        elif c := chunk.get("flagged"):
+            yield "Hey thats not cool bro"
+            completion = "Hey thats not cool bro"
 
     st.session_state.messages.append({"role": "assistant", "content": completion})
 

@@ -37,7 +37,7 @@ class Rubric(BaseModel):
 class Assignment(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str] = None
     due_at: Optional[str] = None
     updated_at: str
     points_possible: Optional[int] = None

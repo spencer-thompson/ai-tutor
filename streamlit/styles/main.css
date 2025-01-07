@@ -21,6 +21,12 @@ hr {
   visibility: hidden;
 }
 
+.stMetric {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 footer {
   visibility: hidden;
 }
@@ -51,6 +57,7 @@ code,
 pre,
 /* .token, */
 [data-testid="stHeadingWithActionElements"] h1,
+.stMetric,
 h1,
 h2,
 h3,
