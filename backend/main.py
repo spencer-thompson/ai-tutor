@@ -354,15 +354,25 @@ async def smart_chat_stream(
     """
     user = await get_user_from_token(token)
     messages = chat.messages
-    descriptions = "\n\n".join(  # This filters for only selected courses
-        [
-            " ".join(c.get("name").split("|")[0].split("-")[0:2])
-            + f"(User is a {c.get("role")}):\n"
-            + c.get("description")
-            for c in user["courses"]
-            if c["id"] in chat.courses
-        ]
-    )
+    course_descriptions = []
+    for c in user["courses"]:
+        name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
+        role = f"(User is a {c.get("role")})" if c.get("role") else ""
+        desc = c.get("description") if c.get("description") else ""
+
+        course_descriptions.append(f"{name} - {role}:\n{desc}")
+
+        # descriptions +=
+    # descriptions = "\n\n".join(  # This filters for only selected courses
+    #     [
+    #         " ".join(c.get("name").split("|")[0].split("-")[0:2])
+    #         + f"(User is a {c.get("role")}):\n"
+    #         + c.get("description")
+    #         for c in user["courses"]
+    #         if c["id"] in chat.courses
+    #     ]
+    # )
+    descriptions = "\n\n".join(course_descriptions)
 
     activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
     course_context = [c for c in user["courses"] if c["id"] in chat.courses]
