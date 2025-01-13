@@ -356,11 +356,12 @@ async def smart_chat_stream(
     messages = chat.messages
     course_descriptions = []
     for c in user["courses"]:
-        name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
-        role = f"(User is a {c.get("role")})" if c.get("role") else ""
-        desc = c.get("description") if c.get("description") else ""
+        if c["id"] in chat.courses:
+            name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
+            role = f"(User is a {c.get("role")})" if c.get("role") else ""
+            desc = c.get("description") if c.get("description") else ""
 
-        course_descriptions.append(f"{name} - {role}:\n{desc}")
+            course_descriptions.append(f"{name} - {role}:\n{desc}")
 
         # descriptions +=
     # descriptions = "\n\n".join(  # This filters for only selected courses

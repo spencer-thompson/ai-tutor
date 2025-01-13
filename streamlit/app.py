@@ -116,14 +116,15 @@ if "user" not in st.session_state:
                 "id": st.session_state.session_id,
                 "role": st.session_state.user.get("role"),
                 "mobile": st.session_state.user.get("mobile"),
-                "institution": st.session_state.user.get("institution"),
                 "canvas_id": st.session_state.user.get("canvas_id"),
+                "institution": st.session_state.user.get("institution"),
                 "first_name": st.session_state.user.get("first_name"),
                 "last_name": st.session_state.user.get("last_name"),
             },
         )
         if not st.session_state.user.get("settings"):
             st.session_state.user["settings"] = {
+                "first_message": True,
                 "show_courses": True,
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
             }
@@ -138,6 +139,8 @@ if "user" not in st.session_state:
 # if "user_count" not in st.session_state:
 #     st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
 
+if "has_sent_message" not in st.session_state:
+    st.session_state.has_sent_message = False
 
 if "layout" not in st.session_state:
     if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):

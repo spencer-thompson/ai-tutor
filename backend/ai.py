@@ -20,15 +20,6 @@ from models import Message
 from openai import AsyncOpenAI
 
 CHAT_MODEL = os.getenv("CHAT_MODEL")
-SYSTEM_MESSAGE = [
-    {
-        "role": "system",
-        "content": """
-    You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
-    Respond in a concise and effictive manner. Format your response in github flavored markdown.
-    """,
-    }
-]
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("aitutor")
@@ -38,17 +29,21 @@ def system_message(descriptions: str = ""):
     """
     Includes the current date and time
     """
-    addition = f"The courses you are a tutor for are: \n{descriptions}" if descriptions else ""
+    addition = f"## Courses\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
     return [
         {
-            "role": "system",
+            "role": "developer",
             "content": f"""
+    # Instructions
+
     You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
     Respond in a concise and effictive manner. Format your response in github flavored markdown.
 
     f"{addition}"
 
-    The current date and time is {datetime.now(tz=timezone(timedelta(hours=-7))).strftime('%H:%M on %A, %Y-%m-%d')}
+    ## Current Date and Time
+
+    * {datetime.now(tz=timezone(timedelta(hours=-7))).strftime('%H:%M on %A, %Y-%m-%d')}
     """,
         }
     ]
@@ -122,8 +117,8 @@ updates = {
         "function": {
             "name": "updates",
             "strict": True,
-            "description": """If the user asks for updates, or information about
-            annoucements, messages, submissions, recent assignments, conversations or discussions""",
+            "description": """If the user asks for updates, or information about annoucements, messages,
+            submissions, recent assignments, conversations, calendar, grades or discussions. Use liberally.""",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -182,7 +177,7 @@ assignments = {
         "type": "function",
         "function": {
             "name": "assignments",
-            "description": "If the user asks about upcoming assignments",
+            "description": "If the user asks about upcoming assignments, use liberally.",
         },
     },
 }
@@ -259,9 +254,24 @@ async def openai_iter_response(messages, descriptions, context):
         yield json.dumps({"flagged": mod.flagged})
         return
 
+    if len(context["courses"]) == 0:  # prevent non-necessary context
+        tools = [read_webpage]
+    else:
+        tools = [read_webpage, updates, assignments]
+
+    tools = {
+        tool.get("name"): {
+            "tool": tool.get("tool"),
+            "func": tool.get("func"),
+            "local": tool.get("local"),
+        }
+        for tool in tools
+    }
+
     response = await openai.chat.completions.create(
         messages=system_message(descriptions) + messages,
         model=CHAT_MODEL,
+        # tools=[t.get("tool") for t in tools.values()] if len(context["courses"]) > 0 else None,
         tools=[t.get("tool") for t in tools.values()],
         tool_choice="auto",
         logprobs=True,
