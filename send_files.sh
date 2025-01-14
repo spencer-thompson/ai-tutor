@@ -5,6 +5,7 @@ rsync -avrPluxz \
     --include='mongo/***' \
     --include='backend/***' \
     --include='compose/***' \
+    --include='plausible/***' \
     --include='streamlit/***' \
     --include='data/***' \
     --exclude='*' \

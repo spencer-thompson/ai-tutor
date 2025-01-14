@@ -27,6 +27,7 @@ class Message(BaseModel):
 class Chat(BaseModel):
     messages: List[Message]
     courses: Optional[List[int]] = None
+    model: Literal["gpt-4o", "o1"]
 
 
 class Rubric(BaseModel):
@@ -37,7 +38,7 @@ class Rubric(BaseModel):
 class Assignment(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str] = None
     due_at: Optional[str] = None
     updated_at: str
     points_possible: Optional[int] = None
@@ -69,6 +70,7 @@ class CanvasCourse(BaseModel):
 
 
 class Settings(BaseModel):
+    first_message: Optional[bool] = True
     show_courses: Optional[bool] = True
     shown_courses: Optional[Dict[str, bool]] = None
 
@@ -84,6 +86,7 @@ class UserCourse(BaseModel):
 
 
 class User(BaseModel):
+    role: str
     institution: str
     canvas_id: int
     first_name: str

@@ -18,7 +18,7 @@ services:
       # - "--providers.file.directory=/etc/traefik/conf/"
       # - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # Redirect http -> https
       # - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # - "--entrypoints.web.address=:80" # Entrypoints
+      - "--entrypoints.web.address=:80" # Entrypoints
       - "--entrypoints.websecure.address=:443"
       # - "--certificatesresolvers.production.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
       - "--certificatesresolvers.production.acme.tlschallenge=true"

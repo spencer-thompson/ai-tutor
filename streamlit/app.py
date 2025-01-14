@@ -3,8 +3,10 @@ Entry point for streamlit
 """
 
 import json
+import logging
 import os
 import re
+import uuid
 from collections import namedtuple
 
 import requests
@@ -14,8 +16,31 @@ import streamlit as st
 VERSION = 1.000
 UNIVERSITIES = ["UVU"]
 
+
+def track_event(name: str, page: str, props: dict = {}):
+    analytics_url = os.getenv("BASE_URL")
+    analytics_headers = {
+        "User-Agent": st.context.headers.get("User-Agent"),
+        "X-Forwarded-For": st.context.headers.get("X-Forwarded-For"),
+        "Content-Type": "application/json",
+    }
+
+    domain = os.getenv("DOMAIN")
+    full_url = f"https://{domain}/{page}"
+
+    analytics_data = {"domain": domain, "name": name, "url": full_url, "props": props}
+
+    r = requests.post(url=analytics_url + "/api/event", headers=analytics_headers, json=analytics_data)
+    if r.status_code != 202:
+        #     return r.json()
+        # else:
+        logging.warning("Analytics Error")
+        # return r.json()
+
+
 if "token" not in st.session_state:
     st.session_state.token = st.context.cookies.get("token")
+
 
 if "backend" not in st.session_state:  # maybe change to a class?
     base_url = os.getenv("BACKEND")
@@ -60,6 +85,9 @@ if "backend" not in st.session_state:  # maybe change to a class?
         backend_post_stream,
     )
 
+if "track_event" not in st.session_state:
+    st.session_state.track_event = track_event
+
 
 if "patterns" not in st.session_state:
     st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
@@ -69,7 +97,7 @@ if "patterns" not in st.session_state:
 
 if "user" not in st.session_state:
     default_user = {
-        "role": "dev",  # TODO: change
+        "role": "dev",
         "mobile": True if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) else False,
         # "logged_in": False,
         "authenticated": False,
@@ -77,19 +105,42 @@ if "user" not in st.session_state:
     try:
         st.session_state.user = default_user | st.session_state.backend.get("user")
         st.session_state.user["authenticated"] = True
+        if "session_id" not in st.session_state:
+            st.session_state.session_id = str(uuid.uuid4())
+
+        # st.session_state.analytics.event(
+        track_event(
+            "session",
+            page="",
+            props={
+                "id": st.session_state.session_id,
+                "role": st.session_state.user.get("role"),
+                "mobile": st.session_state.user.get("mobile"),
+                "canvas_id": st.session_state.user.get("canvas_id"),
+                "institution": st.session_state.user.get("institution"),
+                "first_name": st.session_state.user.get("first_name"),
+                "last_name": st.session_state.user.get("last_name"),
+            },
+        )
         if not st.session_state.user.get("settings"):
             st.session_state.user["settings"] = {
+                "first_message": True,
                 "show_courses": True,
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
             }
+
+        st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as e:
+        logging.warning(e)
         st.session_state.user = default_user  # figure out how to tell a user to login
 
 
-if "user_count" not in st.session_state:
-    st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
+# if "user_count" not in st.session_state:
+#     st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
 
+if "has_sent_message" not in st.session_state:
+    st.session_state.has_sent_message = False
 
 if "layout" not in st.session_state:
     if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):
@@ -121,22 +172,13 @@ def login():
     if not st.session_state.user["authenticated"]:
         st.warning(":material/engineering: The AI Tutor is currently in development. Full release coming soon")
         st.title("Log In")
-        st.caption(
-            "* If you have previously logged in and are seeing this, visit the canvas page and refresh this page"
-        )
+        st.caption("* If you have previously logged in and are seeing this, visit canvas and refresh this page")
         st.write("---")
         if not st.session_state.accepted_cookie:
             st.write("""
             First things first, we need to talk about cookies :cookie: 
 
-            We all know the annoying popups usually saying something like:
-
-            ### ```This website utilizes technologies such as cookies to enable essential site functionality...```
-            
-            *blah blah blah*
-
-
-            **Anyway**, Instead of making everyone create a new account and remember a password,
+            Instead of making everyone create a new account and remember a password,
             I decided I would prefer to store logging in and loggin out as a cookie.""")
 
             st.caption("* This has a lot of benefits, and streamlines the process of logging in and out *a lot*.")
@@ -157,15 +199,18 @@ def login():
         st.balloons()
 
         st.write("""
-        Next, in order to log in, you need to install our **Browser Extension**.
+        Next, in order to log in, you need to install our **Browser Extension**.""")
+        st.caption(
+            "The browser extension allows us to communicate with canvas.\n\nSadly, we can't provide this experience without it."
+        )
 
-        * [Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)
+        st.write("""
+
+        * **[Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
         
-        * Microsoft Edge - *Coming Soon*
+        * **[Microsoft Edge](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
 
         * Firefox - *Coming Soon*
-
-        ---
 
         After downloading the browser extension, if for some reason you are not automatically redirected,
         visit your university canvas homepage.
@@ -193,7 +238,6 @@ def login():
 
 def logout():  # currently unused
     del st.session_state.user
-    # st.session_state.cookies.delete("somethiing")
     st.rerun()
 
 
@@ -212,11 +256,11 @@ info_pages = (
             "./page/privacy.py",
             title="Privacy Policy",
             icon=":material/policy:",
-            default=False if st.session_state.user.get("authenticated") else True,
+            default=True if st.query_params.get("privacy_policy") else False,
         ),
     ]
-    if st.query_params.get("privacy_policy")
-    else [st.Page("./page/about.py", title="About", icon=":material/info:")]
+    # if st.query_params.get("privacy_policy")
+    # else [st.Page("./page/about.py", title="About", icon=":material/info:")]
 )
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
@@ -238,16 +282,30 @@ if st.session_state.user.get("authenticated"):
     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
 
 else:
-    pg = st.navigation({"PROFILE": [st.Page(login, title="Log In", icon=":material/login:")]} | pages, expanded=True)
+    pg = st.navigation(
+        {
+            "PROFILE": [
+                st.Page(
+                    login,
+                    title="Log In",
+                    icon=":material/login:",
+                    default=False if st.query_params.get("privacy_policy") else True,
+                )
+            ]
+        }
+        | pages,
+        expanded=True,
+    )
 
 
 pg.run()
+
 
 with st.sidebar:
     # st.metric("Users", f"{st.session_state.user_count} Users", "1", label_visibility="collapsed")
     if feedback := st.feedback("stars"):
         # st.write(feedback)
-        st.write("implement")
+        st.write("haha it doesn't do anything but you still clicked :smirk: :blush:")
 
 # if feedback := st.sidebar.feedback("stars"):
 #     st.sidebar.text_area("stuff", label_visibility="collapsed")

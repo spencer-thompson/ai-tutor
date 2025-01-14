@@ -1,3 +1,6 @@
 import streamlit as st
 
-st.title("hello world")
+with open("./page/about.md", "r") as f:
+    content = f.read()
+
+st.write(content)

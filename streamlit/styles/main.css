@@ -21,6 +21,12 @@ hr {
   visibility: hidden;
 }
 
+.stMetric {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 footer {
   visibility: hidden;
 }
@@ -40,6 +46,8 @@ footer {
 
 stElementContainer {
   justify-content: center;
+  /* margin-top: 0rem; */
+  /* margin-bottom: 2rem; */
 }
 
 /* fonts */
@@ -48,6 +56,8 @@ stChatInput,
 code,
 pre,
 /* .token, */
+[data-testid="stHeadingWithActionElements"] h1,
+.stMetric,
 h1,
 h2,
 h3,

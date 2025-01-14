@@ -9,18 +9,20 @@ THOUGHTS:
 """
 
 import json
+import logging
 import os
 import re
 from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from itertools import zip_longest
-from logging import info
+from logging.config import dictConfig
 from typing import List
 
 import jwt
 from ai import openai_iter_response
 from anthropic import AsyncAnthropic
+from config import LogConfig
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -47,6 +49,9 @@ SYSTEM_MESSAGE = [
 
 tools = []
 
+dictConfig(LogConfig().dict())
+logger = logging.getLogger("aitutor")
+
 
 # --- INIT ---
 @asynccontextmanager
@@ -68,7 +73,7 @@ async def db_lifespan(app: FastAPI):
         raise Exception("Problem connecting to database cluster.")
 
     else:
-        info("Connected to database cluster.")
+        logger.info("Connected to database cluster.")
 
     yield
 
@@ -132,7 +137,7 @@ async def get_user_from_token(token: str):
         id = int(id)  # fix updated pyjwt
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
         courses = (
@@ -155,18 +160,9 @@ async def get_user_from_token(token: str):
         merged_courses = [
             {**c, **a} if " ".join(c.get("name").split("-")[0:2]) == a.get("code") else c
             for c, a in zip_longest(courses[:], catalog_courses, fillvalue={})
-            # for a in catalog_courses
-            # if " ".join(c.get("name").split("-")[0:2]) == a.get("code")
         ]
 
-        user["courses"] = [
-            u | c
-            # u | m if m.get("id") == u.get("id") else u | c
-            for u in user["courses"]
-            for c in merged_courses
-            # for m in merged_courses
-            if u["id"] == c["id"]  # or " ".join(u.get("name").split("-")[0:2]) == m["code"]
-        ]
+        user["courses"] = [u | c for u in user["courses"] for c in merged_courses if u["id"] == c["id"]]
         return user
 
     except jwt.ExpiredSignatureError:
@@ -186,7 +182,7 @@ async def get_user_id_from_token(token: str):
         id = int(id)  # fix updated pyjwt
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         return id, uni
 
@@ -221,7 +217,7 @@ async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict
         id = payload.get("sub")
         uni = payload.get("uni")
         if id is None or uni is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         new_token = create_access_token(data={"sub": id, "uni": uni})
         return {"token": new_token}
@@ -230,7 +226,7 @@ async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=403, detail="Invalid token")
 
 
 @app.post("/token")
@@ -294,8 +290,11 @@ async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(
         course_dict["syllabus_body"] = app.patterns.clean_markdown.subn(r"\n\n", md(syllabus))[0]
 
     if course_dict.get("assignments"):
-        for assignment in course_dict["assignments"]:
-            assignment["description"] = app.patterns.clean_markdown.subn(r"\n\n", md(assignment["description"]))[0]
+        for assignment in course_dict.get("assignments"):
+            if assignment.get("description"):
+                assignment["description"] = app.patterns.clean_markdown.subn(
+                    r"\n\n", md(assignment.get("description"))
+                )[0]
 
     app.mongodb["courses"].update_one(
         {"id": course_dict["id"], "institution": course_dict["institution"]},
@@ -355,34 +354,31 @@ async def smart_chat_stream(
     """
     user = await get_user_from_token(token)
     messages = chat.messages
+    course_descriptions = []
+    for c in user["courses"]:
+        if c["id"] in chat.courses:
+            name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
+            role = f"(User is a {c.get("role")})" if c.get("role") else ""
+            desc = c.get("description") if c.get("description") else ""
 
-    fields = ["kind", "title", "message", "html_url", "score", "points_possible", "submission_comments"]
-    activity_context = [
-        {f: a.get(f)} for f in fields for a in user["activity_stream"] if a["course_id"] in chat.courses
-    ]
-    course_context = [
-        {
-            "name": " ".join(c.get("name").split("|")[0].split("-")[0:2]),
-            "role": c.get("role"),
-            "score": c.get("current_score"),
-        }
-        for c in user["courses"]
-        if c["id"] in chat.courses
-    ]
+            course_descriptions.append(f"{name} - {role}:\n{desc}")
 
-    context = (
-        [
-            {
-                "role": "user",
-                "content": f"""Canvas updates for {user.get("first_name")} at {user.get("institution")}: 
-                {json.dumps(activity_context)}, 
-                
-                Course Info:
-                {json.dumps(course_context)}""",
-            }
-        ]
-        if chat.courses and len(messages) == 1
-        else []
-    )
+        # descriptions +=
+    # descriptions = "\n\n".join(  # This filters for only selected courses
+    #     [
+    #         " ".join(c.get("name").split("|")[0].split("-")[0:2])
+    #         + f"(User is a {c.get("role")}):\n"
+    #         + c.get("description")
+    #         for c in user["courses"]
+    #         if c["id"] in chat.courses
+    #     ]
+    # )
+    descriptions = "\n\n".join(course_descriptions)
 
-    return StreamingResponse(openai_iter_response(messages, context), media_type="application/json")
+    activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
+    course_context = [c for c in user["courses"] if c["id"] in chat.courses]
+
+    context = {"activity_stream": activity_context, "courses": course_context}
+    # print(context)
+
+    return StreamingResponse(openai_iter_response(messages, descriptions, context), media_type="application/json")

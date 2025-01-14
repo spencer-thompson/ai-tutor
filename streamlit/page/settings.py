@@ -6,8 +6,22 @@ st.write("---")
 
 col1, col2 = st.columns(2)
 
-# with col1:
-#     st.session_state.user_settings["show_courses"] = st.toggle("Show Course Bubbles")
+
+st.subheader("First Message")
+
+# if first_message := st.session_state.user["settings"].get("first_message") is not None:
+#     st.session_state.user["settings"]["first_message"] = st.checkbox("Tutor", value=first_message )
+#
+# else:
+#     st.session_state.user["settings"]["first_message"] = st.checkbox("Tutor", value=True)
+st.session_state.user["settings"]["first_message"] = st.checkbox(
+    "Tutor",
+    value=st.session_state.user["settings"].get("first_message")
+    if st.session_state.user["settings"].get("first_message") is not None
+    else True,
+)
+
+st.subheader("Shown Courses")
 
 for course in st.session_state.user["courses"]:
     st.session_state.user["settings"].get("shown_courses")[str(course["id"])] = st.checkbox(
