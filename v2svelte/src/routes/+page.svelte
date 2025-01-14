@@ -64,17 +64,19 @@
 			class="decoration-black max-w-[220px] flex flex-col w-full leading-1.5"
 			on:submit={handleSubmit}
 		>
-			<textarea
-				class="resize-none rounded-lg text-sky-400 bg-black decoration-red p-2 h-auto max-h-[300px] overflow-y-auto"
-				{rows}
-				bind:this={textarea}
-				use:resize
-				on:resize={onResize}
-				placeholder="textarea"
-				style="--height: auto"
-				bind:value={$input}
-			/>
-			<button class="subButton" type="submit">Send</button>
+			<div class="fixed inset-x-0 bottom-10 flex justify-center">
+				<textarea
+					class="resize-none rounded-lg text-sky-400 bg-black decoration-red p-2 h-auto max-h-[300px] overflow-y-auto"
+					{rows}
+					bind:this={textarea}
+					use:resize
+					on:resize={onResize}
+					placeholder="textarea"
+					style="--height: auto"
+					bind:value={$input}
+				/>
+				<button class="subButton" type="submit">Send</button>
+			</div>
 		</form>
 	</div>
 	<!--<Chat />-->
