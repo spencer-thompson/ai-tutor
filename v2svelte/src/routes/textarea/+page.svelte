@@ -13,10 +13,6 @@
 	}
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
-	// This calculates the number of rows needed based on newline chars. (default is 1)
-
-	// $: console.log(value, rows);
-	// logs rows and values upon updating
 
 	enum Sender {
 		user,
@@ -40,20 +36,20 @@
 	}
 </script>
 
-<main class="flex flex-col-reverse">
-	<div class="inset-x-0 bottom-10 flex justify-center flex-col">
-		{#each messages as message}
-			<div class="flex items-start gap-2.5 place-self-center justify-center">
-				<div
-					class="flex flex-col w-full max-w-[220px] leading-1.5 p-1 px-3 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700"
-				>
-					<p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
-						{message.message}
-						{count}
-					</p>
+<main class="flex flex-col min-h-screen">
+	<div class="flex-1 flex flex-col-reverse mb-24">
+		<div class="w-full max-w-2xl mx-auto px-4">
+			{#each messages as message}
+				<div class="flex items-start gap-2.5 mb-4">
+					<div class={message.sender === Sender.user ? ' ml-auto' : 'mr-auto'}>
+						<p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
+							{message.message}
+							{count}
+						</p>
+					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	</div>
 
 	<div class="fixed inset-x-0 bottom-10 flex justify-center">
