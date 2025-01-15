@@ -4,7 +4,7 @@
 	let name = 'textarea',
 		textarea = null,
 		height = 120,
-		value = `value \nvalue 2 \nvalue 3`;
+		value = ``;
 
 	function onResize(e) {
 		// console.log(e);
@@ -38,11 +38,21 @@
 
 <main class="flex flex-col min-h-screen">
 	<div class="flex-1 flex flex-col-reverse mb-24">
-		<div class="w-full max-w-2xl mx-auto px-4">
+		<div class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div class="flex items-start gap-2.5 mb-4">
-					<div class={message.sender === Sender.user ? ' ml-auto' : 'mr-auto'}>
-						<p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
+					<div
+						class="
+                    max-w-[220px] p-3 rounded-lg {message.sender === Sender.user
+							? ' ml-auto bg-blue-600 rounded-br-none'
+							: ' mr-auto bg-gray-300 rounded-bl-none'}
+                            "
+					>
+						<p
+							class={message.sender === Sender.user
+								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
+								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
+						>
 							{message.message}
 							{count}
 						</p>
@@ -52,18 +62,21 @@
 		</div>
 	</div>
 
-	<div class="fixed inset-x-0 bottom-10 flex justify-center">
+	<div class="fixed gap-2 inset-x-0 bottom-10 flex justify-center">
 		<textarea
 			{rows}
 			bind:this={textarea}
 			use:resize
 			on:resize={onResize}
-			placeholder="textarea"
+			placeholder="Send message to AI Tutor..."
 			style="--height: auto"
 			bind:value
-			class="text-black rounded-lg"
+			class="flex-1 min-h-[44px] max-h-[200px] p-2 border rounded-lg resize-none text-black"
 		></textarea>
-		<button on:click={() => addMessage(Sender.ai, 'this is an AI message')}>Click Here</button>
+		<button
+			on:click={() => addMessage(Sender.user, 'this is an AI message')}
+			class="px-4 py-2 bg-blue-500 text-white rounded-lg">Click Here</button
+		>
 	</div>
 </main>
 
