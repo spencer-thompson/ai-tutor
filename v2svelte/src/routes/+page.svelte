@@ -1,93 +1,134 @@
-<!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
 <script lang="ts">
-	import Chat from '$lib/components/chat/Scheduler.svelte';
 	import { resize } from '$lib/components/textarea/resize';
-
-	import { useChat } from '@ai-sdk/svelte';
-
-	const { input, handleSubmit, messages } = useChat();
-	// let inputValue = '';
-	let rows = 1;
-
-	function adjustHeight(event) {
-		const textarea = event.target;
-		textarea.style.height = 'auto';
-		textarea.style.height = `{textarea.scrollheight}px`;
-	}
-
-	// function handleSubmit() {
-	// 	console.log('Message was submitted');
-	// }
-
 	let name = 'textarea',
-		textarea = null,
+		textarea = '',
 		height = 120,
-		inputValue = `value \nvalue 2 \nvalue 3`;
+		value = ``,
+		inputHeight = 0;
 
-	function onResize(e) {
-		// console.log(e);
-		textarea = e.target;
-		height = e.detail.CR.height;
+	function onResize(event) {
+		const { detail } = event;
+		if (detail.CR) {
+			// console.log(e);
+			inputHeight = detail.CR.height;
+			textarea = event.target;
+			height = event.detail.CR.height;
+		}
 	}
 
-	$: rows = (inputValue.match(/\n/g) || []).length + 1 || 1;
-	// This calculates the number of rows needed based on newline chars. (default is 1)
+	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
-	// $: console.log(value, rows);
-	// logs rows and values upon updating
+	enum Sender {
+		user,
+		ai
+	}
+
+	interface Message {
+		sender: Sender;
+		message: string;
+	}
+
+	let count: number[] = [0];
+	let i = 1;
+
+	let messages: Message[] = [{ sender: Sender.user, message: 'this is a message from the user!' }];
+
+	function addMessage(sender: Sender, text: string) {
+		messages = [...messages, { sender, message: text }];
+		count.push(i);
+		i += 1;
+		console.log(text);
+		setTimeout(() => {
+			window.scrollTo(0, document.body.scrollHeight);
+		}, 0);
+	}
+
+	//This is the next part I am working on:
+	async function sendMessage(sender: Sender, text: string) {
+		addMessage(Sender.user, value);
+		value = '';
+
+		const courses = [101, 202];
+
+		let requestBody = {
+			messages: messages,
+			courses: courses
+		};
+
+		const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
+			method: 'POST',
+			body: JSON.stringify({
+				userId: 1,
+				title: 'I guess stuff goes here',
+				completed: false
+			}),
+			headers: {
+				'Content-Type': 'application/json',
+				'AITUTOR-API-KEY': '${headerManager.apiKey}',
+				Authorization: 'Bearer ${headerManager.jwt}'
+			}
+		});
+		for await (const chunk of response.body) {
+			console.log(chunk);
+		}
+	}
+
+	//check out basic_chat_ui.dart in playground!!!
+	//Need to verify syntax, also, do I need the qr code?
 </script>
 
-<main class="flex flex-col h-screen">
-	<ul>
-		{#each $messages as message}
-			<li>
-				{message.role}:
-				{#if message.toolInvocations}
-					<pre>{JSON.stringify(message.toolInvocations, null, 2)}</pre>
-				{:else}
-					<div class="flex items-start gap-2.5">
-						<div
-							class="flex flex-col w-full max-w-[220px] leading-1.5 p-1 px-3 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700"
+<main class="flex flex-col min-h-screen">
+	<div class="flex-1 flex flex-col-reverse mb-24" style="margin-bottom: {inputHeight + 90}px">
+		<div class="w-full max-w-4xl mx-auto px-4">
+			{#each messages as message}
+				<div class="flex items-start gap-2.5 mb-4">
+					<div
+						class="
+                    max-w-[220px] p-3 rounded-lg {message.sender === Sender.user
+							? ' ml-auto bg-blue-600 rounded-br-none'
+							: ' mr-auto bg-gray-300 rounded-bl-none'}
+                            "
+					>
+						<p
+							class={message.sender === Sender.user
+								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
+								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							<p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
-								{message.content}
-							</p>
-						</div>
+							{message.message}
+							{count}
+						</p>
 					</div>
-				{/if}
-			</li>
-		{/each}
-	</ul>
-
-	<div class="flex items-start gap-2.5">
-		<form
-			class="decoration-black max-w-[220px] flex flex-col w-full leading-1.5"
-			on:submit={handleSubmit}
-		>
-			<div class="fixed inset-x-0 bottom-10 flex justify-center">
-				<textarea
-					class="resize-none rounded-lg text-sky-400 bg-black decoration-red p-2 h-auto max-h-[300px] overflow-y-auto"
-					{rows}
-					bind:this={textarea}
-					use:resize
-					on:resize={onResize}
-					placeholder="textarea"
-					style="--height: auto"
-					bind:value={$input}
-				/>
-				<button class="subButton" type="submit">Send</button>
-			</div>
-		</form>
+				</div>
+			{/each}
+		</div>
 	</div>
-	<!--<Chat />-->
+
+	<div class="fixed gap-2 inset-x-0 bottom-10 mx-4">
+		<div class="max-w-2xl mx-auto">
+			<div class="bg-gray-100 rounded-lg p-3 relative">
+				<div class="flex flex-col w-full pr-24">
+					<textarea
+						{rows}
+						bind:this={textarea}
+						use:resize
+						on:resize={onResize}
+						placeholder="Send message to AI Tutor..."
+						style="--height: auto"
+						bind:value
+						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
+					></textarea>
+					<button
+						on:click={() => sendMessage(Sender.user, textarea.value)}
+						class=" absolute bottom-3 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
+						>Click Here</button
+					>
+				</div>
+			</div>
+		</div>
+	</div>
 </main>
 
-<!--class="rounded-lg text-sky-400 bg-black decoration-red"-->
-
 <style>
-	span {
-		color: red;
-	}
 	textarea {
 		height: var(--height);
 		resize: none;
@@ -95,23 +136,5 @@
 		line-height: 1.5;
 		/* overflow: hidden; */
 		/* overflow-x: scroll; */
-	}
-
-	:global(body) {
-		background: #000;
-	}
-
-	main {
-		width: 500px;
-		margin: 50px auto;
-	}
-
-	.subButton {
-		color: white;
-	}
-
-	.customBox {
-		color: white;
-		background: blue;
 	}
 </style>
