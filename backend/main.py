@@ -36,6 +36,7 @@ BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
 CHAT_MODEL = os.getenv("CHAT_MODEL")
+DOMAIN = os.getenv("DOMAIN")
 SYSTEM_MESSAGE = [
     {
         "role": "system",
@@ -88,6 +89,8 @@ app.add_middleware(
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
+        "http://localhost:5173",
+        f"http://beta.{DOMAIN}",
         "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
