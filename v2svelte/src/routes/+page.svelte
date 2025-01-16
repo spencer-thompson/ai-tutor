@@ -48,29 +48,29 @@
 		if (text != '') addMessage(Sender.user, value);
 		value = '';
 
-		// const courses = [101, 202];
-		//
-		// let requestBody = {
-		// 	messages: messages,
-		// 	courses: courses
-		// };
-		//
-		// const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
-		// 	method: 'POST',
-		// 	body: JSON.stringify({
-		// 		userId: 1,
-		// 		title: 'I guess stuff goes here',
-		// 		completed: false
-		// 	}),
-		// 	headers: {
-		// 		'Content-Type': 'application/json',
-		// 		'AITUTOR-API-KEY': '${headerManager.apiKey}',
-		// 		Authorization: 'Bearer ${headerManager.jwt}'
-		// 	}
-		// });
-		// for await (const chunk of response.body) {
-		// 	console.log(chunk);
-		// }
+		const courses = [101, 202];
+
+		let requestBody = {
+			messages: messages,
+			courses: courses
+		};
+
+		const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
+			method: 'POST',
+			body: JSON.stringify({
+				userId: 1,
+				title: 'I guess stuff goes here',
+				completed: false
+			}),
+			headers: {
+				'Content-Type': 'application/json',
+				'AITUTOR-API-KEY': '${headerManager.apiKey}',
+				Authorization: 'Bearer ${headerManager.jwt}'
+			}
+		});
+		for await (const chunk of response.body) {
+			console.log(chunk);
+		}
 	}
 
 	//check out basic_chat_ui.dart in playground!!!
