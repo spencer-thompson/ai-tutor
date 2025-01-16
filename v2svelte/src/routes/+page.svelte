@@ -2,6 +2,10 @@
 	import { SendHorizontal } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
 	import { marked } from 'marked';
+	// import { jwt } from '$lib/stores/jwtStore';
+
+	// $: currentToken = $jwt;
+
 	let name = 'textarea',
 		textarea = '',
 		height = 120,
@@ -38,12 +42,12 @@
 	function addMessage(sender: Sender, text: string) {
 		messages = [...messages, { sender, message: text }];
 		console.log(text);
+		// console.log(currentCookie);
 		setTimeout(() => {
 			window.scrollTo(0, document.body.scrollHeight);
 		}, 0);
 	}
 
-	//This is the next part I am working on:
 	async function sendMessage(sender: Sender, text: string) {
 		if (text != '') addMessage(Sender.user, value);
 		value = '';
@@ -72,9 +76,6 @@
 			console.log(chunk);
 		}
 	}
-
-	//check out basic_chat_ui.dart in playground!!!
-	//Need to verify syntax, also, do I need the qr code?
 </script>
 
 <main class="flex flex-col min-h-screen">
