@@ -34,7 +34,7 @@ from openai import AsyncOpenAI
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
+CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 SYSTEM_MESSAGE = [
     {
@@ -358,7 +358,7 @@ async def smart_chat_stream(
     for c in user["courses"]:
         if c["id"] in chat.courses:
             name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
-            role = f"(User is a {c.get("role")})" if c.get("role") else ""
+            role = f"(User is a {c.get('role')})" if c.get("role") else ""
             desc = c.get("description") if c.get("description") else ""
 
             course_descriptions.append(f"{name} - {role}:\n{desc}")

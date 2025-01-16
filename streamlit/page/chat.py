@@ -108,7 +108,7 @@ if (
 render_messages()
 
 if user_input := st.chat_input("Send a message", key="current_user_message"):
-    if not st.session_state.has_sent_message:
+    if not st.session_state.has_sent_message and st.session_state.user["settings"].get("first_message"):
         st.session_state.messages.pop(0)
         st.session_state.has_sent_message = True
 
