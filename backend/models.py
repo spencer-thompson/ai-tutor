@@ -27,7 +27,7 @@ class Message(BaseModel):
 class Chat(BaseModel):
     messages: List[Message]
     courses: Optional[List[int]] = None
-    model: Literal["gpt-4o", "o1"]
+    model: Literal["gpt-4o", "gpt-4o-mini", "o1"]
 
 
 class Rubric(BaseModel):
@@ -70,6 +70,7 @@ class CanvasCourse(BaseModel):
 
 
 class Settings(BaseModel):
+    bio: Optional[str] = ""
     first_message: Optional[bool] = True
     show_courses: Optional[bool] = True
     shown_courses: Optional[Dict[str, bool]] = None

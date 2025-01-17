@@ -357,6 +357,7 @@ async def smart_chat_stream(
     """
     user = await get_user_from_token(token)
     messages = chat.messages
+    model = chat.model
     course_descriptions = []
     for c in user["courses"]:
         if c["id"] in chat.courses:
@@ -366,22 +367,14 @@ async def smart_chat_stream(
 
             course_descriptions.append(f"{name} - {role}:\n{desc}")
 
-        # descriptions +=
-    # descriptions = "\n\n".join(  # This filters for only selected courses
-    #     [
-    #         " ".join(c.get("name").split("|")[0].split("-")[0:2])
-    #         + f"(User is a {c.get("role")}):\n"
-    #         + c.get("description")
-    #         for c in user["courses"]
-    #         if c["id"] in chat.courses
-    #     ]
-    # )
     descriptions = "\n\n".join(course_descriptions)
 
     activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
     course_context = [c for c in user["courses"] if c["id"] in chat.courses]
+    user_context = {"bio": user["settings"].get("bio")}
 
-    context = {"activity_stream": activity_context, "courses": course_context}
-    # print(context)
+    context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 
-    return StreamingResponse(openai_iter_response(messages, descriptions, context), media_type="application/json")
+    return StreamingResponse(
+        openai_iter_response(messages, descriptions, context, model), media_type="application/json"
+    )

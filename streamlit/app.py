@@ -124,6 +124,7 @@ if "user" not in st.session_state:
         )
         if not st.session_state.user.get("settings"):
             st.session_state.user["settings"] = {
+                "bio": "",
                 "first_message": True,
                 "show_courses": True,
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
@@ -248,6 +249,7 @@ account_pages = [
 ]
 user_pages = [
     st.Page("./page/chat.py", title="Chat", icon=":material/chat:", default=True),
+    st.Page("./page/tips.py", title="Tips and Tricks", icon=":material/lightbulb_2:"),
 ]
 info_pages = (
     [

@@ -51,6 +51,10 @@ stElementContainer {
 }
 
 /* fonts */
+[data-testid="stChatMessageAvatarAssistant"] {
+  display: flex;
+  align-items: center;
+}
 
 stChatInput,
 code,

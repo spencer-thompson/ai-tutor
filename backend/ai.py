@@ -25,11 +25,14 @@ dictConfig(LogConfig().dict())
 logger = logging.getLogger("aitutor")
 
 
-def system_message(descriptions: str = ""):
+def system_message(bio: str = "", descriptions: str = ""):
     """
     Includes the current date and time
     """
-    addition = f"## Courses\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
+    added_bio = f'## Customization\n"{bio}"\n- From the user' if bio else ""
+    added_descriptions = (
+        f"## Courses\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
+    )
     return [
         {
             "role": "developer",
@@ -39,11 +42,14 @@ def system_message(descriptions: str = ""):
     You are an AI Tutor for Utah Valley University with a bright and excited attitude and tone.
     Respond in a concise and effictive manner. Format your response in github flavored markdown.
 
-    f"{addition}"
+    {added_descriptions}
+
+    {added_bio}
 
     ## Current Date and Time
 
-    * {datetime.now(tz=timezone(timedelta(hours=-7))).strftime('%H:%M on %A, %Y-%m-%d')}
+    * {datetime.now(tz=timezone(timedelta(hours=-7))).strftime("%H:%M on %A, %Y-%m-%d")}
+
     """,
         }
     ]
@@ -177,7 +183,8 @@ assignments = {
         "type": "function",
         "function": {
             "name": "assignments",
-            "description": "If the user asks about upcoming assignments, use liberally.",
+            "description": """If the user asks about upcoming assignments, use liberally.
+            This only returns assignments 1 week from today. """,
         },
     },
 }
@@ -244,7 +251,8 @@ tools = {
 }
 
 
-async def openai_iter_response(messages, descriptions, context):
+async def openai_iter_response(messages, descriptions, context, model: str = "gpt-4o"):
+    logger.info(f"Using Model: {model}")
     mod = await moderate(messages)
 
     if mod.flagged:
@@ -259,6 +267,8 @@ async def openai_iter_response(messages, descriptions, context):
     else:
         tools = [read_webpage, updates, assignments]
 
+    bio = context["user"].get("bio")
+
     tools = {
         tool.get("name"): {
             "tool": tool.get("tool"),
@@ -269,7 +279,7 @@ async def openai_iter_response(messages, descriptions, context):
     }
 
     response = await openai.chat.completions.create(
-        messages=system_message(descriptions) + messages,
+        messages=system_message(bio, descriptions) + messages,
         model=CHAT_MODEL,
         # tools=[t.get("tool") for t in tools.values()] if len(context["courses"]) > 0 else None,
         tools=[t.get("tool") for t in tools.values()],
@@ -322,7 +332,7 @@ async def openai_iter_response(messages, descriptions, context):
             else:
                 function_args = {}
 
-            logger.info(f"Tool Call: {tc["function"]["name"]}")
+            logger.info(f"Tool Call: {tc['function']['name']}")
 
             if tools[function_name]["local"]:
                 function_response = await tools[function_name]["func"](context, **function_args)
@@ -339,7 +349,7 @@ async def openai_iter_response(messages, descriptions, context):
             )
 
             response = await openai.chat.completions.create(
-                messages=system_message(descriptions) + messages,
+                messages=system_message(bio, descriptions) + messages,
                 # tools=tools if tool else None,
                 # tools=[t.get("tool") for t in tools.values()],
                 model=CHAT_MODEL,
