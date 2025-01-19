@@ -34,8 +34,9 @@ from openai import AsyncOpenAI
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-CONNECTION_STRING = f'mongodb://{os.getenv("MONGO_USERNAME")}:{os.getenv("MONGO_PASSWORD")}@mongo/?authSource=admin'
+CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
 CHAT_MODEL = os.getenv("CHAT_MODEL")
+DOMAIN = os.getenv("DOMAIN")
 SYSTEM_MESSAGE = [
     {
         "role": "system",
@@ -88,6 +89,8 @@ app.add_middleware(
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
+        "http://localhost:5173",
+        f"http://beta.{DOMAIN}",
         "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
@@ -354,31 +357,24 @@ async def smart_chat_stream(
     """
     user = await get_user_from_token(token)
     messages = chat.messages
+    model = chat.model
     course_descriptions = []
     for c in user["courses"]:
         if c["id"] in chat.courses:
             name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
-            role = f"(User is a {c.get("role")})" if c.get("role") else ""
+            role = f"(User is a {c.get('role')})" if c.get("role") else ""
             desc = c.get("description") if c.get("description") else ""
 
             course_descriptions.append(f"{name} - {role}:\n{desc}")
 
-        # descriptions +=
-    # descriptions = "\n\n".join(  # This filters for only selected courses
-    #     [
-    #         " ".join(c.get("name").split("|")[0].split("-")[0:2])
-    #         + f"(User is a {c.get("role")}):\n"
-    #         + c.get("description")
-    #         for c in user["courses"]
-    #         if c["id"] in chat.courses
-    #     ]
-    # )
     descriptions = "\n\n".join(course_descriptions)
 
     activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
     course_context = [c for c in user["courses"] if c["id"] in chat.courses]
+    user_context = {"bio": user["settings"].get("bio")}
 
-    context = {"activity_stream": activity_context, "courses": course_context}
-    # print(context)
+    context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 
-    return StreamingResponse(openai_iter_response(messages, descriptions, context), media_type="application/json")
+    return StreamingResponse(
+        openai_iter_response(messages, descriptions, context, model), media_type="application/json"
+    )

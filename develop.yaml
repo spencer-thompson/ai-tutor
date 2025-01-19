@@ -128,8 +128,38 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.streamlit.entrypoints=web
-      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`) # && !PathPrefix(`/ntfy`)
       - traefik.http.services.streamlit.loadbalancer.server.port=8501
+
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: ntfy
+    restart: unless-stopped
+    command:
+      - serve
+    environment:
+      - TZ=UTC
+      - NTFY_BEHIND_PROXY=true
+    volumes:
+      - /var/cache/ntfy:/var/cache/ntfy
+      - /etc/ntfy:/etc/ntfy
+    healthcheck: # optional: remember to adapt the host:port to your environment
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --tries=1 http://${DOMAIN}/ntfy/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1",
+        ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ntfy.entrypoints=web
+      - traefik.http.routers.ntfy.rule=Host(`ntfy.${DOMAIN}`) # && PathPrefix(`/ntfy`))
+      # - traefik.http.services.ntfy.loadbalancer.server.port=8501
+    networks:
+      - web
 
 networks:
   web:

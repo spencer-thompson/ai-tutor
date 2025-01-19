@@ -1,0 +1,50 @@
+# include:
+#   - path: ./svelte/compose.yaml
+#     project_directory: .
+
+services:
+  svelte:
+    build:
+      context: ./svelte/
+      dockerfile: Dockerfile
+    command: pnpm run dev --host 0.0.0.0
+    develop:
+      watch:
+        - action: sync
+          path: ./svelte/
+          target: /app
+          ignore:
+            - node_modules/
+    # environment:
+    depends_on:
+      - traefik
+    ports:
+      - "5173:5173" # remove for deployment
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.svelte.entrypoints=web
+      - traefik.http.routers.svelte.rule=Host(`beta.${DOMAIN}`)
+      # - traefik.http.services.backend.loadbalancer.server.port=8080
+
+  traefik:
+    image: traefik:latest
+    restart: unless-stopped
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8000:8000"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  web:
+    external: false

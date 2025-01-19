@@ -3,7 +3,7 @@ from typing import Literal
 import streamlit as st
 
 
-def runner(courses, model: Literal["gpt-4o", "o1"] = "gpt-4o"):
+def runner(courses, model: Literal["gpt-4o", "gpt-4o-mini", "o1"] = "gpt-4o"):
     data = {"messages": st.session_state.messages, "courses": [c["id"] for c in courses], "model": model}
     completion = ""
     for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", data):
@@ -42,7 +42,6 @@ if "chat_changed" not in st.session_state:
 
 def clear_messages():
     st.session_state.messages = []
-    st.rerun()
 
 
 def think():
@@ -51,10 +50,6 @@ def think():
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-
-# if st.sidebar.button("New Chat", use_container_width=True):
-#     clear_messages()
 
 
 st.title("AI Tutor :sparkles:")
@@ -91,12 +86,14 @@ if (
             "content": f"""
             Greet {st.session_state.user["first_name"]}, the user, and give a brief introduction
             about what you can do and who you are. Use markdown formatting but do not wrap in backticks.
+            Include that you are **created by students for students**.
+            Lastly invite the user to see the `Settings` and `Tips and Tricks` page.
             """,
             "name": "instructions",
         },
     )
     with st.chat_message("assistant"):
-        st.write_stream(runner(selected_courses))
+        st.write_stream(runner(selected_courses, model="gpt-4o-mini"))
 
     st.session_state.messages.pop(0)
 
@@ -108,7 +105,7 @@ if (
 render_messages()
 
 if user_input := st.chat_input("Send a message", key="current_user_message"):
-    if not st.session_state.has_sent_message:
+    if not st.session_state.has_sent_message and st.session_state.user["settings"].get("first_message"):
         st.session_state.messages.pop(0)
         st.session_state.has_sent_message = True
 
@@ -151,14 +148,11 @@ if len(st.session_state.messages) > 1:
         label_visibility="collapsed",
     )
 
-    # st.toast(st.session_state.chat_control)
-
-    # for f in st.session_state.chat_control:
     if func := st.session_state.chat_control.get("func"):
         func()
         st.session_state.chat_changed = False
         # st.session_state.chat_control = []
-        # st.rerun()
+        st.rerun()
 
     # if st.feedback() is False:
     #     st.write("test")
