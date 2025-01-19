@@ -2,15 +2,22 @@
 	import { SendHorizontal } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
 	import { marked } from 'marked';
-	// import { jwt } from '$lib/stores/jwtStore';
+	import { jwt } from '$lib/stores/jwtStore';
+	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 
-	// $: currentToken = $jwt;
+	export let data;
+
+	$: if (data.token) {
+		$jwt = data.token;
+	}
 
 	let name = 'textarea',
 		textarea = '',
 		height = 120,
 		value = ``,
 		inputHeight = 0;
+
+	let chatContainer;
 
 	function onResize(event) {
 		const { detail } = event;
@@ -35,21 +42,25 @@
 	}
 
 	let messages: Message[] = [
-		{ sender: Sender.user, message: 'this is a message from the user!' },
-		{ sender: Sender.ai, message: marked.parse('# Marked in **the** *brower*') }
+		// { sender: Sender.user, message: 'this is a message from the user!' },
+		// { sender: Sender.ai, message: marked.parse('# Marked in **the** *brower*') }
 	];
 
 	function addMessage(sender: Sender, text: string) {
 		messages = [...messages, { sender, message: text }];
 		console.log(text);
-		// console.log(currentCookie);
+
+		console.log($jwt);
+
 		setTimeout(() => {
 			window.scrollTo(0, document.body.scrollHeight);
 		}, 0);
 	}
 
 	async function sendMessage(sender: Sender, text: string) {
-		if (text != '') addMessage(Sender.user, value);
+		if (text.trim() != '') addMessage(Sender.user, value);
+		console.log(height);
+		console.log(inputHeight);
 		value = '';
 
 		const courses = [101, 202];
@@ -78,12 +89,14 @@
 	}
 </script>
 
-<main class="flex flex-col min-h-screen">
-	<div class="flex-1 flex flex-col-reverse mb-24" style="margin-bottom: {inputHeight + 90}px">
-		<div class="w-full max-w-4xl mx-auto px-4">
+<!--style="margin-bottom: {120}px-->
+<main class="flex flex-col min-h-screen overflow-y-auto">
+	<div class="flex-1 flex flex-col-reverse" style="margin-bottom: {height + 90}px">
+		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
-				<div class="flex items-start gap-2.5 mb-4">
+				<div transition:slide class="flex items-start gap-2.5 mb-4">
 					<div
+						transition:scale
 						class="
                     max-w-[220px] py-1 px-3 rounded-lg {message.sender === Sender.user
 							? ' ml-auto bg-blue-600 rounded-br-none'
@@ -102,6 +115,7 @@
 			{/each}
 		</div>
 	</div>
+	<div class="bottom-48"></div>
 
 	<div class="fixed gap-2 inset-x-0 bottom-10 mx-4">
 		<div class="max-w-2xl mx-auto">
@@ -134,7 +148,9 @@
 		resize: none;
 		padding: 1rem;
 		line-height: 1.5;
-		/* overflow: hidden; */
+		will-change: height;
+		transition: rows 250ms ease;
+		overflow: hidden;
 		/* overflow-x: scroll; */
 	}
 </style>
