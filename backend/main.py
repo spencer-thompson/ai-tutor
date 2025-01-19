@@ -365,7 +365,7 @@ async def smart_chat_stream(
             role = f"(User is a {c.get('role')})" if c.get("role") else ""
             desc = c.get("description") if c.get("description") else ""
 
-            course_descriptions.append(f"{name} - {role}:\n{desc}")
+            course_descriptions.append(f"### {name} - [{role}]:\n* {desc}")
 
     descriptions = "\n\n".join(course_descriptions)
 

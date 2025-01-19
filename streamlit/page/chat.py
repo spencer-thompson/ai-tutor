@@ -1,19 +1,48 @@
+import logging
+import re
 from typing import Literal
 
 import streamlit as st
 
+PATTERNS = [  # patterns for converting latex to markdown math
+    {"rgx": re.compile(r"\\\s*?\(|\\\s*?\)", re.DOTALL), "new": r"$"},
+    {"rgx": re.compile(r"\\\s*?\[|\\\s*?\]", re.DOTALL), "new": r"$$"},
+]
+
 
 def runner(courses, model: Literal["gpt-4o", "gpt-4o-mini", "o1"] = "gpt-4o"):
+    """
+    Helper function for the tutor, yields token as they are received
+    """
     data = {"messages": st.session_state.messages, "courses": [c["id"] for c in courses], "model": model}
     completion = ""
+    previous_tokens = []
+    sliding_window_limit = 3  # set sliding window size
     for chunk in st.session_state.backend.post_stream("v1/smart_chat_stream", data):
-        if c := chunk.get("content"):
-            yield c
-            completion += c
+        if token := chunk.get("content"):
+            previous_tokens.append(token)
+            window_size = len(previous_tokens) if len(previous_tokens) <= sliding_window_limit else sliding_window_limit
+            sliding_window = "".join(previous_tokens[-window_size:])
 
-        elif c := chunk.get("flagged"):
+            for pat in PATTERNS:
+                if match := pat["rgx"].search(sliding_window):
+                    # logging.warning(match.string)
+                    previous_tokens = [sliding_window[: match.start()], pat["new"], sliding_window[match.end() :]]
+                    # logging.warning(previous_tokens)
+
+            if len(previous_tokens) >= sliding_window_limit:
+                popped_token = previous_tokens.pop(0)  # lol an actual stack in the wild
+                completion += popped_token
+                yield popped_token
+
+        elif token := chunk.get("flagged"):
             yield "Hey thats not cool bro"
             completion = "Hey thats not cool bro"
+
+    if previous_tokens:  # flush out rest of sliding window
+        for token in previous_tokens:
+            completion += token
+            yield token
 
     st.session_state.messages.append({"role": "assistant", "content": completion})
 
@@ -36,20 +65,50 @@ def render_messages():
 if "chat_control" not in st.session_state:
     st.session_state.chat_control = {}
 
-if "chat_changed" not in st.session_state:
-    st.session_state.chat_changed = False
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 
 def clear_messages():
     st.session_state.messages = []
+    st.rerun()
+
+
+def respond_again():
+    st.session_state.messages.pop()
+    st.write("---")
+    with st.chat_message("assistant"):
+        st.write_stream(runner(selected_courses))
 
 
 def think():
-    pass
+    st.session_state.messages.pop()
+    render_messages()
+    with st.chat_message("assistant"):
+        st.write_stream(runner(selected_courses, model="o1"))
 
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+def chat_control_buttons():
+    if len(st.session_state.messages) > 0:
+        if not st.session_state.chat_control:
+            st.segmented_control(
+                "Control",
+                [
+                    {"display": "New Chat", "func": clear_messages},
+                    {"display": "Again", "func": respond_again},
+                    # {"display": "Think about it", "func": think},
+                ],
+                key="chat_control",
+                default=None,
+                format_func=lambda o: o["display"],
+                # selection_mode="",
+                label_visibility="collapsed",
+            )
+
+        if st.session_state.chat_control:
+            if func := st.session_state.chat_control.get("func"):
+                func()
 
 
 st.title("AI Tutor :sparkles:")
@@ -96,19 +155,16 @@ if (
         st.write_stream(runner(selected_courses, model="gpt-4o-mini"))
 
     st.session_state.messages.pop(0)
+    st.session_state.has_sent_message = True
+    st.session_state.messages.pop(0)
 
-    st.rerun()
-    # render_messages()
-    # clear_messages()
+else:
+    render_messages()
 
 
-render_messages()
+chat_control_buttons()
 
 if user_input := st.chat_input("Send a message", key="current_user_message"):
-    if not st.session_state.has_sent_message and st.session_state.user["settings"].get("first_message"):
-        st.session_state.messages.pop(0)
-        st.session_state.has_sent_message = True
-
     st.chat_message("user").markdown(user_input)
     st.session_state.messages.append(
         {"role": "user", "content": user_input, "name": st.session_state.user["first_name"]},
@@ -118,45 +174,3 @@ if user_input := st.chat_input("Send a message", key="current_user_message"):
 
     with st.chat_message("assistant"):
         st.write_stream(runner(selected_courses))
-
-    st.rerun()
-
-
-def respond_again():
-    st.session_state.messages.pop()
-    with st.chat_message("assistant"):
-        st.write_stream(runner(selected_courses))
-
-
-def chat_changed():
-    st.session_state.chat_changed = True
-
-
-# if len(st.session_state.messages) > 1 and not st.session_state.chat_control or st.session_state.chat_changed:
-if len(st.session_state.messages) > 1:
-    st.segmented_control(
-        "Control",
-        [
-            {"display": "New Chat", "func": clear_messages},
-            # {"display": "Again", "func": respond_again},
-        ],  # , {"display": "Think about it", "func": think}
-        key="chat_control",
-        on_change=chat_changed,
-        default=None,
-        format_func=lambda o: o["display"],
-        # selection_mode="",
-        label_visibility="collapsed",
-    )
-
-    if func := st.session_state.chat_control.get("func"):
-        func()
-        st.session_state.chat_changed = False
-        # st.session_state.chat_control = []
-        st.rerun()
-
-    # if st.feedback() is False:
-    #     st.write("test")
-
-
-# if st.session_state.messages:
-#     st.feedback(options="stars")  # TODO: Hook up

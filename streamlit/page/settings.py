@@ -6,6 +6,9 @@ st.write("---")
 
 col1, col2 = st.columns(2)
 
+st.subheader("Customization")
+st.caption("* Add info about yourself, or instructions for how you would like the tutor to respond.")
+
 st.session_state.user["settings"]["bio"] = st.text_area(
     "bio",
     value=st.session_state.user["settings"].get("bio") if st.session_state.user["settings"].get("bio") else "",
