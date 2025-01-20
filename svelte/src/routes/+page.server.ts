@@ -11,10 +11,9 @@ export function load({ cookies }) {
     if (token) {
         jwt.set(token);
         
-        jwt.subscribe(value => {
-            console.log('JWT value:', value);
-        })();
-        console.log('JWT value:', jwt.value);
+        // jwt.subscribe(value => {
+        //     console.log('JWT value:', value);
+        // })();
     }
 
     return {

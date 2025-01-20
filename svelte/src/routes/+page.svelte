@@ -31,56 +31,58 @@
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
-	enum Sender {
+	enum Role {
 		user,
 		ai
 	}
 
 	interface Message {
-		sender: Sender;
-		message: string;
+		role: Role;
+		content: string;
+		name: string;
 	}
 
 	let messages: Message[] = [
-		// { sender: Sender.user, message: 'this is a message from the user!' },
-		// { sender: Sender.ai, message: marked.parse('# Marked in **the** *brower*') }
+		// { sender: role.user, message: 'this is a message from the user!' },
+		// { sender: role.ai, message: marked.parse('# Marked in **the** *brower*') }
 	];
 
-	function addMessage(sender: Sender, text: string) {
-		messages = [...messages, { sender, message: text }];
+	function addMessage(role: Role, text: string) {
+		messages = [...messages, { role, content: text, name: 'Guts' }];
 		console.log(text);
 
-		console.log($jwt);
+		console.log(import.meta.env.VITE_API_KEY);
 
 		setTimeout(() => {
 			window.scrollTo(0, document.body.scrollHeight);
 		}, 0);
 	}
 
-	async function sendMessage(sender: Sender, text: string) {
-		if (text.trim() != '') addMessage(Sender.user, value);
+	async function sendMessage(role: Role, text: string) {
+		if (text.trim() != '') addMessage(role, value);
 		console.log(height);
 		console.log(inputHeight);
+		// console.log($jwt);
+		console.log(`${$jwt}`);
 		value = '';
 
 		const courses = [101, 202];
 
-		let requestBody = {
-			messages: messages,
-			courses: courses
-		};
+		// let requestBody = {
+		// 	messages: messages,
+		// 	courses: courses
+		// };
 
 		const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
 			method: 'POST',
 			body: JSON.stringify({
-				userId: 1,
-				title: 'I guess stuff goes here',
-				completed: false
+				messages: messages,
+				courses: courses
 			}),
 			headers: {
 				'Content-Type': 'application/json',
-				'AITUTOR-API-KEY': '${headerManager.apiKey}',
-				Authorization: 'Bearer ${headerManager.jwt}'
+				'AITUTOR-API-KEY': `${import.meta.env.VITE_API_KEY}`,
+				Authorization: `Bearer ${$jwt}`
 			}
 		});
 		for await (const chunk of response.body) {
@@ -98,17 +100,17 @@
 					<div
 						transition:scale
 						class="
-                    max-w-[220px] py-1 px-3 rounded-lg {message.sender === Sender.user
+                    max-w-[220px] py-1 px-3 rounded-lg {message.role === Role.user
 							? ' ml-auto bg-blue-600 rounded-br-none'
 							: ' mr-auto bg-gray-300 rounded-bl-none'}
                             "
 					>
 						<p
-							class={message.sender === Sender.user
+							class={message.role === Role.user
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{@html message.message}
+							{@html message.content}
 						</p>
 					</div>
 				</div>
@@ -132,7 +134,7 @@
 						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
 					></textarea>
 					<button
-						on:click={() => sendMessage(Sender.user, textarea.value)}
+						on:click={() => sendMessage(Role.user, textarea.value)}
 						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
 						><SendHorizontal size="24" /></button
 					>
