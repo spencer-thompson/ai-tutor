@@ -130,6 +130,8 @@ if "user" not in st.session_state:
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
             }
 
+            st.session_state.backend.post("user_settings", st.session_state.user["settings"])
+
         st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True
     except requests.exceptions.HTTPError as e:
