@@ -31,16 +31,16 @@ you can simply select only those courses.
 
 Currently, the tutor has access to all upcoming assignments :primary[within one week], and any recent *activities*.
 
-*Activiites* are essentially updates like:
+*Activities* are essentially updates like:
 
 * Recent graded items :rainbow[with submission comments]
 * Announcements
 * Messages
 * Discussions
 
-... Pretty much anything that you would find from canvas anyway
+... Pretty much anything that you would find from canvas anyway.
 
-* :grey[Currently the tutor cannot tell which assignments have been completed or not. I am working to fix this.]
+The tutor now :green[only returns assignments that have not been graded.]
 
 ### Webpages
 

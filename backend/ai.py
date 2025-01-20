@@ -29,9 +29,9 @@ def system_message(bio: str = "", descriptions: str = ""):
     """
     Includes the current date and time
     """
-    added_bio = f'## Customization\n"{bio}"\n- From the user' if bio else ""
+    added_bio = f'## Customization\n\n"{bio}"\n- From the user' if bio else ""
     added_descriptions = (
-        f"## Courses\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
+        f"## Courses\n\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
     )
     return [
         {
@@ -107,9 +107,12 @@ read_webpage = {
 
 async def get_activity_stream(context, activities):
     matches = []
+    date_format = "%Y-%m-%dT%H:%M:%SZ"
     for activity in context.get("activity_stream"):
         if activity["kind"] in activities:
             matches.append(activity)
+
+    matches.sort(key=lambda date: datetime.strptime(date["updated_at"], date_format), reverse=True)
 
     return json.dumps(matches)
 
@@ -149,30 +152,43 @@ updates = {
 
 
 async def get_assignments(context):
-    all_assignments = []
+    """
+    Filters for upcoming_assignments assignments, and sorts by due date
+    """
+    date_format = "%H:%M on %A, %Y-%m-%d"
+    upcoming_assignments = []
+    completed_assignments = [
+        a.get("assignment_id") for a in context.get("activity_stream") if a.get("score") is not None
+    ]
+
     for course in context.get("courses"):
-        all_assignments.append(
+        upcoming_assignments.append(
             [
                 {
                     "name": a.get("name"),
                     "description": a.get("description"),
                     "due_at": (datetime.strptime(a.get("due_at"), "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=-7)).strftime(
-                        "%H:%M on %A, %Y-%m-%d"
+                        date_format
                     ),
                     "updated_at": (
                         datetime.strptime(a.get("updated_at"), "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=-7)
-                    ).strftime("%H:%M on %A, %Y-%m-%d"),
+                    ).strftime(date_format),
                     "points_possible": a.get("points_possible"),
                     "url": a.get("html_url"),
                     "submission_types": a.get("submission_types"),
                 }
                 for a in course.get("assignments")
+                if a.get("id") not in completed_assignments
             ]
         )
-        # for assignment in course.get("assignments"):
-        # all_assignments.append({})
 
-    return json.dumps(all_assignments)
+    upcoming_assignments = [
+        assignment for course_assignments in upcoming_assignments for assignment in course_assignments
+    ]
+
+    upcoming_assignments.sort(key=lambda date: datetime.strptime(date["due_at"], date_format), reverse=True)
+
+    return json.dumps(upcoming_assignments)
 
 
 assignments = {
@@ -184,7 +200,7 @@ assignments = {
         "function": {
             "name": "assignments",
             "description": """If the user asks about upcoming assignments, use liberally.
-            This only returns assignments 1 week from today. """,
+            This only returns not yet completed assignments 1 week from today. """,
         },
     },
 }
@@ -278,17 +294,29 @@ async def openai_iter_response(messages, descriptions, context, model: str = "gp
         for tool in tools
     }
 
-    response = await openai.chat.completions.create(
-        messages=system_message(bio, descriptions) + messages,
-        model=CHAT_MODEL,
-        # tools=[t.get("tool") for t in tools.values()] if len(context["courses"]) > 0 else None,
-        tools=[t.get("tool") for t in tools.values()],
-        tool_choice="auto",
-        logprobs=True,
-        stream=True,
-        temperature=0.7,
-        top_p=0.9,
-        # stream_options={"include_usage": True}, # currently errors out
+    response = (
+        await openai.chat.completions.create(
+            messages=system_message(bio, descriptions) + messages,
+            model=model,
+            # tools=[t.get("tool") for t in tools.values()] if len(context["courses"]) > 0 else None,
+            tools=[t.get("tool") for t in tools.values()],
+            tool_choice="auto",
+            # logprobs=True,
+            stream=True,
+            temperature=0.7,  # if model != "o1" else False,
+            top_p=0.9,  # if model != "o1" else False,
+            # stream_options={"include_usage": True}, # currently errors out
+        )
+        # if model != "o1"
+        # else await openai.chat.completions.create(
+        #     messages=system_message(bio, descriptions) + messages,
+        #     model=model,
+        #     # tools=[t.get("tool") for t in tools.values()] if len(context["courses"]) > 0 else None,
+        #     tools=[t.get("tool") for t in tools.values()],
+        #     tool_choice="auto",
+        #     # logprobs=True,
+        #     # stream=True,
+        # )
     )
 
     completion = ""
