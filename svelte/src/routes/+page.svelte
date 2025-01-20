@@ -5,11 +5,11 @@
 	import { jwt } from '$lib/stores/jwtStore';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 
-	export let data;
-
-	$: if (data.token) {
-		$jwt = data.token;
-	}
+	// export let data;
+	//
+	// $: if (data.token) {
+	// 	$jwt = data.token;
+	// }
 
 	let name = 'textarea',
 		textarea = '',
@@ -18,6 +18,7 @@
 		inputHeight = 0;
 
 	let chatContainer;
+	let isLoading = false;
 
 	function onResize(event) {
 		const { detail } = event;
@@ -31,13 +32,8 @@
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
-	enum Role {
-		user,
-		ai
-	}
-
 	interface Message {
-		role: Role;
+		role: string;
 		content: string;
 		name: string;
 	}
@@ -47,49 +43,78 @@
 		// { sender: role.ai, message: marked.parse('# Marked in **the** *brower*') }
 	];
 
-	function addMessage(role: Role, text: string) {
-		messages = [...messages, { role, content: text, name: 'Guts' }];
+	let currentStreamingMessage = '';
+
+	function addMessage(role: string, text: string) {
+		messages = [...messages, { role, content: text, name: 'user' }];
 		console.log(text);
 
-		console.log(import.meta.env.VITE_API_KEY);
+		// console.log(import.meta.env.VITE_API_KEY);
 
 		setTimeout(() => {
 			window.scrollTo(0, document.body.scrollHeight);
 		}, 0);
 	}
 
-	async function sendMessage(role: Role, text: string) {
+	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, value);
+
 		console.log(height);
 		console.log(inputHeight);
 		// console.log($jwt);
-		console.log(`${$jwt}`);
+		// console.log(`${$jwt}`);
 		value = '';
+		isLoading = true;
+
+		currentStreamingMessage = '';
+		messages = [...messages, { role: 'assistant', content: '', name: 'assistant' }];
 
 		const courses = [101, 202];
 
-		// let requestBody = {
-		// 	messages: messages,
-		// 	courses: courses
-		// };
+		try {
+			const response = await fetch('/api/chat', {
+				method: 'POST',
+				body: JSON.stringify({
+					// messages: messages,
+					messages: messages.slice(0, -1),
+					courses: courses
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			const reader = response.body?.getReader();
+			const decoder = new TextDecoder();
 
-		const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
-			method: 'POST',
-			body: JSON.stringify({
-				messages: messages,
-				courses: courses
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-				'AITUTOR-API-KEY': `${import.meta.env.VITE_API_KEY}`,
-				Authorization: `Bearer ${$jwt}`
+			while (true) {
+				const { done, value } = await reader!.read();
+				if (done) break;
+
+				const chunk = decoder.decode(value);
+				currentStreamingMessage += chunk;
+
+				messages = messages.map((msg, index) => {
+					if (index === messages.length - 1) {
+						return { ...msg, content: currentStreamingMessage };
+					}
+					return msg;
+				});
 			}
-		});
-		for await (const chunk of response.body) {
-			console.log(chunk);
+		} catch (error) {
+			console.error('Error:', error);
+			messages = messages.map((msg, index) => {
+				if (index === messages.length - 1) {
+					return { ...msg, content: 'Sorry, there waa an error processing your request.' };
+				}
+				return msg;
+			});
+		} finally {
+			isLoading = false;
 		}
 	}
 </script>
+
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3NDQxMDkxLCJpYXQiOjE3MzczNTQ2OTF9.16z4uMY_eg5t0S7ihPvodklYzBTB-IVnquT08FhqHzo; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/"; -->
 
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen overflow-y-auto">
@@ -100,13 +125,13 @@
 					<div
 						transition:scale
 						class="
-                    max-w-[220px] py-1 px-3 rounded-lg {message.role === Role.user
+                    max-w-[220px] py-1 px-3 rounded-lg {message.role === 'user'
 							? ' ml-auto bg-blue-600 rounded-br-none'
 							: ' mr-auto bg-gray-300 rounded-bl-none'}
                             "
 					>
 						<p
-							class={message.role === Role.user
+							class={message.role === 'user'
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
@@ -134,7 +159,7 @@
 						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
 					></textarea>
 					<button
-						on:click={() => sendMessage(Role.user, textarea.value)}
+						on:click={() => sendMessage('user', textarea.value)}
 						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
 						><SendHorizontal size="24" /></button
 					>

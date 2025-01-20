@@ -22,3 +22,6 @@ export function load({ cookies }) {
         // jwt: jwt === 'true'
     };
 }
+
+
+
