@@ -39,7 +39,9 @@ st.caption("* Show only selected courses in the chat interface.")
 
 for course in st.session_state.user["courses"]:
     st.session_state.user["settings"].get("shown_courses")[str(course["id"])] = st.checkbox(
-        " ".join(course["name"].split("|")[0].split("-")[0:2]),
+        " ".join(course.get("course_code").split(" ")[0:2])
+        if course.get("course_code")
+        else " ".join(course["name"].split("|")[0].split("-")[0:2]),
         value=st.session_state.user["settings"].get("shown_courses").get(str(course["id"])),
         key=f"{str(course['id'])}_settings",
     )

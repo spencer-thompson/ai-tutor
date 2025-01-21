@@ -25,9 +25,13 @@ class Message(BaseModel):
 
 
 class Chat(BaseModel):
+    """
+    Format for any Smart Chat endpoints
+    """
+
     messages: List[Message]
     courses: Optional[List[int]] = None
-    model: Literal["gpt-4o", "gpt-4o-mini", "o1"]
+    model: Optional[Literal["gpt-4o", "gpt-4o-mini", "o1"]] = "gpt-4o"
 
 
 class Rubric(BaseModel):
@@ -53,6 +57,7 @@ class Assignment(BaseModel):
 class Course(BaseModel):
     id: int
     name: str
+    course_code: Optional[str] = None
     role: str
     institution: str
     current_score: Optional[float] = None
@@ -64,6 +69,7 @@ class Course(BaseModel):
 class CanvasCourse(BaseModel):
     id: int
     name: str
+    course_code: Optional[str] = None
     institution: str
     syllabus_body: Optional[str] = None
     assignments: Optional[List[Assignment]] = None
@@ -79,6 +85,7 @@ class Settings(BaseModel):
 class UserCourse(BaseModel):
     id: int
     name: str
+    course_code: Optional[str] = None
     role: str
     institution: str
     current_score: Optional[float] = None
@@ -121,6 +128,29 @@ class Activity(BaseModel):
     submission_comments: Optional[List[SubmissionComment]] = None
 
 
+class PlannerItem(BaseModel):
+    """
+    Almost One to One map of the Canvas LMS Planner API.
+    Some values are flattened for simplicity.
+    https://canvas.instructure.com/doc/api/planner.html
+    """
+
+    canvas_id: Optional[int] = None
+    context_type: str
+    created_at: str
+    updated_at: str
+    excused: Optional[bool] = None
+    graded: Optional[bool] = None
+    has_feedback: Optional[bool] = None
+    late: Optional[bool] = None
+    missing: Optional[bool] = None
+    needs_grading: Optional[bool] = None
+    submitted: Optional[bool] = None
+    plannable_date: str
+    plannable_type: str
+    title: str
+
+
 class CanvasData(BaseModel):
     institution: str
     canvas_id: int
@@ -129,4 +159,5 @@ class CanvasData(BaseModel):
     avatar_url: str
     courses: List[Course]
     activity_stream: List[Activity]
+    planner: Optional[List[PlannerItem]] = None
     # effective_local: str

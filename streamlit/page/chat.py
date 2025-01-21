@@ -130,7 +130,9 @@ selected_courses = st.pills(
     ],
     selection_mode="multi",
     on_change=clear_messages,
-    format_func=lambda c: " ".join(c["name"].split("|")[0].split("-")[0:2]),
+    format_func=lambda c: " ".join(c.get("course_code").split(" ")[0:2])
+    if c.get("course_code")
+    else " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
 )
 
