@@ -154,14 +154,25 @@ async def get_user_from_token(token: str):
             .find(
                 {
                     "institution": uni,
-                    "code": {"$in": [" ".join(c.get("name").split("-")[0:2]) for c in courses]},
+                    # "code": {"$in": [" ".join(c.get("name").split("-")[0:2]) for c in courses]},
+                    "code": {
+                        "$in": [
+                            " ".join(c.get("course_code").split(" ")[0:2])
+                            if c.get("course_code")
+                            else " ".join(c.get("name").split("-")[0:2])
+                            for c in courses
+                        ]
+                    },
                 }
             )
             .to_list(None)
         )
 
         merged_courses = [
-            {**c, **a} if " ".join(c.get("name").split("-")[0:2]) == a.get("code") else c
+            {**c, **a}
+            if (" ".join(c.get("course_code")) if c.get("course_code") else " ".join(c.get("name").split("-")[0:2]))
+            == a.get("code")
+            else c
             for c, a in zip_longest(courses[:], catalog_courses, fillvalue={})
         ]
 
@@ -213,7 +224,7 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
 async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
     """
     Returns a valid JSON Web Token.
-    Uses the current token to generate, or refresh, a new one.
+    Uses the current token to generate or refresh, a new token.
     """
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
@@ -261,7 +272,13 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
 
     app.mongodb["users"].update_one(
         {"canvas_id": user_dict["canvas_id"], "institution": user_dict["institution"]},
-        {"$set": user_dict, "$setOnInsert": {"role": "normal"}},
+        {
+            "$set": user_dict,
+            "$setOnInsert": {
+                "role": "normal",
+                "settings": {"bio": "", "first_message": True, "show_courses": True},
+            },
+        },
         upsert=True,
     )
 
@@ -361,7 +378,11 @@ async def smart_chat_stream(
     course_descriptions = []
     for c in user["courses"]:
         if c["id"] in chat.courses:
-            name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
+            if c.get("course_code"):
+                name = " ".join(c.get("course_code").split(" ")[0:2])
+            else:
+                name = " ".join(c.get("name").split("|")[0].split("-")[0:2]) if c.get("name") else ""
+
             role = f"(User is a {c.get('role')})" if c.get("role") else ""
             desc = c.get("description") if c.get("description") else ""
 

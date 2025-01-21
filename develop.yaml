@@ -73,8 +73,8 @@ services:
     #   mongoimport -d aitutor -c keys --file /tmp/keys.json --drop;
     #   mongosh --file /tmp/mongo-dev-init.js;
     #   "
-    # ports:
-    #   - "27017:27017"
+    ports:
+      - "27017:27017"
     networks:
       - web
     volumes:

@@ -16,9 +16,7 @@ async function getData(url) {
 
 async function getContext() {
   let user_data = await getData(`${domain}/api/v1/users/self`);
-  // let courses_data = await getData(
-  //   `${domain}/api/v1/users/self/courses?enrollment_state=active`,
-  // );
+
   let activity_stream = await getData(
     `${domain}/api/v1/users/self/activity_stream?only_active_courses=true`,
   );
@@ -28,19 +26,16 @@ async function getContext() {
   );
 
   let weekAgo = new Date(new Date() - 604800000);
-  let plannerAssignments = await getData(
-    `${domain}/api/v1/planner/items?start_date=${weekAgo.toISOString()}&per_page=75`,
+  let planner = await getData(
+    `${domain}/api/v1/planner/items?start_date=${weekAgo.toISOString()}&per_page=100`,
   );
 
-  console.log("Planner:\n");
-  console.log(plannerAssignments);
+  console.log("Courses Data:\n", courses_data);
 
-  console.log("Courses Data:\n");
-  console.log(courses_data);
-
-  let ccd = courses_data.map(({ id, name, syllabus_body }) => ({
+  let ccd = courses_data.map(({ id, name, course_code, syllabus_body }) => ({
     id,
     name,
+    course_code,
     ...(syllabus_body !== null && { syllabus_body }),
   }));
 
@@ -90,16 +85,52 @@ async function getContext() {
     console.log(ccd[i]);
   }
 
+  console.log("Planner:\n", planner);
+
+  let cleaned_planner_data = planner.map(
+    ({
+      context_type,
+      course_id,
+      html_url,
+      plannable,
+      plannable_date,
+      plannable_type,
+      submissions,
+    }) => ({
+      canvas_id: user_data.id,
+      context_type: context_type,
+      course_id: course_id,
+      html_url: html_url,
+      title: plannable.title,
+      created_at: plannable.created_at,
+      updated_at: plannable.updated_at,
+      plannable_date: plannable_date,
+      plannable_type: plannable_type,
+      ...(submissions !== false && {
+        excused: submissions.excused,
+        graded: submissions.graded,
+        has_feedback: submissions.has_feedback,
+        late: submissions.late,
+        missing: submissions.missing,
+        needs_grading: submissions.needs_grading,
+        submitted: submissions.submitted,
+      }),
+    }),
+  );
+
+  console.log("Cleaned Planner:\n", cleaned_planner_data);
+
   let cleaned_user_data = {
     institution: institution,
     canvas_id: user_data.id,
     first_name: user_data.first_name,
     last_name: user_data.last_name,
     avatar_url: user_data.avatar_url,
-    courses: courses_data.map(({ id, name, enrollments }) => ({
+    courses: courses_data.map(({ id, name, course_code, enrollments }) => ({
       institution: institution,
       id,
       name,
+      course_code,
       role: enrollments[0].type,
       ...(enrollments[0].computed_current_score != null && {
         current_score: enrollments[0].computed_current_score,
@@ -108,6 +139,7 @@ async function getContext() {
       //   points_possible: enrollments[0].points_possible,
       // }),
     })),
+    planner: cleaned_planner_data,
     activity_stream: activity_stream.map(
       ({
         id,
@@ -152,7 +184,8 @@ async function getContext() {
       }),
     ),
   };
-  // console.log(cleaned_user_data);
+
+  console.log("Cleaned User Data:\n", cleaned_user_data);
 }
 
 getContext();
