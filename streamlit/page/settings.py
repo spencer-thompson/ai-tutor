@@ -41,6 +41,7 @@ for course in st.session_state.user["courses"]:
     st.session_state.user["settings"].get("shown_courses")[str(course["id"])] = st.checkbox(
         " ".join(course["name"].split("|")[0].split("-")[0:2]),
         value=st.session_state.user["settings"].get("shown_courses").get(str(course["id"])),
+        key=f"{str(course['id'])}_settings",
     )
 
 st.session_state.backend.post("user_settings", st.session_state.user["settings"])
