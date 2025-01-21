@@ -58,7 +58,25 @@
 	}
 
 	async function sendMessage(role: string, text: string) {
-		if (text.trim() != '') addMessage(role, value);
+		if (text.trim() != '') addMessage(role, text);
+
+		try {
+			const response = await fetch('/plzwork', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json' // Ensure correct header capitalization
+				},
+				body: JSON.stringify({
+					textareaContent: text // Use the actual text value
+				})
+			});
+
+			const result = await response.text(); // Parse the server response
+			messages = [...messages, { role: 'assistant', content: result, name: 'ai' }]; // Parse the server response
+			console.log('Response from server:', result);
+		} catch (error) {
+			console.error('Error sending message:', error);
+		}
 
 		console.log(height);
 		console.log(inputHeight);
