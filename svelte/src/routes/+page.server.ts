@@ -11,6 +11,7 @@ export const actions: Actions = {
         console.log(cookies.get('token'));
         console.log(API_KEY);
         console.log(content);
+        console.log(data.get('textareaContent'));
         const payload = {
             messages: [
                 {
@@ -22,7 +23,7 @@ export const actions: Actions = {
             courses: [101, 202], 
             model: "gpt-4o"
         };
-        console.log(JSON.stringify(payload));
+        // console.log(JSON.stringify(payload));
         // console.log(payload);
 
         try {
@@ -37,49 +38,32 @@ export const actions: Actions = {
                 body: JSON.stringify(payload)
             });
 
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
 
-            console.log(response.body);
-    //
-    //         if (!response.ok) {
-    //             const errorText = await response.text();
-    //             console.error("Error from API:", {
-    //                 status: response.status,
-    //                 statusText: response.statusText,
-    //                 body: errorText
-    //             });
-    //             return {
-    //                 success: false,
-    //                 error: `API Error: ${response.status} ${response.statusText}`
-    //             };
-    //         }
-    //
-    //         // Handle the streaming response
-    //         const reader = response.body?.getReader();
-    //         if (!reader) {
-    //             throw new Error('No readable stream available');
-    //         }
-    //
-    //         // Return a readable stream that can be consumed by the client
-    //         return {
-    //             success: true,
-    //             stream: new ReadableStream({
-    //                 async start(controller) {
-    //                     try {
-    //                         while (true) {
-    //                             const { done, value } = await reader.read();
-    //                             if (done) {
-    //                                 controller.close();
-    //                                 break;
-    //                             }
-    //                             controller.enqueue(value);
-    //                         }
-    //                     } catch (error) {
-    //                         controller.error(error);
-    //                     }
-    //                 }
-    //             })
-    //         };
-        } catch (error) {
+
+            let result = '';
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) break;
+                console.log(decoder.decode(value, {stream: true }));
+                result += decoder.decode(value, { stream: true });
+            }
+            console.log('Stream contents:', result);
+
+
+
+            //
+            // return new Response(response.body, {
+            //     headers: {
+            //         'content-Type': 'text/event-stream',
+            //         'Cache-Control': 'no-cache',
+            //         'Connection': 'keep-alive'
+            //     }
+            // });
+
+            } catch (error) {
             console.error("Error during API call:", error);
             return {
                 success: false,
@@ -89,6 +73,8 @@ export const actions: Actions = {
     }
 }
 
+
+            
 
 
 // export async function POST({ request }) {

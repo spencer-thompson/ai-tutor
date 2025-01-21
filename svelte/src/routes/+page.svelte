@@ -4,7 +4,7 @@
 	import { marked } from 'marked';
 	import { jwt } from '$lib/stores/jwtStore';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
-	import { enhance } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 
 	// export let data;
 	//
@@ -66,53 +66,6 @@
 		// console.log(`${$jwt}`);
 		value = '';
 		isLoading = true;
-
-		//
-		// currentStreamingMessage = '';
-		// messages = [...messages, { role: 'assistant', content: '', name: 'assistant' }];
-		//
-		// const courses = [101, 202];
-		//
-		// try {
-		// 	const response = await fetch('/', {
-		// 		method: 'POST',
-		// 		body: JSON.stringify({
-		// 			// messages: messages,
-		// 			messages: messages.slice(0, -1),
-		// 			courses: courses
-		// 		}),
-		// 		headers: {
-		// 			'Content-Type': 'application/json'
-		// 		}
-		// 	});
-		// 	const reader = response.body?.getReader();
-		// 	const decoder = new TextDecoder();
-		//
-		// 	while (true) {
-		// 		const { done, value } = await reader!.read();
-		// 		if (done) break;
-		//
-		// 		const chunk = decoder.decode(value);
-		// 		currentStreamingMessage += chunk;
-		//
-		// 		messages = messages.map((msg, index) => {
-		// 			if (index === messages.length - 1) {
-		// 				return { ...msg, content: currentStreamingMessage };
-		// 			}
-		// 			return msg;
-		// 		});
-		// 	}
-		// } catch (error) {
-		// 	console.error('Error:', error);
-		// 	messages = messages.map((msg, index) => {
-		// 		if (index === messages.length - 1) {
-		// 			return { ...msg, content: 'Sorry, there waa an error processing your request.' };
-		// 		}
-		// 		return msg;
-		// 	});
-		// } finally {
-		// 	isLoading = false;
-		// }
 	}
 </script>
 
@@ -150,7 +103,16 @@
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-gray-100 rounded-3xl py-3 relative">
 				<div class="flex flex-col w-full pr-24">
-					<form method="POST" action="?/send" use:enhance>
+					<form
+						method="POST"
+						action="?/send"
+						use:enhance={() => {
+							sendMessage('user', value);
+							return async ({ update }) => {
+								await update();
+							};
+						}}
+					>
 						<textarea
 							{rows}
 							name="textareaContent"
@@ -163,8 +125,6 @@
 							class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
 						></textarea>
 						<button
-							type="submit"
-							on:click={() => sendMessage('user', textarea.value)}
 							class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
 							><SendHorizontal size="24" /></button
 						>
@@ -175,7 +135,61 @@
 	</div>
 </main>
 
-<!--on:click={() => sendMessage('user', textarea.value)}-->
+<!--on:submit={() => sendMessage('user', value)}-->
+
+<!--
+		currentStreamingMessage = '';
+		messages = [...messages, { role: 'assistant', content: '', name: 'assistant' }];
+
+		const courses = [101, 202];
+
+		try {
+			const response = await fetch('/', {
+				method: 'POST',
+				body: JSON.stringify({
+					// messages: messages,
+					messages: messages.slice(0, -1),
+					courses: courses
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			const reader = response.body?.getReader();
+			const decoder = new TextDecoder();
+
+			while (true) {
+				const { done, value } = await reader!.read();
+				if (done) break;
+
+				const chunk = decoder.decode(value);
+				currentStreamingMessage += chunk;
+
+				messages = messages.map((msg, index) => {
+					if (index === messages.length - 1) {
+						return { ...msg, content: currentStreamingMessage };
+					}
+					return msg;
+				});
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			messages = messages.map((msg, index) => {
+				if (index === messages.length - 1) {
+					return { ...msg, content: 'Sorry, there waa an error processing your request.' };
+				}
+				return msg;
+			});
+		} finally {
+			isLoading = false;
+		}
+-->
+
+<!--on:submit={(event) => {
+	event.preventDefault();
+	sendMessage('user', value);
+	event.currentTarget.submit();
+}}-->
 
 <style>
 	textarea {
