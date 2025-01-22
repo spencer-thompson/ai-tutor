@@ -36,21 +36,49 @@ export const actions: Actions = {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
+            }).then((response) => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                return new ReadableStream({
+                    start(controller) {
+                        return pump();
+                        function pump() {
+                            return reader.read().then(({done, value }) => {
+                                const json = JSON.parse(decoder.decode(value));
+                                console.log(json.content);
+                                if (done) {
+                                    controller.close();
+                                    return;
+                                }
+                                controller.enqueue(value);
+                                return pump();
+                            });
+                        }
+                    },
+                });
             });
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+
+            // const decoder = new TextDecoder();
+
+            // for await (const chunk of response.body) {
+            //     console.log(chunk);
+                // console.log(chunk.toBase64({ omitPadding: true}));
 
 
-            let result = '';
-            while (true) {
-                const { done, value } = await reader.read();
-
-                if (done) break;
-                console.log(decoder.decode(value, {stream: true }));
-                result += decoder.decode(value, { stream: true });
-            }
-            console.log('Stream contents:', result);
+            // const reader = response.body.getReader();
+            // const decoder = new TextDecoder();
+            //
+            //
+            // let result = '';
+            // while (true) {
+            //     const { done, value } = await reader.read();
+            //
+            //     if (done) break;
+            //     console.log(decoder.decode(value, {stream: true }));
+            //     result += decoder.decode(value, { stream: true });
+            // }
+            // console.log('Stream contents:', result);
 
 
 

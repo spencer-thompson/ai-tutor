@@ -2,4 +2,8 @@ check out: https://flowbite.com/docs/components/chat-bubble/
 
 for ideas on avatar and menu options on the chat bubble
 
+xh post https://api.aitutor.live/token AITUTOR-API-KEY:eegFwcddXYhl67NALN_fP8iXKbB_4tSqrnABEoAhVMQ sub=10810570 uni=uvu
 
+"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3NjIzMzEzLCJpYXQiOjE3Mzc1MzY5MTN9.7E646uDZZfn-aVKwto5BeBBlx9PhjvKMHuu0KTOxQn0"
+
+document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3NjIzMzEzLCJpYXQiOjE3Mzc1MzY5MTN9.7E646uDZZfn-aVKwto5BeBBlx9PhjvKMHuu0KTOxQn0; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/";
