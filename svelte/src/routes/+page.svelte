@@ -90,6 +90,9 @@
 					if (match) {
 						for (let i = 0; i < match.length; i++) {
 							buffer += match[i];
+							if (messages.length > 0) {
+								messages[messages.length - 1].content = buffer;
+							}
 						}
 					}
 
