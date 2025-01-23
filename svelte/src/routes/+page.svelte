@@ -4,8 +4,20 @@
 	import { marked } from 'marked';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { enhance, applyAction } from '$app/forms';
+	import { onMount } from 'svelte';
 
 	export let data;
+
+	const scrollToBottom = (node) => {
+		const scroll = () =>
+			node.scroll({
+				top: node.scrollHeight,
+				behavior: 'smooth'
+			});
+		scroll();
+
+		return { update: scroll };
+	};
 
 	let name = 'textarea',
 		textarea = '',
@@ -113,6 +125,9 @@
 
 	function addMessage(role: string, text: string) {
 		messages = [...messages, { role, content: text, name: 'user' }];
+		readData();
+
+		messages = [...messages, { role: 'assistant', content: '', name: 'ai' }];
 		console.log(text);
 
 		// console.log(import.meta.env.VITE_API_KEY);
@@ -124,9 +139,7 @@
 
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
-		readData();
 
-		messages = [...messages, { role: 'assistant', content: '', name: 'ai' }];
 		console.log(height);
 		console.log(inputHeight);
 		console.log(data.token);
@@ -140,15 +153,18 @@
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3NDQxMDkxLCJpYXQiOjE3MzczNTQ2OTF9.16z4uMY_eg5t0S7ihPvodklYzBTB-IVnquT08FhqHzo; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/"; -->
 
 <!--style="margin-bottom: {120}px-->
-<main class="flex flex-col min-h-screen overflow-y-auto">
-	<div class="flex-1 flex flex-col-reverse" style="margin-bottom: {height + 90}px">
-		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
+<main class="flex flex-col min-h-screen">
+	{@html marked(
+		`${'H1\n## This is an H2\n### This is an H3\n```\n\n## Emphasis\n\n- *Italics* can be added with either asterisks or underscores: `*italics*` or `_italics_`\n- **Bold**'}`
+	)}
+	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
+		<div use:scrollToBottom transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
 					<div
 						transition:scale
 						class="
-                    max-w-[220px] py-1 px-3 rounded-lg {message.role === 'user'
+                    max-w-[620px] py-1 px-3 rounded-lg {message.role === 'user'
 							? ' ml-auto bg-blue-600 rounded-br-none'
 							: ' mr-auto bg-gray-300 rounded-bl-none'}
                             "
