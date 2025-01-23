@@ -1,5 +1,32 @@
+// import { jwt } from '$lib/stores/jwtStore';
+import { API_KEY } from  '$env/static/private';
 import type { Actions } from './$types';
 import { API_KEY } from  '$env/static/private';
+
+
+export function load({ cookies }) {
+    const token = cookies.get('token');
+    const apiKey = API_KEY;
+    
+    // if (token) {
+    //     jwt.set(token);
+    //     api.set(String(API_KEY));
+    //
+    //     jwt.subscribe(value => {
+    //         console.log('JWT value:', value);
+    //     })();
+    //
+    //     api.subscribe(value => {
+    //         console.log('API KEY value:', value);
+    //     })();
+    //
+    // }
+
+    return {
+        token,
+        apiKey 
+    };
+}
 
 export const actions: Actions = {
     send: async ({ cookies, request }) => {
@@ -57,8 +84,7 @@ export const actions: Actions = {
                     },
                 });
             });
-
-
+        
             // const decoder = new TextDecoder();
 
             // for await (const chunk of response.body) {
@@ -140,26 +166,6 @@ export const actions: Actions = {
 //     }
 // }
 
-
-
-// import { jwt } from '$lib/stores/jwtStore';
-//
-// export function load({ cookies }) {
-//     const token = cookies.get('token');
-//
-//     if (token) {
-//         jwt.set(token);
-//
-//         jwt.subscribe(value => {
-//             console.log('JWT value:', value);
-//         })();
-//     }
-//
-//     return {
-//         authenticated: !!token,
-//         token
-//     };
-// }
 
 
 

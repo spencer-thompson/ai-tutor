@@ -2,15 +2,10 @@
 	import { SendHorizontal } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
 	import { marked } from 'marked';
-	import { jwt } from '$lib/stores/jwtStore';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { enhance, applyAction } from '$app/forms';
 
-	// export let data;
-	//
-	// $: if (data.token) {
-	// 	$jwt = data.token;
-	// }
+	export let data;
 
 	let name = 'textarea',
 		textarea = '',
@@ -44,7 +39,73 @@
 		// { sender: role.ai, message: marked.parse('# Marked in **the** *brower*') }
 	];
 
-	let currentStreamingMessage = '';
+	let buffer = '';
+
+	async function readData() {
+		console.log('calling');
+		const payload = {
+			messages: [
+				{
+					name: 'Joshua',
+					role: 'user',
+					content: value
+				}
+			],
+			courses: [101, 202],
+			model: 'gpt-4o'
+		};
+
+		try {
+			const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'AITUTOR-API-KEY': data.apiKey,
+					Authorization: `Bearer ${data.token}`
+				},
+				body: JSON.stringify(payload)
+			});
+
+			console.log(response.status);
+			console.log(response.body);
+
+			const decoder = new TextDecoder();
+
+			if (response.body) {
+				const reader = response.body.getReader();
+				const processChunk = async () => {
+					const { done, value } = await reader.read();
+
+					if (done) {
+						console.log('Streaming complete');
+						return;
+					}
+
+					const decodedChunk = decoder.decode(value, { stream: true });
+					// { role: 'assistant', content: `${buffer}`, name: 'ai' }
+					const regex = /(?<="content":\s?")([^"]+)/g;
+
+					const match = decodedChunk.match(regex);
+
+					if (match) {
+						for (let i = 0; i < match.length; i++) {
+							buffer += match[i];
+						}
+					}
+
+					console.log(decodedChunk);
+					console.log(match);
+
+					await processChunk();
+				};
+
+				await processChunk();
+			}
+		} catch (error) {
+			console.error('Streaming error:', error);
+		}
+		console.log(buffer);
+	}
 
 	function addMessage(role: string, text: string) {
 		messages = [...messages, { role, content: text, name: 'user' }];
@@ -59,29 +120,15 @@
 
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
+		readData();
 
-		try {
-			const response = await fetch('/plzwork', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json' // Ensure correct header capitalization
-				},
-				body: JSON.stringify({
-					textareaContent: text // Use the actual text value
-				})
-			});
-
-			const result = await response.text(); // Parse the server response
-			messages = [...messages, { role: 'assistant', content: result, name: 'ai' }]; // Parse the server response
-			console.log('Response from server:', result);
-		} catch (error) {
-			console.error('Error sending message:', error);
-		}
-
+		messages = [...messages, { role: 'assistant', content: `${buffer}`, name: 'ai' }];
+		buffer = '';
 		console.log(height);
 		console.log(inputHeight);
-		// console.log($jwt);
-		// console.log(`${$jwt}`);
+		console.log(data.token);
+		console.log(data.apiKey);
+
 		value = '';
 		isLoading = true;
 	}
@@ -121,7 +168,7 @@
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-gray-100 rounded-3xl py-3 relative">
 				<div class="flex flex-col w-full pr-24">
-					<form
+					<!--<form
 						method="POST"
 						action="?/send"
 						use:enhance={() => {
@@ -131,22 +178,25 @@
 							};
 						}}
 					>
-						<textarea
-							{rows}
-							name="textareaContent"
-							bind:this={textarea}
-							use:resize
-							on:resize={onResize}
-							placeholder="Send message to AI Tutor..."
-							style="--height: auto"
-							bind:value
-							class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
-						></textarea>
-						<button
-							class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
-							><SendHorizontal size="24" /></button
-						>
-					</form>
+					</form>-->
+					<textarea
+						{rows}
+						name="textareaContent"
+						bind:this={textarea}
+						use:resize
+						on:resize={onResize}
+						placeholder="Send message to AI Tutor..."
+						style="--height: auto"
+						bind:value
+						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
+					></textarea>
+					<button
+						on:click={() => {
+							sendMessage('user', value);
+						}}
+						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
+						><SendHorizontal size="24" /></button
+					>
 				</div>
 			</div>
 		</div>
