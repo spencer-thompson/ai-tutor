@@ -56,6 +56,7 @@
 		};
 
 		try {
+			buffer = '';
 			const response = await fetch('https://api.aitutor.live/v1/smart_chat_stream', {
 				method: 'POST',
 				headers: {
@@ -125,8 +126,7 @@
 		if (text.trim() != '') addMessage(role, text);
 		readData();
 
-		messages = [...messages, { role: 'assistant', content: `${buffer}`, name: 'ai' }];
-		buffer = '';
+		messages = [...messages, { role: 'assistant', content: '', name: 'ai' }];
 		console.log(height);
 		console.log(inputHeight);
 		console.log(data.token);
