@@ -39,8 +39,16 @@
 			height = event.detail.CR.height;
 		}
 	}
-	528;
-	864;
+
+	onMount(() => {
+		const handleScroll = () => {
+			console.log('Scroll event fired!');
+			setTimeout(() => {
+				console.log('Waiting on scroll events...');
+			}, 1000);
+		};
+		window.addEventListener('scroll', handleScroll);
+	});
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
@@ -59,12 +67,14 @@
 
 	function scrolldown() {
 		console.log(y);
-		// console.log(window.innerHeight);
-		// console.log(document.documentElement.clientHeight);
-		setTimeout(function () {
-			window.scrollTo(0, document.body.scrollHeight);
-			scrolldown();
-		}, 2000);
+		console.log(window.innerHeight);
+		console.log(document.body.scrollHeight);
+		if (document.body.scrollHeight - (window.innerHeight + y) < 200) {
+			setTimeout(function () {
+				window.scrollTo(0, document.body.scrollHeight);
+				scrolldown();
+			}, 500);
+		}
 	}
 
 	async function readData() {
