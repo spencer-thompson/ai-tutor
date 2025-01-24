@@ -1,0 +1,29 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      svelte-viewport-info:
+        specifier: ^1.0.3
+        version: 1.0.3
+
+packages:
+
+  svelte-viewport-info@1.0.3:
+    resolution: {integrity: sha512-Q+WxtmmxA7WpCxdHW8rpRofNOXNpb7mBXeiErHfqa0oSwBfmYew9+bGfIlQ1xonqBG/CzvSPL1TpU+Zr9Yjspg==}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+snapshots:
+
+  svelte-viewport-info@1.0.3:
+    dependencies:
+      tslib: 2.8.1
+
+  tslib@2.8.1: {}
