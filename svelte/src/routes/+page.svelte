@@ -8,6 +8,11 @@
 	// import DOMPurify from 'dompurify';
 	export let data;
 
+	marked.setOptions({
+		breaks: true,
+		gfm: true
+	});
+
 	let y: number;
 
 	let name = 'textarea',
@@ -46,10 +51,6 @@
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
 	function scrolldown() {
-		console.log(y);
-		console.log(window.innerHeight);
-		console.log(document.body.scrollHeight);
-
 		if (document.body.scrollHeight - (window.innerHeight + y) < 30) {
 			setTimeout(function () {
 				window.scrollTo(0, document.body.scrollHeight);
@@ -142,12 +143,6 @@
 		if (text.trim() != '') addMessage(role, text);
 
 		scrolldown();
-
-		console.log(height);
-		console.log(inputHeight);
-		console.log(data.token);
-		console.log(data.apiKey);
-
 		value = '';
 		isLoading = true;
 	}
@@ -157,6 +152,13 @@
 
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
+	{@html marked.parse(
+		"Absolutely! Here's a basic example of Markdown to get you started:\n\nmarkdown\n# Heading 1\n\n## Heading 2\n\n### Heading 3\n\n**Bold Text**\n\n*Italic Text*\n\n- Bullet Point 1\n- Bullet Point 2\n - Nested Bullet Point\n\n1. Numbered List Item 1\n2. Numbered List Item 2\n\n[Link to UVU](https://www.uvu.edu)\n\n![Image Alt Text](https://www.uvu.edu/logo.png)\n\n> Blockquote\n\n`Inline code`\n\n\nCode block\n\n\n\nFeel free to ask if you have any more questions or need further assistance! \ud83d\ude0a"
+	)}
+	<pre>The quick brown fox jumps over the lazy dog.</pre>
+	Press<kbd>⌘ + C</kbd> to copy.
+	<del><s>Always</s> Gonna Give You Up</del>
+	<ins cite="https://youtu.be/dQw4w9WgXcQ" datetime="10-31-2022"> Never Gonna Give You Up </ins>
 	{@html marked(
 		`${`Marked - Markdown Parser
 ========================
@@ -196,7 +198,7 @@ Ready to start writing?  Either start changing stuff on the left or
 [Markdown]: http://daringfireball.net/projects/markdown/`}`
 	)}
 	{@html marked(
-		`${"Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a"}`
+		`${"\ud83d\ude04 Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a"}`
 	)}
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
@@ -215,7 +217,8 @@ Ready to start writing?  Either start changing stuff on the left or
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{@html marked.parse(message.content)}
+							<!--{@html marked.parse(message.content.replace(/\\n/g, '\n'))}-->
+							{@html message.content}
 						</p>
 					</div>
 				</div>
@@ -264,62 +267,6 @@ Ready to start writing?  Either start changing stuff on the left or
 </main>
 
 <svelte:window bind:scrollY={y} />
-
-<!--on:submit={() => sendMessage('user', value)}-->
-
-<!--
-		currentStreamingMessage = '';
-		messages = [...messages, { role: 'assistant', content: '', name: 'assistant' }];
-
-		const courses = [101, 202];
-
-		try {
-			const response = await fetch('/', {
-				method: 'POST',
-				body: JSON.stringify({
-					// messages: messages,
-					messages: messages.slice(0, -1),
-					courses: courses
-				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			const reader = response.body?.getReader();
-			const decoder = new TextDecoder();
-
-			while (true) {
-				const { done, value } = await reader!.read();
-				if (done) break;
-
-				const chunk = decoder.decode(value);
-				currentStreamingMessage += chunk;
-
-				messages = messages.map((msg, index) => {
-					if (index === messages.length - 1) {
-						return { ...msg, content: currentStreamingMessage };
-					}
-					return msg;
-				});
-			}
-		} catch (error) {
-			console.error('Error:', error);
-			messages = messages.map((msg, index) => {
-				if (index === messages.length - 1) {
-					return { ...msg, content: 'Sorry, there waa an error processing your request.' };
-				}
-				return msg;
-			});
-		} finally {
-			isLoading = false;
-		}
--->
-
-<!--on:submit={(event) => {
-	event.preventDefault();
-	sendMessage('user', value);
-	event.currentTarget.submit();
-}}-->
 
 <style>
 	textarea {
