@@ -3,21 +3,10 @@
 	import { resize } from '$lib/components/textarea/resize';
 	import { marked } from 'marked';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
-	import { enhance, applyAction } from '$app/forms';
-	import { onMount } from 'svelte';
-	import DOMPurify from 'dompurify';
+	// import { enhance, applyAction } from '$app/forms';
+	// import { onMount } from 'svelte';
+	// import DOMPurify from 'dompurify';
 	export let data;
-
-	const scrollToBottom = (node) => {
-		const scroll = () =>
-			node.scroll({
-				top: node.scrollHeight,
-				behavior: 'smooth'
-			});
-		scroll();
-
-		return { update: scroll };
-	};
 
 	let y: number;
 
@@ -111,7 +100,7 @@
 					}
 
 					const decodedChunk = decoder.decode(value, { stream: true });
-					// { role: 'assistant', content: `${buffer}`, name: 'ai' }
+
 					const regex = /(?<="content":\s?")([^"]+)/g;
 
 					const match = decodedChunk.match(regex);
@@ -210,7 +199,7 @@ Ready to start writing?  Either start changing stuff on the left or
 		`${"Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a"}`
 	)}
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
-		<div use:scrollToBottom transition:fade class="w-full max-w-4xl mx-auto px-4">
+		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
 					<div
