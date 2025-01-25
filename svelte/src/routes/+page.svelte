@@ -48,7 +48,6 @@
 	];
 
 	let buffer = '';
-	let yBeforeSend: number;
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
@@ -99,7 +98,6 @@
 						console.log('Streaming complete');
 						return;
 					}
-
 					const decodedChunk = decoder.decode(value, { stream: true });
 
 					const regex = /(?<="content":\s?")([^"]+)/g;
@@ -114,6 +112,7 @@
 							}
 						}
 					}
+					scrolldown();
 
 					console.log(decodedChunk);
 					console.log(match);
@@ -139,7 +138,6 @@
 	}
 
 	async function sendMessage(role: string, text: string) {
-		yBeforeSend = y;
 		if (text.trim() != '') addMessage(role, text);
 
 		scrolldown();
@@ -148,7 +146,7 @@
 	}
 </script>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3ODIxNjg3LCJpYXQiOjE3Mzc3MzUyODd9.XvSd8YEnWnEkCvgnCxppKcpdIJISHPTuk73nI92vJvE; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/"; -->
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3OTMyMTE1LCJpYXQiOjE3Mzc4NDU3MTV9.mGDOUzbNsQaZiWJWcpcpwABHqI-8z2z6iQOzkfZsoNc; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/"; -->
 
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
