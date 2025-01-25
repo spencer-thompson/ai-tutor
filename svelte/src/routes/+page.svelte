@@ -40,18 +40,6 @@
 		}
 	}
 
-	onMount(() => {
-		const handleScroll = () => {
-			console.log('Scroll event fired!');
-			setTimeout(() => {
-				console.log('Waiting on scroll events...');
-			}, 1000);
-		};
-		window.addEventListener('scroll', handleScroll);
-	});
-
-	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
-
 	interface Message {
 		role: string;
 		content: string;
@@ -64,16 +52,20 @@
 	];
 
 	let buffer = '';
+	let yBeforeSend: number;
+
+	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
 	function scrolldown() {
 		console.log(y);
 		console.log(window.innerHeight);
 		console.log(document.body.scrollHeight);
-		if (document.body.scrollHeight - (window.innerHeight + y) < 200) {
+
+		if (document.body.scrollHeight - (window.innerHeight + y) < 30) {
 			setTimeout(function () {
 				window.scrollTo(0, document.body.scrollHeight);
 				scrolldown();
-			}, 500);
+			}, 0);
 		}
 	}
 
@@ -152,16 +144,12 @@
 		readData();
 
 		messages = [...messages, { role: 'assistant', content: '', name: 'ai' }];
+
 		console.log(text);
-
-		// console.log(import.meta.env.VITE_API_KEY);
-
-		setTimeout(() => {
-			window.scrollTo(0, document.body.scrollHeight);
-		}, 0);
 	}
 
 	async function sendMessage(role: string, text: string) {
+		yBeforeSend = y;
 		if (text.trim() != '') addMessage(role, text);
 
 		scrolldown();
@@ -238,7 +226,7 @@ Ready to start writing?  Either start changing stuff on the left or
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{@html message.content}
+							{@html marked.parse(message.content)}
 						</p>
 					</div>
 				</div>
