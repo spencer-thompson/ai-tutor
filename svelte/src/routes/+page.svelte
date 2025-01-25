@@ -6,6 +6,8 @@
 	// import { enhance, applyAction } from '$app/forms';
 	// import { onMount } from 'svelte';
 	// import DOMPurify from 'dompurify';
+	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
+
 	export let data;
 
 	marked.setOptions({
@@ -41,8 +43,8 @@
 	}
 
 	let messages: Message[] = [
-		// { sender: role.user, message: 'this is a message from the user!' },
-		// { sender: role.ai, message: marked.parse('# Marked in **the** *brower*') }
+		{ role: 'user', content: 'this is a message from the user!', name: 'Guts' },
+		{ role: 'assistant', content: marked.parse('# Marked in **the** *browser*'), name: 'ai' }
 	];
 
 	let buffer = '';
@@ -59,16 +61,14 @@
 		}
 	}
 
+	function copyHandler(message: string) {
+		console.log(message);
+	}
+
 	async function readData() {
 		console.log('calling');
 		const payload = {
-			messages: [
-				{
-					name: 'Joshua',
-					role: 'user',
-					content: value
-				}
-			],
+			messages,
 			courses: [101, 202],
 			model: 'gpt-4o'
 		};
@@ -130,7 +130,7 @@
 	}
 
 	function addMessage(role: string, text: string) {
-		messages = [...messages, { role, content: text, name: 'user' }];
+		messages = [...messages, { role, content: text, name: 'Joshua' }];
 		readData();
 
 		messages = [...messages, { role: 'assistant', content: '', name: 'ai' }];
@@ -204,10 +204,26 @@ Ready to start writing?  Either start changing stuff on the left or
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
+					<!--<button class="px-2" use:clipboard={message.content}>Copy</button>-->
+					{#if message.role === 'assistant'}
+						<button
+							on:click={() => {
+								copyHandler(message.content);
+							}}
+						>
+							<Avatar
+								initials="UV"
+								width="w-11"
+								class="rounded-2xl"
+								cursor="cursor-pointer"
+								background="bg-primary-500"
+							/>
+						</button>
+					{/if}
 					<div
 						transition:scale
 						class="
-                    max-w-[620px] py-1 px-3 rounded-lg {message.role === 'user'
+                    max-w-[620px] px-3 rounded-lg {message.role === 'user'
 							? ' ml-auto bg-blue-600 rounded-br-none'
 							: ' mr-auto bg-gray-300 rounded-bl-none'}
                             "
@@ -217,10 +233,19 @@ Ready to start writing?  Either start changing stuff on the left or
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							<!--{@html marked.parse(message.content.replace(/\\n/g, '\n'))}-->
-							{@html message.content}
+							{@html marked.parse(message.content.replace(/\\n/g, '\n'))}
+							<!--{@html message.content}-->
 						</p>
 					</div>
+					{#if message.role === 'user'}
+						<button
+							on:click={() => {
+								console.log(message.content);
+							}}
+						>
+							<Avatar initials="JD" width="w-11" class="rounded-2xl" background="bg-red-700" />
+						</button>
+					{/if}
 				</div>
 			{/each}
 		</div>

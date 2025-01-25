@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"html-to-text": "^9.0.5",
 		"svelte-viewport-info": "^1.0.3"
 	}
 }
