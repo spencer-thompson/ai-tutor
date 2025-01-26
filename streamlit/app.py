@@ -12,9 +12,41 @@ from collections import namedtuple
 import requests
 
 import streamlit as st
+from streamlit.components.v1 import html
 
 VERSION = 1.000
 UNIVERSITIES = ["UVU"]
+UPDATES = [  # notifications to display the user upon login
+    "- :material/qr_code: Mobile Login Now Available!",
+    "- :material/healing: Locked assigments no longer shown.",
+]
+
+# st.session_state.updates = UPDATES
+
+if "patterns" not in st.session_state:
+    st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
+        re.compile(r"[mM]obile|iPhone|iPad|iPod|Android|webOS")
+    )  # check mobile
+
+
+if "layout" not in st.session_state:
+    if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):
+        st.session_state.layout = "wide"
+    else:
+        st.session_state.layout = "centered"
+
+st.set_page_config(
+    page_title="AI Tutor",
+    page_icon=":mortar_board:",
+    layout=st.session_state.layout,
+    # initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "auto",
+    initial_sidebar_state="collapsed",
+    menu_items={
+        "Get Help": None,  # url
+        "Report a bug": None,  # url
+        "About": f"""# Version: {VERSION}""",
+    },
+)
 
 
 def track_event(name: str, page: str, props: dict = {}):
@@ -38,7 +70,35 @@ def track_event(name: str, page: str, props: dict = {}):
         # return r.json()
 
 
+def set_cookie(key: str, val: str):
+    """
+    Sets a cookie for 1 day
+    """
+    html(
+        f"""
+    <script>
+        const date = new Date();
+        date.setTime(date.getTime() + (1 * 24 * 60 * 60 * 1000)); // Set expiration to 1 day from now
+        const expires = "expires=" + date.toUTCString();
+
+        document.cookie = "{key}={val}; " + expires + "; path=/; Secure; SameSite=None";
+    </script>
+    """,
+        height=0,
+    )
+
+
+if "set_cookie" not in st.session_state:
+    st.session_state.set_cookie = set_cookie
+
+
 if "token" not in st.session_state:
+    if token := st.query_params.get("token"):
+        set_cookie("token", token)
+        st.session_state.token = token
+        del st.query_params["token"]
+        st.rerun()
+
     st.session_state.token = st.context.cookies.get("token")
 
 
@@ -85,14 +145,19 @@ if "backend" not in st.session_state:  # maybe change to a class?
         backend_post_stream,
     )
 
+
+def refresh_token():
+    new_token = st.session_state.backend.get("token")
+    st.session_state.token = new_token.get("token")
+    st.session_state.set_cookie("token", st.session_state.token)
+
+
+if "refresh_token" not in st.session_state:
+    st.session_state.refresh_token = refresh_token
+
+
 if "track_event" not in st.session_state:
     st.session_state.track_event = track_event
-
-
-if "patterns" not in st.session_state:
-    st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
-        re.compile(r"[mM]obile|iPhone|iPad|iPod|Android|webOS")
-    )  # check mobile
 
 
 if "user" not in st.session_state:
@@ -125,6 +190,7 @@ if "user" not in st.session_state:
         if not st.session_state.user.get("settings"):
             st.session_state.user["settings"] = {
                 "bio": "",
+                "notify_updates": True,
                 "first_message": True,
                 "show_courses": True,
                 "shown_courses": {str(c["id"]): True for c in st.session_state.user["courses"]},
@@ -145,28 +211,10 @@ if "user" not in st.session_state:
 if "has_sent_message" not in st.session_state:
     st.session_state.has_sent_message = False
 
-if "layout" not in st.session_state:
-    if st.session_state.patterns.mobile.search(st.context.headers["User-Agent"]) or st.query_params.get("extension"):
-        st.session_state.layout = "wide"
-    else:
-        st.session_state.layout = "centered"
 
 if "accepted_cookie" not in st.session_state:
     st.session_state.accepted_cookie = False
 
-
-st.set_page_config(
-    page_title="AI Tutor",
-    page_icon=":mortar_board:",
-    layout=st.session_state.layout,
-    # initial_sidebar_state="collapsed" if st.session_state.user["mobile"] else "auto",
-    initial_sidebar_state="collapsed",
-    menu_items={
-        "Get Help": None,  # url
-        "Report a bug": None,  # url
-        "About": f"""# Version: {VERSION}""",
-    },
-)
 
 st.logo("./512.png", size="large", icon_image="./512.png")
 
@@ -199,29 +247,46 @@ def login():
                 # st.toast("Thank you!", icon=":material/sentiment_very_satisfied:")
 
         st.toast("Thank you!", icon=":material/sentiment_very_satisfied:")
-        st.balloons()
 
         st.write("""
         Next, in order to log in, you need to install our **Browser Extension**.""")
         st.caption(
-            "The browser extension allows us to communicate with canvas.\n\nSadly, we can't provide this experience without it."
+            "* The browser extension allows us to communicate with canvas.\n* Sadly, we can't provide this experience without it."
         )
 
+        st.link_button(
+            "**Google Chrome**",
+            "https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman",
+            type="primary",
+            use_container_width=True,
+        )
+        st.link_button(
+            "**Microsoft Edge**",
+            "https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman",
+            type="primary",
+            use_container_width=True,
+        )
+        st.link_button(
+            "**Firefox** - *Coming Soon*",
+            "https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman",
+            type="primary",
+            disabled=True,
+            use_container_width=True,
+        )
+        st.link_button(
+            "**Safari** - *Coming Soon*",
+            "https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman",
+            type="primary",
+            disabled=True,
+            use_container_width=True,
+        )
         st.write("""
-
-        * **[Google Chrome](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
-        
-        * **[Microsoft Edge](https://chromewebstore.google.com/detail/ai-tutor/eoidpdhnopocccgnlclpmadnccolaman)**
-
-        * Firefox - *Coming Soon*
-
-        After downloading the browser extension, if for some reason you are not automatically redirected,
-        visit your university canvas homepage.
+        ##### After downloading the browser extension, if for some reason you are not automatically redirected, visit your university canvas homepage.
         """)
 
         cols = st.columns(len(UNIVERSITIES))
         for c, u in zip(cols, UNIVERSITIES):
-            c.link_button(u, f"https://{u.lower()}.instructure.com", type="primary", use_container_width=True)
+            c.link_button(u, f"https://{u.lower()}.instructure.com", type="secondary", use_container_width=True)
         # if uni := st.pills("Universities", UNIVERSITIES, default=UNIVERSITIES[0]):
         #     st.switch_page("https://uvu.instructure.com")
 
@@ -300,6 +365,11 @@ else:
         | pages,
         expanded=True,
     )
+
+
+if not st.session_state.has_sent_message and st.session_state.user["settings"].get("notify_updates"):
+    for u in UPDATES:
+        st.toast(u, icon=":material/new_releases:")
 
 
 pg.run()

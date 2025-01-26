@@ -178,7 +178,7 @@ async def get_assignments(context):
                     "submission_types": a.get("submission_types"),
                 }
                 for a in course.get("assignments")
-                if a.get("id") not in completed_assignments
+                if a.get("id") not in completed_assignments and not a.get("locked_for_user")
             ]
         )
 

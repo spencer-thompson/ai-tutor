@@ -7,7 +7,9 @@ st.write("---")
 col1, col2 = st.columns(2)
 
 st.subheader("Customization")
-st.caption("* Add info about yourself, or instructions for how you would like the tutor to respond.")
+st.caption(
+    "* Add info about yourself, or instructions for how you would like the tutor to respond. This is surprisingly effective."
+)
 
 st.session_state.user["settings"]["bio"] = st.text_area(
     "bio",
@@ -18,6 +20,16 @@ st.session_state.user["settings"]["bio"] = st.text_area(
     label_visibility="collapsed",
 )
 
+st.subheader("Update Notification")
+st.caption("* Keep checked if you would like notifications about new features. 🥳")
+
+st.session_state.user["settings"]["notify_updates"] = st.checkbox(
+    "New Updates",
+    value=st.session_state.user["settings"].get("notify_updates")
+    if st.session_state.user["settings"].get("notify_updates") is not None
+    else True,
+    # help="It would make me happy if you kept this on :smile:",
+)
 
 st.subheader("First Message")
 st.caption("* Uncheck to stop the Tutor from sending the first message.")
@@ -28,7 +40,7 @@ st.caption("* Uncheck to stop the Tutor from sending the first message.")
 # else:
 #     st.session_state.user["settings"]["first_message"] = st.checkbox("Tutor", value=True)
 st.session_state.user["settings"]["first_message"] = st.checkbox(
-    "Tutor",
+    "Tutor sends first message",
     value=st.session_state.user["settings"].get("first_message")
     if st.session_state.user["settings"].get("first_message") is not None
     else True,

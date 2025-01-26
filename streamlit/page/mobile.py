@@ -1,9 +1,8 @@
+import os
 from io import BytesIO
 
 import qrcode
 
-# from qrcode.image.styledpil import StyledPilImage
-# from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 import streamlit as st
 
 
@@ -12,7 +11,7 @@ def create_qrcode(data: str) -> BytesIO:
         version=1,  # controls the size of the QR Code
         error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=36,
-        border=2,
+        border=4,
     )
 
     qr.add_data(data)
@@ -30,13 +29,16 @@ def create_qrcode(data: str) -> BytesIO:
 
 
 if "qr" not in st.session_state:
-    st.session_state.qr = create_qrcode(st.session_state.token)
+    st.session_state.qr = create_qrcode(f"https://{os.getenv('DOMAIN')}/?token=" + st.session_state.token)
 
 
-st.warning(":material/engineering: The AI Tutor Mobile App is currently in active development. Coming soon :eyes:")
+# st.warning(":material/engineering: The AI Tutor Mobile App is currently in active development. Coming soon :eyes:")
 
-st.title("Log in with Mobile")
+st.title(":material/qr_code: Mobile Login")
+st.caption("* Scan to use the tutor on your mobile device (browser)")
 st.write("---")
 st.image(
-    st.session_state.qr, caption="Scan the QR code to log on on the AI Tutor mobile app", use_container_width=False
+    st.session_state.qr,
+    caption="Scan the QR code to log on on the AI Tutor on mobile",
+    use_container_width=False,
 )

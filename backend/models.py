@@ -77,6 +77,7 @@ class CanvasCourse(BaseModel):
 
 class Settings(BaseModel):
     bio: Optional[str] = ""
+    notify_updates: Optional[bool] = True
     first_message: Optional[bool] = True
     show_courses: Optional[bool] = True
     shown_courses: Optional[Dict[str, bool]] = None
