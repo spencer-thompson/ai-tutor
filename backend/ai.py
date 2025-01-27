@@ -10,7 +10,7 @@ import os
 import re
 from datetime import datetime, timedelta, timezone
 from logging.config import dictConfig
-from typing import List
+from typing import Dict, List
 
 import httpx
 from anthropic import AsyncAnthropic
@@ -267,7 +267,7 @@ tools = {
 }
 
 
-async def openai_iter_response(messages, descriptions, context, model: str = "gpt-4o"):
+async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, context, model: str = "gpt-4o"):
     logger.info(f"Using Model: {model}")
     mod = await moderate(messages)
 

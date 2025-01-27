@@ -276,7 +276,13 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
             "$set": user_dict,
             "$setOnInsert": {
                 "role": "normal",
-                "settings": {"bio": "", "first_message": True, "show_courses": True, "notify_updates": True},
+                "settings": {
+                    "bio": "",
+                    "first_message": True,
+                    "show_courses": True,
+                    "notify_updates": True,
+                    "shown_courses": {str(c["id"]): True for c in user_dict.get("courses")},
+                },
             },
         },
         upsert=True,

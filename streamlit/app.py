@@ -188,7 +188,7 @@ if "user" not in st.session_state:
             },
         )
         if not st.session_state.user.get("settings"):
-            st.session_state.user["settings"] = {
+            st.session_state.user["settings"] = {  # Need to move this to the backend
                 "bio": "",
                 "notify_updates": True,
                 "first_message": True,
