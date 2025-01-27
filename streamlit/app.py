@@ -350,6 +350,10 @@ if st.session_state.user.get("authenticated"):
 
     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)
 
+    if not st.session_state.has_sent_message and st.session_state.user["settings"].get("notify_updates"):
+        for u in UPDATES:
+            st.toast(u, icon=":material/new_releases:")
+
 else:
     pg = st.navigation(
         {
@@ -365,11 +369,6 @@ else:
         | pages,
         expanded=True,
     )
-
-
-if not st.session_state.has_sent_message and st.session_state.user["settings"].get("notify_updates"):
-    for u in UPDATES:
-        st.toast(u, icon=":material/new_releases:")
 
 
 pg.run()
