@@ -44,15 +44,22 @@
 
 	let messages: Message[] = [
 		{ role: 'user', content: 'this is a message from the user!', name: 'Guts' },
-		{ role: 'assistant', content: marked.parse('# Marked in **the** *browser*'), name: 'ai' }
+		{
+			role: 'assistant',
+			content: marked.parse(
+				"# Marked in **the** *browser* \ud83c\udf1f # Hi Joshua! \ud83d\ude0a\n\nHow can I assist you today? Let me know if there's anything you need help with!"
+			),
+			name: 'ai'
+		}
 	];
 
 	let buffer = '';
+	let scrollBufferHeight = 30;
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
 	function scrolldown() {
-		if (document.body.scrollHeight - (window.innerHeight + y) < 30) {
+		if (document.body.scrollHeight - (window.innerHeight + y) < scrollBufferHeight) {
 			setTimeout(function () {
 				window.scrollTo(0, document.body.scrollHeight);
 				scrolldown();
@@ -126,6 +133,8 @@
 			console.error('Streaming error:', error);
 		}
 		console.log(buffer);
+		messages[messages.length - 1].content = buffer;
+		scrollBufferHeight = 30;
 	}
 
 	function addMessage(role: string, text: string) {
@@ -139,19 +148,25 @@
 
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
-
+		setTimeout(() => {
+			scrollBufferHeight = 10;
+		}, '300');
 		scrolldown();
 		value = '';
 		isLoading = true;
 	}
+
+	marked.use({
+		gfm: true
+	});
 </script>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM3OTMyMTE1LCJpYXQiOjE3Mzc4NDU3MTV9.mGDOUzbNsQaZiWJWcpcpwABHqI-8z2z6iQOzkfZsoNc; expires=Fri, 30 Jan 2025 23:59:59 GMT; path=/"; -->
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NDg5NTEyLCJpYXQiOjE3Mzg0MDMxMTJ9.oTcPXhEM6SXyEK5xjrcFSG9Crocyxnd1RUukeH0przA; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
 	{@html marked.parse(
-		"Absolutely! Here's a basic example of Markdown to get you started:\n\nmarkdown\n# Heading 1\n\n## Heading 2\n\n### Heading 3\n\n**Bold Text**\n\n*Italic Text*\n\n- Bullet Point 1\n- Bullet Point 2\n - Nested Bullet Point\n\n1. Numbered List Item 1\n2. Numbered List Item 2\n\n[Link to UVU](https://www.uvu.edu)\n\n![Image Alt Text](https://www.uvu.edu/logo.png)\n\n> Blockquote\n\n`Inline code`\n\n\nCode block\n\n\n\nFeel free to ask if you have any more questions or need further assistance! \ud83d\ude0a"
+		"Of course, Joshua! Here are some regular emojis for you:\n\n- \ud83d\ude0a\n- \ud83d\udc4d\n- \u2728\n- \u2764\ufe0f\n- \ud83d\udcda\n\nI hope you like them! If you need anything else, just let me know! \ud83d\ude0aAbsolutely! Here's a basic example of Markdown to get you started:\n\nmarkdown\n# Heading 1\n\n## Heading 2\n\n### Heading 3\n\n**Bold Text**\n\n*Italic Text*\n\n- Bullet Point 1\n- Bullet Point 2\n - Nested Bullet Point\n\n1. Numbered List Item 1\n2. Numbered List Item 2\n\n[Link to UVU](https://www.uvu.edu)\n\n![Image Alt Text](https://www.uvu.edu/logo.png)\n\n> Blockquote\n\n`Inline code hi `\n\n\nCode block\n\n\n\nFeel free to ask if you have any more questions or need further assistance! \ud83d\ude0a"
 	)}
 	<pre>The quick brown fox jumps over the lazy dog.</pre>
 	Press<kbd>⌘ + C</kbd> to copy.
@@ -196,7 +211,7 @@ Ready to start writing?  Either start changing stuff on the left or
 [Markdown]: http://daringfireball.net/projects/markdown/`}`
 	)}
 	{@html marked(
-		`${"\ud83d\ude04 Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a"}`
+		`${"\ud83d\ude04 Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a \ud83c\udf1f"}`
 	)}
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
@@ -232,6 +247,7 @@ Ready to start writing?  Either start changing stuff on the left or
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
 							{@html marked.parse(message.content.replace(/\\n/g, '\n'))}
+							<!--{@html marked.parse(message.content)}-->
 							<!--{@html message.content}-->
 						</p>
 					</div>
