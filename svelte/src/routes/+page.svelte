@@ -3,9 +3,6 @@
 	import { resize } from '$lib/components/textarea/resize';
 	import { marked } from 'marked';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
-	// import { enhance, applyAction } from '$app/forms';
-	// import { onMount } from 'svelte';
-	// import DOMPurify from 'dompurify';
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
 
 	export let data;
@@ -34,6 +31,20 @@
 			textarea = event.target;
 			height = event.detail.CR.height;
 		}
+	}
+
+	function decodeUnicode(str: string): string {
+		return str
+			.replace(/\\u[\dA-F]{4}/gi, (match) =>
+				String.fromCodePoint(parseInt(match.replace(/\\u/g, ''), 16))
+			)
+			.replace(/\\ud[\dA-F]{3}/gi, (match) => {
+				const [high, low] = match
+					.split('\\u')
+					.filter(Boolena)
+					.map((code) => parseInt(code, 16));
+				return String.fromCodePoint(((high & 0x3ff) << 10) + (low & 0x3ff) + 0x10000);
+			});
 	}
 
 	interface Message {
@@ -172,44 +183,7 @@
 	Press<kbd>⌘ + C</kbd> to copy.
 	<del><s>Always</s> Gonna Give You Up</del>
 	<ins cite="https://youtu.be/dQw4w9WgXcQ" datetime="10-31-2022"> Never Gonna Give You Up </ins>
-	{@html marked(
-		`${`Marked - Markdown Parser
-========================
 
-[Marked] lets you convert [Markdown] into HTML.  Markdown is a simple text format whose goal is to be very easy to read and write, even when not converted to HTML.  This demo page will let you type anything you like and see how it gets converted.  Live.  No more waiting around.
-
-How To Use The Demo
--------------------
-
-1. Type in stuff on the left.
-2. See the live updates on the right.
-
-That's it.  Pretty simple.  There's also a drop-down option above to switch between various views:
-
-- **Preview:**  A live display of the generated HTML as it would render in a browser.
-- **HTML Source:**  The generated HTML before your browser makes it pretty.
-- **Lexer Data:**  What [marked] uses internally, in case you like gory stuff like this.
-- **Quick Reference:**  A brief run-down of how to format things using markdown.
-
-Why Markdown?
--------------
-
-It's easy.  It's not overly bloated, unlike HTML.  Also, as the creator of [markdown] says,
-
-> The overriding design goal for Markdown's
-> formatting syntax is to make it as readable
-> as possible. The idea is that a
-> Markdown-formatted document should be
-> publishable as-is, as plain text, without
-> looking like it's been marked up with tags
-> or formatting instructions.
-
-Ready to start writing?  Either start changing stuff on the left or
-[clear everything](/demo/?text=) with a simple click.
-
-[Marked]: https://github.com/markedjs/marked/
-[Markdown]: http://daringfireball.net/projects/markdown/`}`
-	)}
 	{@html marked(
 		`${"\ud83d\ude04 Sure! Here's a simple example of markdown text:\n\nmarkdown\n# Welcome to Utah Valley University!\n\nUtah Valley University (UVU) is a public university located in **Orem, Utah**. It's an exciting place to learn, grow, and achieve your academic goals.\n\n## Why Choose UVU?\n\n- **Diverse Programs**: UVU offers a wide range of programs to suit your interests, from arts to sciences.\n- **Flexible Learning**: With both in-person and online classes, you can learn on your terms.\n- **Supportive Community**: UVU provides excellent resources to support students' success.\n\n## How to Apply\n\n1. Visit the [UVU Admissions](https://www.uvu.edu/admissions) page.\n2. Submit your application online.\n3. Send your transcripts and test scores.\n4. Await your acceptance letter!\n\n## Contact Us\n\nFor more information, feel free to reach out:\n\n- **Email**: info@uvu.edu\n- **Phone**: (801) 863-INFO\n\nJoin us at UVU, where your future begins!\n\n---\n\n> \Education is the most powerful weapon which you can use to change the world.\ \u2013 Nelson Mandela\n\n\nFeel free to use and modify this markdown to suit your needs! \ud83d\ude0a \ud83c\udf1f"}`
 	)}
@@ -217,7 +191,6 @@ Ready to start writing?  Either start changing stuff on the left or
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
-					<!--<button class="px-2" use:clipboard={message.content}>Copy</button>-->
 					{#if message.role === 'assistant'}
 						<button
 							on:click={() => {
@@ -246,7 +219,9 @@ Ready to start writing?  Either start changing stuff on the left or
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{@html marked.parse(message.content.replace(/\\n/g, '\n'))}
+							<!--{@html marked.parse(JSON.parse(`"${message.content}"`.replace(/\\n/g, '\n')))}-->
+							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+							<!--{@html marked.parse(`"${message.content}"`.replace(/\\n/g, '\n'))}-->
 							<!--{@html marked.parse(message.content)}-->
 							<!--{@html message.content}-->
 						</p>
@@ -270,17 +245,6 @@ Ready to start writing?  Either start changing stuff on the left or
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-gray-100 rounded-3xl py-3 relative">
 				<div class="flex flex-col w-full pr-24">
-					<!--<form
-						method="POST"
-						action="?/send"
-						use:enhance={() => {
-							sendMessage('user', value);
-							return async ({ update }) => {
-								await update();
-							};
-						}}
-					>
-					</form>-->
 					<textarea
 						{rows}
 						name="textareaContent"
@@ -294,7 +258,7 @@ Ready to start writing?  Either start changing stuff on the left or
 					></textarea>
 					<button
 						on:click={() => {
-							sendMessage('user', value);
+							sendMessage('user', textarea.value);
 						}}
 						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
 						><SendHorizontal size="24" /></button

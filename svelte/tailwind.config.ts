@@ -32,6 +32,29 @@ export default {
 						name: 'gold-nouveau',
 						enhancements: true,
 					},
+                    {
+						name: 'rocket',
+						enhancements: true,
+					},
+                    {
+						name: 'crimson',
+						enhancements: true,
+					},
+                    {
+						name: 'hamlindigo',
+						enhancements: true,
+					},
+                    {
+						name: 'vintage',
+						enhancements: true,
+					},
+                    {
+						name: 'seafoam',
+						enhancements: true,
+					},
+                    
+
+
 				],
 			},
 		}),
