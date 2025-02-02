@@ -26,12 +26,18 @@ importers:
       highlight.js:
         specifier: 11.11.1
         version: 11.11.1
+      katex:
+        specifier: ^0.16.21
+        version: 0.16.21
       lucide-svelte:
         specifier: ^0.471.0
         version: 0.471.0(svelte@4.2.19)
       marked:
         specifier: ^15.0.6
         version: 15.0.6
+      marked-katex-extension:
+        specifier: ^5.1.4
+        version: 5.1.4(katex@0.16.21)(marked@15.0.6)
     devDependencies:
       '@skeletonlabs/skeleton':
         specifier: 2.10.4
@@ -801,6 +807,10 @@ packages:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
 
+  commander@8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
+
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -1164,6 +1174,10 @@ packages:
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
 
+  katex@0.16.21:
+    resolution: {integrity: sha512-XvqR7FgOHtWupfMiigNzmh+MgUVmDGU2kXZm899ZkPfcuoPuFxyHmXsgATDpFZDAXCI8tvinaVcDo8PIIJSo4A==}
+    hasBin: true
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -1218,6 +1232,12 @@ packages:
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+
+  marked-katex-extension@5.1.4:
+    resolution: {integrity: sha512-GQOio4vCp0laxB1IY+2oNVo5nbn82yWMDP/jILRYHmyu2WXMVlXCB+krq2/U2fQn+V9j8aqDmnNdrsgqG2AkGQ==}
+    peerDependencies:
+      katex: '>=0.16 <0.17'
+      marked: '>=4 <16'
 
   marked@15.0.6:
     resolution: {integrity: sha512-Y07CUOE+HQXbVDCGl3LXggqJDbXDP2pArc2C1N1RRMN0ONiShoSsIInMd5Gsxupe7fKLpgimTV+HOJ9r7bA+pg==}
@@ -2452,6 +2472,8 @@ snapshots:
 
   commander@4.1.1: {}
 
+  commander@8.3.0: {}
+
   concat-map@0.0.1: {}
 
   cookie@0.6.0: {}
@@ -2810,6 +2832,10 @@ snapshots:
       chalk: 5.4.1
       diff-match-patch: 1.0.5
 
+  katex@0.16.21:
+    dependencies:
+      commander: 8.3.0
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -2852,6 +2878,11 @@ snapshots:
   magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  marked-katex-extension@5.1.4(katex@0.16.21)(marked@15.0.6):
+    dependencies:
+      katex: 0.16.21
+      marked: 15.0.6
 
   marked@15.0.6: {}
 

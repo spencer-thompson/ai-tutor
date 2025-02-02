@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { SendHorizontal } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
-	import { marked } from 'marked';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
 	import { decodeUnicode } from '$lib/utils/decodeUnicode';
@@ -9,6 +8,8 @@
 	import { onMount } from 'svelte';
 	import Katex from '$lib/components/Katex.svelte';
 	import Katex2 from '$lib/components/Katex2.svelte';
+	import { marked } from 'marked';
+	import markedKatex from 'marked-katex-extension';
 
 	const math1 = 'ax^2+bx+c=0';
 	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
@@ -130,54 +131,31 @@
 		scrolldown();
 		value = '';
 	}
+
+	const options = {
+		throwOnError: false
+	};
+
+	marked.use(markedKatex(options));
+
+	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
 </script>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NDg5NTEyLCJpYXQiOjE3Mzg0MDMxMTJ9.oTcPXhEM6SXyEK5xjrcFSG9Crocyxnd1RUukeH0przA; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
+<svelte:head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" />
+</svelte:head>
 
-<!--To find the integral of \(\cos^3(x)\), we can use a trigonometric identity and substitution. Here's a step-by-step solution:
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
-    Rewrite \(\cos^3(x)\):
-
-    \[ \cos^3(x) = \cos(x) \cdot \cos^2(x) \]
-
-    Use the identity \(\cos^2(x) = 1 - \sin^2(x)\):
-
-    \[ \cos^3(x) = \cos(x) \cdot (1 - \sin^2(x)) \]
-
-    Substitute and split the integral:
-
-    \[ \int \cos^3(x) \, dx = \int \cos(x) \cdot (1 - \sin^2(x)) \, dx = \int \cos(x) \, dx - \int \cos(x) \sin^2(x) \, dx \]
-
-    Integrate \(\int \cos(x) \, dx\):
-
-    \[ \int \cos(x) \, dx = \sin(x) \]
-
-    For \(\int \cos(x) \sin^2(x) \, dx\), use substitution:
-
-    Let \( u = \sin(x) \), then \( du = \cos(x) \, dx \).
-
-    \[ \int \cos(x) \sin^2(x) \, dx = \int u^2 \, du = \frac{u^3}{3} + C = \frac{\sin^3(x)}{3} + C \]
-
-    Combine results:
-
-    \[ \int \cos^3(x) \, dx = \sin(x) - \frac{\sin^3(x)}{3} + C \]
-
-So, the integral of \(\cos^3(x)\) is:
-
-\[ \int \cos^3(x) \, dx = \sin(x) - \frac{\sin^3(x)}{3} + C \]
-
-where \( C \) is the constant of integration. If you have any questions or need further clarification, feel free to ask! 🌟-->
-
-<!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
 	<Katex math="ax^2+bx+c=0" />
 	<Katex math={math3} displayMode={true} />
-	<Katex math="\int\cos^3(x)\,dx" displayMode={true} />
+	<Katex math="\int\cos^3(x)\,dx" />
+	<div>{@html marked.parse('$\\int\\cos^3(x)\dx$')}</div>
+	<div>{@html marked.parse('katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$')}</div>
 
 	<Katex math="cos^3(x)" displayMode={true} />
 	<Katex math="\cos^3(x) = \cos(x) \cdot (1 - \sin^2(x))" displayMode={true} />
-
-	\[ \cos^3(x) = \cos(x) \cdot (1 - \sin^2(x)) \] Rewrite \(\cos^3(x)\):
 	<MarkdownExample />
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
@@ -197,7 +175,7 @@ where \( C \) is the constant of integration. If you have any questions or need 
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 							<!--{@html message.content}-->
 						</p>
 					</div>
