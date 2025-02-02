@@ -1,20 +1,23 @@
-<script lang="ts">
+<script>
 	import katex from 'katex';
-	import 'katex/dist/katex.min.css';
-
-	export let math = '';
+	export let math;
 	export let displayMode = false;
 
-	let element;
+	const options = {
+		displayMode: displayMode,
+		throwOnError: false
+	};
 
-	$: {
-		if (element) {
-			katex.render(math, element, {
-				throwOnError: false,
-				displayMode: displayMode
-			});
-		}
-	}
+	$: katexString = katex.renderToString(math, options);
 </script>
 
-<span bind:this={element}></span>
+<svelte:head>
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+		integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X"
+		crossorigin="anonymous"
+	/>
+</svelte:head>
+
+{@html katexString}
