@@ -48,7 +48,7 @@
 		"dotenv": "^16.4.7",
 		"highlight.js": "11.11.1",
 		"lucide-svelte": "^0.471.0",
-		"marked": "^15.0.6"
+		"marked": "^15.0.6",
+		"katex": "^0.16.21"
 	}
 }
-

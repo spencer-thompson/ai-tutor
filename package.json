@@ -1,6 +1,8 @@
 {
 	"dependencies": {
 		"html-to-text": "^9.0.5",
+		"katex": "^0.16.21",
+		"markdown-it": "^14.1.0",
 		"svelte-viewport-info": "^1.0.3"
 	}
 }
