@@ -1,7 +1,7 @@
 <script>
 	import katex from 'katex';
 	export let math;
-	export let displayMode = false;
+	export let displayMode = true;
 
 	const options = {
 		displayMode: displayMode,

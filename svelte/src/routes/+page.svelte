@@ -8,6 +8,7 @@
 	import MarkdownExample from './MarkdownExample.svelte';
 	import { onMount } from 'svelte';
 	import Katex from '$lib/components/Katex.svelte';
+	import Katex2 from '$lib/components/Katex2.svelte';
 
 	const math1 = 'ax^2+bx+c=0';
 	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
@@ -33,7 +34,7 @@
 		}
 	}
 
-	let messages: Message[] = [];
+	let messages: Message[] = [{ role: 'user', content: '\int\cos^3(x)\,dx', name: 'Guts' }];
 
 	let buffer = '';
 	let scrollBufferHeight = 30;
@@ -169,9 +170,14 @@ where \( C \) is the constant of integration. If you have any questions or need 
 
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
-	<Katex math="ax^2+bx+c=0" displayMode={true} />
+	<Katex math="ax^2+bx+c=0" />
 	<Katex math={math3} displayMode={true} />
 	<Katex math="\int\cos^3(x)\,dx" displayMode={true} />
+
+	<Katex math="cos^3(x)" displayMode={true} />
+	<Katex math="\cos^3(x) = \cos(x) \cdot (1 - \sin^2(x))" displayMode={true} />
+
+	\[ \cos^3(x) = \cos(x) \cdot (1 - \sin^2(x)) \] Rewrite \(\cos^3(x)\):
 	<MarkdownExample />
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
@@ -191,7 +197,7 @@ where \( C \) is the constant of integration. If you have any questions or need 
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
-							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+							{marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 							<!--{@html message.content}-->
 						</p>
 					</div>
