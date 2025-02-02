@@ -4,9 +4,10 @@
 	import { marked } from 'marked';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
-	import katex from 'katex';
 	import { decodeUnicode } from '$lib/utils/decodeUnicode';
 	import MarkdownExample from './MarkdownExample.svelte';
+	import { onMount } from 'svelte';
+	import Katex from '$lib/components/Katex.svelte';
 
 	const math1 = 'ax^2+bx+c=0';
 	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
@@ -132,8 +133,45 @@
 
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NDg5NTEyLCJpYXQiOjE3Mzg0MDMxMTJ9.oTcPXhEM6SXyEK5xjrcFSG9Crocyxnd1RUukeH0przA; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
+<!--To find the integral of \(\cos^3(x)\), we can use a trigonometric identity and substitution. Here's a step-by-step solution:
+
+    Rewrite \(\cos^3(x)\):
+
+    \[ \cos^3(x) = \cos(x) \cdot \cos^2(x) \]
+
+    Use the identity \(\cos^2(x) = 1 - \sin^2(x)\):
+
+    \[ \cos^3(x) = \cos(x) \cdot (1 - \sin^2(x)) \]
+
+    Substitute and split the integral:
+
+    \[ \int \cos^3(x) \, dx = \int \cos(x) \cdot (1 - \sin^2(x)) \, dx = \int \cos(x) \, dx - \int \cos(x) \sin^2(x) \, dx \]
+
+    Integrate \(\int \cos(x) \, dx\):
+
+    \[ \int \cos(x) \, dx = \sin(x) \]
+
+    For \(\int \cos(x) \sin^2(x) \, dx\), use substitution:
+
+    Let \( u = \sin(x) \), then \( du = \cos(x) \, dx \).
+
+    \[ \int \cos(x) \sin^2(x) \, dx = \int u^2 \, du = \frac{u^3}{3} + C = \frac{\sin^3(x)}{3} + C \]
+
+    Combine results:
+
+    \[ \int \cos^3(x) \, dx = \sin(x) - \frac{\sin^3(x)}{3} + C \]
+
+So, the integral of \(\cos^3(x)\) is:
+
+\[ \int \cos^3(x) \, dx = \sin(x) - \frac{\sin^3(x)}{3} + C \]
+
+where \( C \) is the constant of integration. If you have any questions or need further clarification, feel free to ask! 🌟-->
+
 <!--style="margin-bottom: {120}px-->
 <main class="flex flex-col min-h-screen">
+	<Katex math="ax^2+bx+c=0" displayMode={true} />
+	<Katex math={math3} displayMode={true} />
+	<Katex math="\int\cos^3(x)\,dx" displayMode={true} />
 	<MarkdownExample />
 	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
