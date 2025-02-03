@@ -5,13 +5,12 @@
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
 	import { decodeUnicode } from '$lib/utils/decodeUnicode';
 	import MarkdownExample from './MarkdownExample.svelte';
-	import AppBar from './AppBar.svelte';
-	import Drawer from './Drawer.svelte';
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
 	import markedKatex from 'marked-katex-extension';
 	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
+	import { MoveDown } from 'lucide-svelte';
 
 	const math1 = 'ax^2+bx+c=0';
 	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
@@ -36,6 +35,14 @@
 			height = event.detail.CR.height;
 		}
 	}
+
+	let shouldShowButton = false;
+
+	onMount(() => {
+		window.addEventListener('scroll', () => {
+			shouldShowButton = document.body.scrollHeight - (window.innerHeight + y) > window.innerHeight;
+		});
+	});
 
 	let messages: Message[] = [
 		{ role: 'user', content: 'katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$', name: 'Guts' },
@@ -71,6 +78,9 @@
 				window.scrollTo(0, document.body.scrollHeight);
 				scrolldown();
 			}, 0);
+			// setTimeout(function () {
+			// 	window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+			// }, 0);
 		}
 	}
 
@@ -148,6 +158,7 @@
 
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
+
 		setTimeout(() => {
 			scrollBufferHeight = 10;
 		}, '300');
@@ -173,11 +184,12 @@
 
 <main class="flex flex-col min-h-screen pt-30">
 	<!--<MarkdownExample />-->
-	<AppBar />
+	<h1 class="ml-24 mt-3">AI Tutor Beta</h1>
+	<button></button>
 	<!--<Drawer />-->
 	<div
 		class="flex-1 flex flex-col-reverse"
-		style="margin-top: 10px; margin-bottom: {height + 90}px"
+		style="margin-top: 10px; margin-bottom: {height + 70}px"
 	>
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
@@ -206,7 +218,16 @@
 	</div>
 	<div class="bottom-48"></div>
 
-	<div class="fixed gap-2 inset-x-0 bottom-10 mx-4">
+	{#if shouldShowButton}
+		<div transition:fly={{ y: 100, duration: 1000 }} class="fixed bottom-9 left-10 z-10">
+			<button
+				on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+				class="btn rounded-3xl variant-filled"><em>Go to bottom</em><MoveDown /></button
+			>
+		</div>
+	{/if}
+
+	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-gray-100 rounded-3xl py-3 relative">
 				<div class="flex flex-col w-full pr-24">
