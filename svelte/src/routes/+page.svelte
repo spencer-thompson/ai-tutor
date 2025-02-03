@@ -175,7 +175,10 @@
 	<!--<MarkdownExample />-->
 	<AppBar />
 	<!--<Drawer />-->
-	<div class="flex-1 flex flex-col-reverse" style="margin-bottom: {height + 90}px">
+	<div
+		class="flex-1 flex flex-col-reverse"
+		style="margin-top: 10px; margin-bottom: {height + 90}px"
+	>
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">

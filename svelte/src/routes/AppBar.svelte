@@ -1,7 +1,16 @@
 <script lang="ts">
 	import { AppRail, AppRailTile, AppRailAnchor, AppBar, popup } from '@skeletonlabs/skeleton';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
-	import { AlignJustify, BookCheck, GraduationCap } from 'lucide-svelte';
+	import {
+		AlignJustify,
+		BookCheck,
+		GraduationCap,
+		BotMessageSquare,
+		TabletSmartphone,
+		Settings,
+		Info,
+		Lightbulb
+	} from 'lucide-svelte';
 	import { fly, slide, scale } from 'svelte/transition';
 	import { bounceOut, cubicIn, cubicInOut, circOut } from 'svelte/easing';
 
@@ -19,22 +28,16 @@
 	let appRailVisible = false;
 </script>
 
-<div class="fixed z-50">
-	<AppRail width="w-20" background="bg-transparent">
-		<svelte:fragment slot="lead">
-			<AppRailAnchor>
-				<button
-					class="btn-menu open"
-					on:click|preventDefault={() => (appRailVisible = !appRailVisible)}
-				>
-					<div class="flex justify-center items-center w-full">
-						<GraduationCap size="56" />
-					</div>
-				</button>
-			</AppRailAnchor>
-		</svelte:fragment>
-	</AppRail>
+<div class="fixed z-50 p-3">
+	<button class="btn-menu open" on:click|preventDefault={() => (appRailVisible = !appRailVisible)}>
+		<div class="flex justify-center items-center w-full">
+			<GraduationCap size="56" />
+		</div>
+	</button>
 </div>
+
+<!--AlignJustify, BookCheck, GraduationCap, BotMessageSquare, TabletSmartphone, Settings, Info,
+LightBulb-->
 
 {#if appRailVisible}
 	<div class="fixed" transition:fly={{ x: -100, duration: 800 }}>
@@ -52,22 +55,42 @@
 			<AppRailTile bind:group={currentTile} name="tile-1" value={0} title="tile-1">
 				<svelte:fragment slot="lead">
 					<div class="flex justify-center items-center w-full">
-						<BookCheck />
+						<BotMessageSquare size="36" />
 					</div>
 				</svelte:fragment>
-				<span>Tile 1</span>
+				<span>Chat</span>
 			</AppRailTile>
 			<AppRailTile bind:group={currentTile} name="tile-2" value={1} title="tile-2">
-				<svelte:fragment slot="lead"></svelte:fragment>
-				<span>Tile 2</span>
+				<svelte:fragment slot="lead">
+					<div class="flex justify-center items-center w-full">
+						<TabletSmartphone size="36" />
+					</div>
+				</svelte:fragment>
+				<span>Mobile</span>
 			</AppRailTile>
 			<AppRailTile bind:group={currentTile} name="tile-3" value={2} title="tile-3">
-				<svelte:fragment slot="lead">(icon)</svelte:fragment>
-				<span>Tile 3</span>
+				<svelte:fragment slot="lead">
+					<div class="flex justify-center items-center w-full">
+						<Settings size="36" />
+					</div>
+				</svelte:fragment>
+				<span>Settings</span>
 			</AppRailTile>
-			<!-- --- -->
+			<AppRailTile bind:group={currentTile} name="tile-4" value={3} title="tile-4">
+				<svelte:fragment slot="lead">
+					<div class="flex justify-center items-center w-full">
+						<Lightbulb size="36" />
+					</div>
+				</svelte:fragment>
+				<span>Tips</span>
+			</AppRailTile>
 			<svelte:fragment slot="trail">
-				<AppRailAnchor href="/" target="_blank" title="Account">(icon)</AppRailAnchor>
+				<AppRailTile bind:group={currentTile} name="tile-5" value={4} title="tile-5">
+					<div class="flex justify-center items-center w-full">
+						<Info size="36" />
+					</div>
+					<span>About</span>
+				</AppRailTile>
 			</svelte:fragment>
 		</AppRail>
 	</div>
