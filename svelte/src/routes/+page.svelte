@@ -6,6 +6,7 @@
 	import { decodeUnicode } from '$lib/utils/decodeUnicode';
 	import MarkdownExample from './MarkdownExample.svelte';
 	import AppBar from './AppBar.svelte';
+	import Drawer from './Drawer.svelte';
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
 	import markedKatex from 'marked-katex-extension';
@@ -170,9 +171,10 @@
 
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
-<AppBar />
 <main class="flex flex-col min-h-screen pt-30">
 	<!--<MarkdownExample />-->
+	<AppBar />
+	<!--<Drawer />-->
 	<div class="flex-1 flex flex-col-reverse" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
@@ -240,6 +242,6 @@
 		will-change: height;
 		transition: rows 250ms ease;
 		overflow: hidden;
-		/* overflow-x: scroll; */
+		overflow-y: scroll;
 	}
 </style>
