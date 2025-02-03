@@ -18,11 +18,14 @@
 
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
+	import { Modal, initializeStores, storePopup } from '@skeletonlabs/skeleton';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	initializeStores(); // Initialize Skeleton stores
 	import AppBar from './AppBar.svelte';
 </script>
 
 <AppBar />
 
 <slot />
+
+<Modal />

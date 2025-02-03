@@ -12,10 +12,6 @@
 	import hljs from 'highlight.js';
 	import { MoveDown } from 'lucide-svelte';
 
-	const math1 = 'ax^2+bx+c=0';
-	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
-	const math3 = 'V=\\frac{1}{3}\\pi r^2 h';
-
 	export let data;
 
 	let y: number;

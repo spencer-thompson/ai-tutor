@@ -1,6 +1,19 @@
 <script lang="ts">
-	import { AppRail, AppRailTile, AppRailAnchor, AppBar, popup } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
+	import {
+		AppRail,
+		AppRailTile,
+		AppRailAnchor,
+		AppBar,
+		Modal,
+		getModalStore,
+		popup
+	} from '@skeletonlabs/skeleton';
+	import type {
+		ModalSettings,
+		ModalComponent,
+		ModalStore,
+		PopupSettings
+	} from '@skeletonlabs/skeleton';
 	import {
 		AlignJustify,
 		BookCheck,
@@ -14,17 +27,21 @@
 	import { fly, slide, scale } from 'svelte/transition';
 	import { bounceOut, cubicIn, cubicInOut, circOut } from 'svelte/easing';
 
-	const popupClick: PopupSettings = {
-		event: 'click',
-		target: 'popupClick',
-		placement: 'bottom',
-		closeQuery: '#will-close',
-		shift: { crossAxis: false },
-		arrow: { padding: 80 }
+	const modalStore = getModalStore();
+
+	const modal: ModalSettings = {
+		type: 'confirm',
+		title: 'Application Settings',
+		body: 'Configure your application preferences here.'
+		// Optional: Add buttons or custom content
 	};
 
-	let currentTile: number = 0;
+	function openSettingsModal() {
+		modalStore.close();
+		modalStore.trigger(modal);
+	}
 
+	let currentTile: number = 0;
 	let appRailVisible = false;
 </script>
 
@@ -60,7 +77,24 @@ LightBulb-->
 				</svelte:fragment>
 				<span>Chat</span>
 			</AppRailTile>
-			<AppRailTile bind:group={currentTile} name="tile-2" value={1} title="tile-2">
+
+			<AppRailTile
+				AppRailTile
+				bind:group={currentTile}
+				name="tile-2"
+				value={1}
+				title="tile-2"
+				on:click={openSettingsModal}
+			>
+				<svelte:fragment slot="lead">
+					<div class="flex justify-center items-center w-full">
+						<BookCheck size="36" />
+					</div>
+				</svelte:fragment>
+				<span>Settings</span>
+			</AppRailTile>
+
+			<AppRailTile bind:group={currentTile} name="tile-3" value={2} title="tile-3">
 				<svelte:fragment slot="lead">
 					<div class="flex justify-center items-center w-full">
 						<TabletSmartphone size="36" />
@@ -68,7 +102,8 @@ LightBulb-->
 				</svelte:fragment>
 				<span>Mobile</span>
 			</AppRailTile>
-			<AppRailTile bind:group={currentTile} name="tile-3" value={2} title="tile-3">
+
+			<AppRailTile bind:group={currentTile} name="tile-4" value={3} title="tile-4">
 				<svelte:fragment slot="lead">
 					<div class="flex justify-center items-center w-full">
 						<Settings size="36" />
@@ -76,7 +111,8 @@ LightBulb-->
 				</svelte:fragment>
 				<span>Settings</span>
 			</AppRailTile>
-			<AppRailTile bind:group={currentTile} name="tile-4" value={3} title="tile-4">
+
+			<AppRailTile bind:group={currentTile} name="tile-5" value={4} title="tile-5">
 				<svelte:fragment slot="lead">
 					<div class="flex justify-center items-center w-full">
 						<Lightbulb size="36" />
@@ -85,7 +121,7 @@ LightBulb-->
 				<span>Tips</span>
 			</AppRailTile>
 			<svelte:fragment slot="trail">
-				<AppRailTile bind:group={currentTile} name="tile-5" value={4} title="tile-5">
+				<AppRailTile bind:group={currentTile} name="tile-6" value={5} title="tile-6">
 					<div class="flex justify-center items-center w-full">
 						<Info size="36" />
 					</div>
