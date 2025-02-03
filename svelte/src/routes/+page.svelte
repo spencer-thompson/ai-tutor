@@ -5,11 +5,12 @@
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
 	import { decodeUnicode } from '$lib/utils/decodeUnicode';
 	import MarkdownExample from './MarkdownExample.svelte';
+	import AppBar from './AppBar.svelte';
 	import { onMount } from 'svelte';
-	import Katex from '$lib/components/Katex.svelte';
-	import Katex2 from '$lib/components/Katex2.svelte';
 	import { marked } from 'marked';
 	import markedKatex from 'marked-katex-extension';
+	import { markedHighlight } from 'marked-highlight';
+	import hljs from 'highlight.js';
 
 	const math1 = 'ax^2+bx+c=0';
 	const math2 = 'x=-\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}';
@@ -35,7 +36,28 @@
 		}
 	}
 
-	let messages: Message[] = [{ role: 'user', content: '\int\cos^3(x)\,dx', name: 'Guts' }];
+	let messages: Message[] = [
+		{ role: 'user', content: 'katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$', name: 'Guts' },
+		{
+			role: 'user',
+			content:
+				'**Partial Derivatives:**\n    $$ \\frac{\\partial f}{\\partial x} \\quad \\text{and} \\quad \\frac{\\partial f}{\\partial y} $$\n\n16.',
+			name: 'Guts'
+		},
+
+		{ role: 'assistant', content: '${Your Name}$', name: 'ai' },
+		{
+			role: 'assistant',
+			content: '$$ \\int \\cos^3(x) \\, dx = \\int \\cos(x) \\cdot (1 - \\sin^2(x)) \\, dx $$',
+			name: 'ai'
+		},
+		{
+			role: 'assistant',
+			content:
+				'Why hello there! I would like to see if this:\\n $$c = \\pm\\sqrt{a^{(2 + b)^2}}$$ \\n Appears in the center',
+			name: 'ai'
+		}
+	];
 
 	let buffer = '';
 	let scrollBufferHeight = 30;
@@ -137,6 +159,7 @@
 	};
 
 	marked.use(markedKatex(options));
+	marked.use({ breaks: true });
 
 	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
 </script>
@@ -147,17 +170,10 @@
 
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
-<main class="flex flex-col min-h-screen">
-	<Katex math="ax^2+bx+c=0" />
-	<Katex math={math3} displayMode={true} />
-	<Katex math="\int\cos^3(x)\,dx" />
-	<div>{@html marked.parse('$\\int\\cos^3(x)\dx$')}</div>
-	<div>{@html marked.parse('katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$')}</div>
-
-	<Katex math="cos^3(x)" displayMode={true} />
-	<Katex math="\cos^3(x) = \cos(x) \cdot (1 - \sin^2(x))" displayMode={true} />
-	<MarkdownExample />
-	<div class="flex-1 flex flex-col-reverse overflow-y-auto" style="margin-bottom: {height + 90}px">
+<AppBar />
+<main class="flex flex-col min-h-screen pt-30">
+	<!--<MarkdownExample />-->
+	<div class="flex-1 flex flex-col-reverse" style="margin-bottom: {height + 90}px">
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
@@ -166,8 +182,8 @@
 						transition:scale
 						class="
                     max-w-[620px] px-3 rounded-lg {message.role === 'user'
-							? ' ml-auto bg-blue-600 rounded-br-none'
-							: ' mr-auto bg-gray-300 rounded-bl-none'}
+							? ' ml-auto bg-primary-500 rounded-br-none'
+							: ' mr-auto bg-secondary-300 rounded-bl-none'}
                             "
 					>
 						<p
@@ -204,7 +220,7 @@
 						on:click={() => {
 							sendMessage('user', textarea.value);
 						}}
-						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-blue-500 text-white rounded-xl focus:bg-blue-600"
+						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-tertiary-500 text-white rounded-xl focus:bg-tertiary-600"
 						><SendHorizontal size="24" /></button
 					>
 				</div>

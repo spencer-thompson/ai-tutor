@@ -50,6 +50,7 @@
 		"katex": "^0.16.21",
 		"lucide-svelte": "^0.471.0",
 		"marked": "^15.0.6",
+		"marked-highlight": "^2.2.1",
 		"marked-katex-extension": "^5.1.4"
 	}
 }
