@@ -124,9 +124,11 @@
 					}
 					const decodedChunk = decoder.decode(value, { stream: true });
 
+					const cleanedChunk = decodedChunk.replace(/(?<=\$+)\\\\/g, '\\').replace(/\\\\/g, '\\');
+
 					const regex = /(?<="content":\s?")([^"]+)/g;
 
-					const match = decodedChunk.match(regex);
+					const match = cleanedChunk.match(regex);
 
 					if (match) {
 						for (let i = 0; i < match.length; i++) {
