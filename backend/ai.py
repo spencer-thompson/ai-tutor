@@ -15,6 +15,7 @@ from typing import Dict, List
 import httpx
 from anthropic import AsyncAnthropic
 from config import LogConfig
+from IPython.core.interactiveshell import InteractiveShell
 from markdownify import markdownify as md
 from models import Message
 from openai import AsyncOpenAI
@@ -105,6 +106,66 @@ read_webpage = {
 }
 
 
+async def get_python_result(code: str):
+    """
+    Execute Python Code
+    """
+    return InteractiveShell.instance().run_cell(code).result
+
+
+python = {
+    "name": "python",
+    "local": False,
+    "func": get_python_result,
+    "tool": {
+        "type": "function",
+        "function": {
+            "name": "python",
+            "strict": True,
+            "description": """Use this tool to execute python code. Use if a calculator is needed,
+            or to find results for math or calculations. Use only the python standard library.""",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "The python code to execute.",
+                    },
+                },
+                "additionalProperties": False,
+                "required": [
+                    "code",
+                ],
+            },
+        },
+    },
+}
+
+
+async def get_overall_grades(context):
+    if user_data := context.get("user"):
+        overall_grades = [
+            {"name": c.get("name"), "code": c.get("course_code"), "grade": c.get("current_score")}
+            for c in user_data.get("courses")
+        ]
+
+    return json.dumps(overall_grades)
+
+
+grades = {
+    "name": "grades",
+    "local": True,
+    "func": get_overall_grades,
+    "tool": {
+        "type": "function",
+        "function": {
+            "name": "grades",
+            "description": "Use this tool if the users asks about a specific course grade or overall grades. Use liberally",
+        },
+    },
+}
+
+
 async def get_activity_stream(context, activities):
     matches = []
     date_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -127,7 +188,7 @@ updates = {
             "name": "updates",
             "strict": True,
             "description": """If the user asks for updates, or information about annoucements, messages,
-            submissions, recent assignments, conversations, calendar, grades or discussions. Use liberally.""",
+            submissions, recent assignments, conversations, calendar, graded assignments or discussions. Use liberally.""",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -255,7 +316,7 @@ async def moderate(messages: List[Message]):
     return response.results[0]
 
 
-tools = [read_webpage, updates, assignments]
+tools = [assignments, grades, python, read_webpage, updates]
 
 tools = {
     tool.get("name"): {
@@ -266,6 +327,37 @@ tools = {
     for tool in tools
 }
 
+PATTERNS = [  # patterns for converting latex to markdown math
+    {"rgx": re.compile(r"\\\s*?\(|\\\s*?\)", re.DOTALL), "new": r"$"},
+    {"rgx": re.compile(r"\\\s*?\[|\\\s*?\]", re.DOTALL), "new": r"$$"},
+]
+
+
+async def openai_formatted_iter_response(messages: List[Dict[str, Dict]], descriptions, context, model: str = "gpt-4o"):
+    completion = ""
+    previous_tokens = []
+    sliding_window_limit = 3
+    async for token in openai_iter_response(messages=messages, descriptions=descriptions, context=context, model=model):
+        previous_tokens.append(token)
+        window_size = len(previous_tokens) if len(previous_tokens) <= sliding_window_limit else sliding_window_limit
+        sliding_window = "".join(previous_tokens[-window_size:])
+
+        for pat in PATTERNS:
+            if match := pat["rgx"].search(sliding_window):
+                previous_tokens = [sliding_window[: match.start()], pat["new"], sliding_window[match.end() :]]
+
+        if len(previous_tokens) >= sliding_window_limit:
+            popped_token = previous_tokens.pop(0)  # lol an actual stack in the wild
+            completion += popped_token
+            # yield popped_token
+            yield json.dumps({"content": popped_token})
+
+    if previous_tokens:  # flush out rest of sliding window
+        for token in previous_tokens:
+            completion += token
+            # yield token
+            yield json.dumps({"content": token})
+
 
 async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, context, model: str = "gpt-4o"):
     logger.info(f"Using Model: {model}")
@@ -275,13 +367,21 @@ async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, co
         logger.warning(
             f"Chat Message Flagged: \n{messages[-1].content}\n\n For: {[c for c, f in mod.categories.dict().items() if f]}"
         )
-        yield json.dumps({"flagged": mod.flagged})
-        return
+        categories = [cat for cat, flg in mod.categories.dict().items() if flg]
+        if any("self-harm" in c for c in categories):
+            yield "I am worried you might not be doing too well, we have some [awesome resources](https://www.uvu.edu/studenthealth/) 🤍"
+            return
+        if any("sexual" in c for c in categories):
+            yield "That is not cool bro"
+            return
+        if any("graphic" in c for c in categories):
+            yield "[Click here](https://www.uvu.edu/studenthealth/)"
+            return
 
     if len(context["courses"]) == 0:  # prevent non-necessary context
-        tools = [read_webpage]
+        tools = [python, read_webpage]
     else:
-        tools = [read_webpage, updates, assignments]
+        tools = [assignments, grades, python, read_webpage, updates]
 
     bio = context["user"].get("bio")
 
@@ -325,7 +425,8 @@ async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, co
         delta = chunk.choices[0].delta
         if delta and delta.content:
             completion += delta.content
-            yield json.dumps({"content": chunk.choices[0].delta.content})
+            # yield json.dumps({"content": chunk.choices[0].delta.content})
+            yield chunk.choices[0].delta.content
 
         elif delta and delta.tool_calls:
             for tool in delta.tool_calls:
@@ -394,7 +495,8 @@ async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, co
 
                 if delta and delta.content:
                     completion += delta.content
-                    yield json.dumps({"content": delta.content})
+                    # yield json.dumps({"content": delta.content})
+                    yield delta.content
 
 
 async def anthropic_iter_response(messages, context):
@@ -411,7 +513,8 @@ async def anthropic_iter_response(messages, context):
 
     async for event in response:
         if event.type == "content_block_delta":
-            yield json.dumps({"content": event.delta.text})
+            # yield json.dumps({"content": event.delta.text})
+            yield event.delta.text
 
 
 if __name__ == "__main__":

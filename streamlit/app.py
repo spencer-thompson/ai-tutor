@@ -17,11 +17,14 @@ from streamlit.components.v1 import html
 VERSION = 1.000
 UNIVERSITIES = ["UVU"]
 UPDATES = [  # notifications to display the user upon login
-    "- :material/qr_code: Mobile Login Now Available!",
-    "- :material/healing: Locked assigments no longer shown.",
+    # "- :material/qr_code: Mobile Login Now Available!",
+    # "- :material/healing: Locked assigments no longer shown.",
+    # "- :material/delete: New option button to delete all user data in `settings`",
+    """
+    - :material/bookmark_added: You can now save chats to continue later.
+    - :material/calculate: The tutor can now run and execute code!""",
 ]
 
-# st.session_state.updates = UPDATES
 
 if "patterns" not in st.session_state:
     st.session_state.patterns = namedtuple("Pattern", ["mobile"])(
@@ -92,6 +95,24 @@ if "set_cookie" not in st.session_state:
     st.session_state.set_cookie = set_cookie
 
 
+def delete_cookie(key: str):
+    """
+    Delete a cookie (send that boi back to 1970 󱫚)
+    """
+    html(
+        f"""
+    <script>
+        document.cookie = "{key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=None";
+    </script>
+    """,
+        height=0,
+    )
+
+
+if "delete_cookie" not in st.session_state:
+    st.session_state.delete_cookie = delete_cookie
+
+
 if "token" not in st.session_state:
     if token := st.query_params.get("token"):
         set_cookie("token", token)
@@ -139,10 +160,16 @@ if "backend" not in st.session_state:  # maybe change to a class?
                 except UnicodeDecodeError as e:
                     st.error(e)
 
-    st.session_state.backend = namedtuple("Backend", ["get", "post", "post_stream"])(
+    def backend_delete(endpoint: str = "", data: dict | None = None):
+        r = requests.delete(url=base_url + endpoint, headers=headers, json=data)
+        r.raise_for_status()
+        return r.json()
+
+    st.session_state.backend = namedtuple("Backend", ["get", "post", "post_stream", "delete"])(
         backend_get,
         backend_post,
         backend_post_stream,
+        backend_delete,
     )
 
 
@@ -197,6 +224,11 @@ if "user" not in st.session_state:
             }
 
             st.session_state.backend.post("user_settings", st.session_state.user["settings"])
+
+        if not st.session_state.user["settings"].get("shown_courses"):
+            st.session_state.user["settings"]["shown_courses"] = {
+                str(c["id"]): True for c in st.session_state.user["courses"]
+            }
 
         st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True

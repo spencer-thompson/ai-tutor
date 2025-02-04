@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
@@ -94,6 +95,11 @@ class UserCourse(BaseModel):
     code: Optional[str] = None
 
 
+# class History(BaseModel):
+#     messages: List[Message]
+# timestamp: Optional[str] = datetime.now(tz=timezone(timedelta(hours=-7))).isoformat()
+
+
 class User(BaseModel):
     role: str
     institution: str
@@ -103,6 +109,7 @@ class User(BaseModel):
     avatar_url: str
     courses: List[UserCourse]
     settings: Optional[Settings] = None
+    chat_history: Optional[List[Message]] = None
 
 
 class SubmissionComment(BaseModel):

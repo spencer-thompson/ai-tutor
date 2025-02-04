@@ -1,10 +1,11 @@
 import streamlit as st
 
-st.title("User Settings")
+st.title(":material/tune: User Settings")
 st.caption("* Customize your chat experience")
 st.write("---")
 
 col1, col2 = st.columns(2)
+
 
 st.subheader("Customization")
 st.caption(
@@ -20,6 +21,7 @@ st.session_state.user["settings"]["bio"] = st.text_area(
     label_visibility="collapsed",
 )
 
+
 st.subheader("Update Notification")
 st.caption("* Keep checked if you would like notifications about new features. 🥳")
 
@@ -34,6 +36,7 @@ st.session_state.user["settings"]["notify_updates"] = st.checkbox(
 st.subheader("First Message")
 st.caption("* Uncheck to stop the Tutor from sending the first message.")
 
+
 # if first_message := st.session_state.user["settings"].get("first_message") is not None:
 #     st.session_state.user["settings"]["first_message"] = st.checkbox("Tutor", value=first_message )
 #
@@ -45,6 +48,7 @@ st.session_state.user["settings"]["first_message"] = st.checkbox(
     if st.session_state.user["settings"].get("first_message") is not None
     else True,
 )
+
 
 st.subheader("Shown Courses")
 st.caption("* Show only selected courses in the chat interface.")
@@ -59,3 +63,19 @@ for course in st.session_state.user["courses"]:
     )
 
 st.session_state.backend.post("user_settings", st.session_state.user["settings"])
+
+st.write("---")
+
+if st.button("Delete Saved Chat", use_container_width=True):
+    st.session_state.backend.post("save_chat", [])
+
+if st.button(
+    "**DELETE USER DATA**",
+    help="Will completely wipe your info from the service.",
+    type="primary",
+    use_container_width=True,
+):
+    # if st.session_state.user.get("role") != "dev":
+    st.session_state.delete_cookie("token")
+
+    st.session_state.backend.delete("user")

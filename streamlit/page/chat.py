@@ -55,7 +55,11 @@ if "selected_control" not in st.session_state:
 
 
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    if history := st.session_state.user.get("chat_history"):
+        st.session_state.messages = history
+
+    else:
+        st.session_state.messages = []
 
 
 def clear_messages():
@@ -68,9 +72,12 @@ def respond_again():
     st.session_state.messages.pop()
     st.session_state.messages.pop()
     st.rerun()
-    # st.write("---")
-    # with st.chat_message("assistant"):
-    #     st.write_stream(runner(selected_courses))
+
+
+def save_chat():
+    st.session_state.selected_control = True
+    st.session_state.backend.post("save_chat", st.session_state.messages)
+    st.rerun()
 
 
 def think():
@@ -81,20 +88,22 @@ def think():
 
 
 def chat_control_buttons():
-    if len(st.session_state.messages) > 0:
+    if len(st.session_state.messages) > 0 and st.session_state.has_sent_message:
         # if not st.session_state.chat_control:
         if not st.session_state.selected_control:
+            # st.write(st.session_state.chat_control)
             st.segmented_control(
                 "Control",
                 [
                     {"display": "New Chat", "func": clear_messages},
                     {"display": "Rewind", "func": respond_again},
+                    {"display": "Save Chat", "func": save_chat},
                     # {"display": "Think about it", "func": think},
                 ],
                 key="chat_control",
                 default=None,
                 format_func=lambda o: o["display"],
-                # selection_mode="",
+                selection_mode="single",
                 label_visibility="collapsed",
             )
 
@@ -123,7 +132,7 @@ selected_courses = st.pills(
         if st.session_state.user["settings"].get("shown_courses").get(str(c.get("id")))
     ],
     selection_mode="multi",
-    on_change=clear_messages,
+    # on_change=lambda: st.session_state.messages = [],
     format_func=lambda c: " ".join(c.get("course_code").split(" ")[0:2])
     if c.get("course_code")
     else " ".join(c["name"].split("|")[0].split("-")[0:2]),
@@ -180,6 +189,7 @@ render_messages()
 if user_input := st.chat_input(
     "What updates do I have?" if len(st.session_state.messages) == 0 else "Send a chat", key="current_user_message"
 ):
+    st.session_state.has_sent_message = True
     st.chat_message("user").markdown(user_input)
     st.session_state.messages.append(
         {"role": "user", "content": user_input, "name": st.session_state.user["first_name"]},
@@ -192,6 +202,5 @@ if user_input := st.chat_input(
 
     st.session_state.refresh_token()  # refresh token on chat to keep user logged in
     st.rerun()
-
 
 chat_control_buttons()

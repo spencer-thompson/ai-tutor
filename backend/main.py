@@ -20,7 +20,7 @@ from logging.config import dictConfig
 from typing import List
 
 import jwt
-from ai import openai_iter_response
+from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
 from config import LogConfig
 from fastapi import Depends, FastAPI, HTTPException, Security, status
@@ -289,6 +289,16 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
     )
 
 
+@app.delete("/user")
+async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+    """
+    Delete All User Data for logged in User.
+    """
+    id, uni = await get_user_id_from_token(token)
+    result = app.mongodb["users"].delete_one({"canvas_id": id, "institution": uni})
+    return {"deleted_count": result.deleted_count}
+
+
 @app.post("/user_settings")
 async def update_user_settings(
     settings: Settings, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
@@ -298,6 +308,19 @@ async def update_user_settings(
     app.mongodb["users"].update_one(
         {"canvas_id": id, "institution": uni},
         {"$set": {"settings": settings.dict(exclude_none=True)}},
+        upsert=True,
+    )
+
+
+@app.post("/save_chat")
+async def save_chat_session(
+    messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
+):
+    id, uni = await get_user_id_from_token(token)
+
+    app.mongodb["users"].update_one(
+        {"canvas_id": id, "institution": uni},
+        {"$set": {"chat_history": [message.dict(exclude_none=True) for message in messages]}},
         upsert=True,
     )
 
@@ -398,10 +421,10 @@ async def smart_chat_stream(
 
     activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
     course_context = [c for c in user["courses"] if c["id"] in chat.courses]
-    user_context = {"bio": user["settings"].get("bio")}
+    user_context = {"bio": user["settings"].get("bio"), "courses": user["courses"]}
 
     context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 
     return StreamingResponse(
-        openai_iter_response(messages, descriptions, context, model), media_type="application/json"
+        openai_formatted_iter_response(messages, descriptions, context, model), media_type="application/json"
     )

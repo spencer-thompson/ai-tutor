@@ -1,7 +1,3 @@
-# Tips and Tricks
-
----
-
 **:rainbow[First of all]** thank you for using the AI Tutor :smile:
 
 I have put an incredible amount of effort into this project
