@@ -125,6 +125,7 @@
 					const decodedChunk = decoder.decode(value, { stream: true });
 
 					const cleanedChunk = decodedChunk.replace(/(?<=\$+)\\\\/g, '\\').replace(/\\\\/g, '\\');
+					// const cleanedChunk = decodedChunk;
 
 					const regex = /(?<="content":\s?")([^"]+)/g;
 
@@ -134,7 +135,9 @@
 						for (let i = 0; i < match.length; i++) {
 							buffer += match[i];
 							if (messages.length > 0) {
-								messages[messages.length - 1].content = buffer;
+								messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+
+								// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 							}
 						}
 					}
@@ -155,6 +158,10 @@
 		messages[messages.length - 1].content = buffer;
 		scrollBufferHeight = 30;
 	}
+	// $$ \n\int_{a}^{b} f(x) \, dx = F(b) - F(a)$$
+	// $$ \int_{a}^{b} f(x) \, dx = F(b) - F(a) $$
+	// ($ \int_{a}^{b} f(x) \, dx $)
+	// $ \int_{a}^{b} f(x) \, dx $
 
 	function addMessage(role: string, text: string) {
 		messages = [...messages, { role, content: text, name: 'Joshua' }];
@@ -192,8 +199,39 @@
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
 <main class="flex flex-col min-h-screen pt-30">
+	<!--{#if shouldShowButton}-->
+
 	{#if shouldShowButton}
-		<div transition:fly={{ y: -100, duration: 1000 }} class="fixed place-self-center top-3">
+		{#if !showAppBar}
+			<div in:fly={{ y: 80, duration: 1000 }} out:fade class="fixed place-self-center top-3">
+				<button
+					on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+					class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+				>
+			</div>
+		{:else}
+			<div
+				in:fly={{ y: -100, duration: 1000 }}
+				out:fade
+				class="z-51 fixed place-self-center top-20"
+			>
+				<button
+					on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+					class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+				>
+			</div>
+		{/if}
+	{/if}
+
+	<!--{#if !showAppBar}
+		<div in:fly={{ y: 70, duration: 100 }} class="z-51 fixed place-self-center top-3">
+			<button
+				on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+				class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+			>
+		</div>
+	{:else}
+		<div in:fly={{ y: -100, duration: 1000 }} class="z-51 fixed place-self-center top-20">
 			<button
 				on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
 				class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
