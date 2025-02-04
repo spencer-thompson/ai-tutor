@@ -535,7 +535,7 @@ if __name__ == "__main__":
                 }
             ]
         ):
-            print(json.loads(token).get("content"), end="")
+            print(token, end="", flush=True)
             # print(json.loads(token).get("flagged"), end="")
             # print()
 
