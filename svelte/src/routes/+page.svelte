@@ -33,6 +33,17 @@
 	}
 
 	let shouldShowButton = false;
+	let showAppBar = false;
+
+	function updateAppRailVisibility() {
+		showAppBar = window.innerWidth < 1027 ? true : false;
+	}
+
+	onMount(() => {
+		updateAppRailVisibility();
+		window.addEventListener('resize', updateAppRailVisibility);
+		return () => window.removeEventListener('resize', updateAppRailVisibility);
+	});
 
 	onMount(() => {
 		window.addEventListener('scroll', () => {
@@ -179,9 +190,19 @@
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
 <main class="flex flex-col min-h-screen pt-30">
+	{#if shouldShowButton}
+		<div transition:fly={{ y: -100, duration: 1000 }} class="fixed place-self-center top-3">
+			<button
+				on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+				class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+			>
+		</div>
+	{/if}
+
 	<!--<MarkdownExample />-->
-	<h1 class="ml-24 mt-3">AI Tutor Beta</h1>
-	<button></button>
+	{#if !showAppBar}
+		<h1 in:fly={{ y: -100, duration: 1000 }} class="ml-24 mt-3">AI Tutor Beta</h1>
+	{/if}
 	<!--<Drawer />-->
 	<div
 		class="flex-1 flex flex-col-reverse"
@@ -214,18 +235,6 @@
 	</div>
 	<div class="bottom-48"></div>
 
-	<!--{#if shouldShowButton}-->
-	<div
-		transition:fly={{ y: 100, duration: 1000 }}
-		class="fixed place-self-center bottom-9 -ml-[900px] z-10"
-	>
-		<button
-			on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-			class="btn rounded-3xl variant-filled"><em>Go to bottom</em><MoveDown /></button
-		>
-	</div>
-	<!--{/if}-->
-
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
 		<div class="max-w-2xl mx-auto">
 			<div class="bg-gray-100 rounded-3xl py-3 relative">
@@ -241,6 +250,7 @@
 						bind:value
 						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
 					></textarea>
+
 					<button
 						on:click={() => {
 							sendMessage('user', textarea.value);
