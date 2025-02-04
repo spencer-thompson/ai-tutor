@@ -214,14 +214,17 @@
 	</div>
 	<div class="bottom-48"></div>
 
-	{#if shouldShowButton}
-		<div transition:fly={{ y: 100, duration: 1000 }} class="fixed bottom-9 left-10 z-10">
-			<button
-				on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-				class="btn rounded-3xl variant-filled"><em>Go to bottom</em><MoveDown /></button
-			>
-		</div>
-	{/if}
+	<!--{#if shouldShowButton}-->
+	<div
+		transition:fly={{ y: 100, duration: 1000 }}
+		class="fixed place-self-center bottom-9 -ml-[900px] z-10"
+	>
+		<button
+			on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+			class="btn rounded-3xl variant-filled"><em>Go to bottom</em><MoveDown /></button
+		>
+	</div>
+	<!--{/if}-->
 
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
 		<div class="max-w-2xl mx-auto">
