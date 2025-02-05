@@ -183,7 +183,8 @@
 	}
 
 	const options = {
-		throwOnError: false
+		throwOnError: false,
+		nonStandard: true
 	};
 
 	marked.use(markedKatex(options));
