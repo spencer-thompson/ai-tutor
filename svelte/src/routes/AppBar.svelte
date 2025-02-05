@@ -26,25 +26,34 @@
 		TabletSmartphone,
 		Settings,
 		Info,
-		Lightbulb
+		Lightbulb,
+		PaintBucket
 	} from 'lucide-svelte';
 	import { fly, slide, scale, fade } from 'svelte/transition';
 	import { bounceOut, cubicIn, cubicInOut, circOut } from 'svelte/easing';
 	import { onMount } from 'svelte';
+	import CourseSettingsModal from './CourseSettingsModal.svelte';
+	import ThemeSettingsModal from './ThemeSettingsModal.svelte';
 
 	const modalStore = getModalStore();
 	const drawerStore = getDrawerStore();
 
-	const modal: ModalSettings = {
-		type: 'confirm',
-		title: 'Application Settings',
-		body: 'Configure your application preferences here.'
-		// Optional: Add buttons or custom content
+	const modalCourses: ModalSettings = {
+		type: 'component',
+		component: 'courses'
 	};
-
-	function openSettingsModal() {
+	function openCoursesModal() {
 		modalStore.close();
-		modalStore.trigger(modal);
+		modalStore.trigger(modalCourses);
+	}
+
+	const modalTheme: ModalSettings = {
+		type: 'component',
+		component: 'themes'
+	};
+	function openThemeModal() {
+		modalStore.close();
+		modalStore.trigger(modalTheme);
 	}
 
 	const drawer: DrawerSettings = {
@@ -92,8 +101,11 @@
 			</div>
 		</button>
 	</div>
+	<div class="fixed right-2 z-10 p-3" transition:fly={{ x: 100, duration: 800 }}>
+		<button on:click={openThemeModal}><PaintBucket /></button>
+	</div>
 {:else}
-	<div class="fixed w-full z-50" in:fly={{ x: -100, duration: 800 }}>
+	<div class="fixed w-full z-50" in:fly={{ x: -50, duration: 800 }}>
 		<AppBar>
 			<svelte:fragment slot="lead"
 				><button on:click={openDrawerModal}><GraduationCap size="36" /></button>
@@ -110,7 +122,9 @@
 			>
 			<h3>AI Tutor Beta</h3>
 
-			<svelte:fragment slot="trail"><BookCheck /></svelte:fragment>
+			<svelte:fragment slot="trail"
+				><button on:click={openThemeModal}><PaintBucket /></button></svelte:fragment
+			>
 		</AppBar>
 	</div>
 {/if}
@@ -143,7 +157,7 @@
 				name="tile-2"
 				value={1}
 				title="tile-2"
-				on:click={openSettingsModal}
+				on:click={openCoursesModal}
 			>
 				<svelte:fragment slot="lead">
 					<div class="flex justify-center items-center w-full">

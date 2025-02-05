@@ -196,7 +196,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" />
 </svelte:head>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4NTkzODQ3LCJpYXQiOjE3Mzg1MDc0NDd9.6-KGzKfetoEOM_c-vJaXDYS-YQq_FbKHlhJS0vflqpM; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzM4ODUzMDk4LCJpYXQiOjE3Mzg3NjY2OTh9.3Ut9AGY216PYAlxlVEAgXO5v20SUYfhlxfnAI_2SYso; expires=Fri, 28 Feb 2025 23:59:59 GMT; path=/"; -->
 
 <main class="flex flex-col min-h-screen pt-30">
 	<!--{#if shouldShowButton}-->
@@ -206,7 +206,7 @@
 			<div in:fly={{ y: 80, duration: 1000 }} out:fade class="fixed place-self-center top-3">
 				<button
 					on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-					class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+					class=" btn btn-sm rounded-xl bg-primary-500"><MoveDown /></button
 				>
 			</div>
 		{:else}
@@ -217,7 +217,7 @@
 			>
 				<button
 					on:click={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-					class=" btn btn-sm rounded-xl bg-tertiary-500"><MoveDown /></button
+					class=" btn btn-sm rounded-xl bg-primary-500"><MoveDown /></button
 				>
 			</div>
 		{/if}
@@ -295,7 +295,7 @@
 						on:click={() => {
 							sendMessage('user', textarea.value);
 						}}
-						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-tertiary-500 text-white rounded-xl focus:bg-tertiary-600"
+						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-primary-500 text-white rounded-xl focus:bg-primary-600"
 						><SendHorizontal size="24" /></button
 					>
 				</div>

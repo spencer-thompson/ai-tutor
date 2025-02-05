@@ -41,6 +41,13 @@
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 	initializeStores(); // Initialize Skeleton stores
 	import AppBar from './AppBar.svelte';
+	import CourseSettingsModal from './CourseSettingsModal.svelte';
+	import ThemeSettingsModal from './ThemeSettingsModal.svelte';
+
+	const modalRegistry: Record<string, ModalComponent> = {
+		courses: { ref: CourseSettingsModal },
+		themes: { ref: ThemeSettingsModal }
+	};
 
 	const modalStore = getModalStore();
 	const drawerStore = getDrawerStore();
@@ -65,7 +72,7 @@
 
 <slot />
 
-<Modal />
+<Modal components={modalRegistry} />
 
 <Drawer>
 	<div out:fade>
@@ -83,7 +90,7 @@
 					<button on:click={drawerStore.close} class="btn variant-filled-primary">
 						<div class="flex gap-2">
 							<h4>Courses</h4>
-							<GraduationCap />
+							<BookCheck />
 						</div>
 					</button>
 					<button on:click={drawerStore.close} class="btn variant-filled-primary">
