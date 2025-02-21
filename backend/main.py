@@ -50,8 +50,8 @@ SYSTEM_MESSAGE = [
 
 tools = []
 
-dictConfig(LogConfig().dict())
-logger = logging.getLogger("aitutor")
+# dictConfig(LogConfig().dict())
+logger = logging.getLogger("uvicorn")
 
 
 # --- INIT ---
@@ -60,6 +60,9 @@ async def db_lifespan(app: FastAPI):
     """
     This just safely starts and stops FastAPI with mongo
     """
+
+    app.log = logging.getLogger("uvicorn")
+    app.log.info(f"--- API Started at [{DOMAIN}] ---")
 
     app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)  # setup mongo
     app.mongodb = app.mongodb_client.get_database("aitutor")
@@ -79,6 +82,7 @@ async def db_lifespan(app: FastAPI):
     yield
 
     app.mongodb_client.close()  # Shutdown
+    app.log.info("--- API Stopped ---")
 
 
 app = FastAPI(lifespan=db_lifespan)
@@ -399,7 +403,7 @@ async def smart_chat_stream(
     """
     Sends back chunks as they are generated from the AI.
     Response is an iterator in the form of:
-    `{"content": "the ai response"}` or `{"flagged": bool}`
+    `{"content": "the ai response"}`
     """
     user = await get_user_from_token(token)
     messages = chat.messages
@@ -421,7 +425,13 @@ async def smart_chat_stream(
 
     activity_context = [a for a in user["activity_stream"] if a["course_id"] in chat.courses]
     course_context = [c for c in user["courses"] if c["id"] in chat.courses]
-    user_context = {"bio": user["settings"].get("bio"), "courses": user["courses"]}
+    user_context = {
+        "bio": user["settings"].get("bio"),
+        "courses": user["courses"],
+        "canvas_id": user.get("canvas_id"),
+        "first_name": user.get("first_name"),
+        "last_name": user.get("last_name"),
+    }
 
     context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 

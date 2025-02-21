@@ -9,21 +9,18 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta, timezone
-from logging.config import dictConfig
 from typing import Dict, List
 
-import httpx
+# from logging.config import dictConfig
 from anthropic import AsyncAnthropic
-from config import LogConfig
-from IPython.core.interactiveshell import InteractiveShell
+from httpx import AsyncClient
 from markdownify import markdownify as md
 from models import Message
 from openai import AsyncOpenAI
 
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 
-dictConfig(LogConfig().dict())
-logger = logging.getLogger("aitutor")
+logger = logging.getLogger("uvicorn")
 
 
 def system_message(bio: str = "", descriptions: str = ""):
@@ -64,7 +61,7 @@ async def get_markdown_webpage(urls: list[str]) -> str:
     pat = re.compile(r"(\n){2,}")
 
     async def get_page(url: str):
-        async with httpx.AsyncClient() as client:
+        async with AsyncClient() as client:
             r = await client.get(url)
             cleaned_text = pat.subn(r"\n\n", md(r.text))[0]
 
@@ -109,8 +106,13 @@ read_webpage = {
 async def get_python_result(code: str):
     """
     Execute Python Code
+    Calls to another docker container
     """
-    return InteractiveShell.instance().run_cell(code).result
+
+    async with AsyncClient() as client:
+        r = await client.post("http://python:8081/execute", json={"code": code})
+
+    return r.text
 
 
 python = {
@@ -359,24 +361,37 @@ async def openai_formatted_iter_response(messages: List[Dict[str, Dict]], descri
             yield json.dumps({"content": token})
 
 
-async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, context, model: str = "gpt-4o"):
-    logger.info(f"Using Model: {model}")
-    mod = await moderate(messages)
+async def openai_iter_response(messages: List[Message], descriptions, context, model: str = "gpt-4o", recursive=False):
+    if not recursive:
+        logger.info(f"CHAT - Used model: {model}")
+        mod = await moderate(messages)
 
-    if mod.flagged:
-        logger.warning(
-            f"Chat Message Flagged: \n{messages[-1].content}\n\n For: {[c for c, f in mod.categories.dict().items() if f]}"
-        )
-        categories = [cat for cat, flg in mod.categories.dict().items() if flg]
-        if any("self-harm" in c for c in categories):
-            yield "I am worried you might not be doing too well, we have some [awesome resources](https://www.uvu.edu/studenthealth/) 🤍"
-            return
-        if any("sexual" in c for c in categories):
-            yield "That is not cool bro"
-            return
-        if any("graphic" in c for c in categories):
-            yield "[Click here](https://www.uvu.edu/studenthealth/)"
-            return
+        if mod.flagged:
+            logger.warning(
+                f"FLAG - Flagged `{messages[-1].content}`\t for: {[c for c, f in mod.categories.dict().items() if f]}"
+            )
+            categories = [cat for cat, flg in mod.categories.dict().items() if flg]
+            if any("self-harm" in c for c in categories):
+                logger.warning(
+                    f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: self-harm"
+                )
+                yield "I am worried you might not be doing too well, we have some [awesome resources](https://www.uvu.edu/studenthealth/) 🤍"
+                return
+            if any("sexual" in c for c in categories):
+                logger.warning(
+                    f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: sexual"
+                )
+                yield "That is not cool bro"
+                return
+            if any("graphic" in c for c in categories):
+                logger.warning(
+                    f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: graphic"
+                )
+                yield "[Click here](https://www.uvu.edu/studenthealth/)"
+                return
+
+    if recursive:
+        logger.info(f"RECURSIVE CHAT - Used model: {model}")
 
     if len(context["courses"]) == 0:  # prevent non-necessary context
         tools = [python, read_webpage]
@@ -461,7 +476,7 @@ async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, co
             else:
                 function_args = {}
 
-            logger.info(f"Tool Call: {tc['function']['name']}")
+            logger.info(f"TOOL - Used tool: {tc['function']['name']}")
 
             if tools[function_name]["local"]:
                 function_response = await tools[function_name]["func"](context, **function_args)
@@ -477,26 +492,9 @@ async def openai_iter_response(messages: List[Dict[str, Dict]], descriptions, co
                 }
             )
 
-            response = await openai.chat.completions.create(
-                messages=system_message(bio, descriptions) + messages,
-                # tools=tools if tool else None,
-                # tools=[t.get("tool") for t in tools.values()],
-                model=CHAT_MODEL,
-                logprobs=True,
-                stream=True,
-                temperature=0.7,
-                top_p=0.9,
-                # stream_options={"include_usage": True}, # currently errors out
-            )
-
-            completion = ""
-            async for chunk in response:
-                delta = chunk.choices[0].delta
-
-                if delta and delta.content:
-                    completion += delta.content
-                    # yield json.dumps({"content": delta.content})
-                    yield delta.content
+        # Recursively call OpenAI to let the AI respond more naturally
+        async for recursive_chunk in openai_iter_response(messages, descriptions, context, model, recursive=True):
+            yield recursive_chunk
 
 
 async def anthropic_iter_response(messages, context):

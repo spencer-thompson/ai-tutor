@@ -1,0 +1,20 @@
+services:
+  python:
+    build:
+      context: ./python_sandbox/
+      dockerfile: Dockerfile
+    command: fastapi run main.py --host 0.0.0.0 --port 8081
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/
+          target: /app
+          ignore:
+            - __pycache__/
+    depends_on:
+      - traefik
+      - fastapi
+    ports:
+      - "8081:8081"
+    networks:
+      - web

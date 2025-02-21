@@ -8,5 +8,6 @@ rsync -avrPluxz \
     --include='plausible/***' \
     --include='streamlit/***' \
     --include='data/***' \
+    --include='python_sandbox/***' \
     --exclude='*' \
     . aitutor:/home/sthom/aitutor/

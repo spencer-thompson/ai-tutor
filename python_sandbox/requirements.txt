@@ -1,0 +1,5 @@
+fastapi[standard]
+ipython
+numpy
+scipy
+scikit-learn

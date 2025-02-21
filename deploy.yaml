@@ -7,6 +7,8 @@ include:
     project_directory: .
   - path: ./compose/whoami.yaml
     project_directory: .
+  - path: ./python_sandbox/compose.yaml
+    project_directory: .
 
 services:
   fastapi:
