@@ -69,13 +69,13 @@ st.write("---")
 if st.button("Delete Saved Chat", use_container_width=True):
     st.session_state.backend.post("save_chat", [])
 
-if st.button(
-    "**DELETE USER DATA**",
-    help="Will completely wipe your info from the service.",
-    type="primary",
-    use_container_width=True,
-):
-    # if st.session_state.user.get("role") != "dev":
-    st.session_state.delete_cookie("token")
-
-    st.session_state.backend.delete("user")
+# if st.button(
+#     "**DELETE USER DATA**",
+#     help="Will completely wipe your info from the service.",
+#     type="primary",
+#     use_container_width=True,
+# ):
+#     # if st.session_state.user.get("role") != "dev":
+#     st.session_state.delete_cookie("token")
+#
+#     st.session_state.backend.delete("user")

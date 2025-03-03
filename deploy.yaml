@@ -5,8 +5,8 @@ include:
     project_directory: .
   - path: ./plausible/compose.yaml
     project_directory: .
-  - path: ./compose/whoami.yaml
-    project_directory: .
+  # - path: ./compose/whoami.yaml
+  #   project_directory: .
   - path: ./python_sandbox/compose.yaml
     project_directory: .
 
@@ -16,6 +16,7 @@ services:
       context: ./backend/
       dockerfile: Dockerfile
     command: fastapi run main.py --host 0.0.0.0 --port 8080
+    restart: unless-stopped
     develop:
       watch:
         - action: sync
@@ -51,6 +52,7 @@ services:
       context: ./streamlit/
       dockerfile: Dockerfile
     command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN}
       BACKEND: ${BACKEND}

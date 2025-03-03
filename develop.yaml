@@ -1,6 +1,11 @@
 # include:
 #   - path: ./plausible/compose.yaml
 #     project_directory: .
+env_file:
+  - path: ./.env
+    required: true # default
+  - path: ./dev.env
+    required: false
 
 services:
   traefik:
