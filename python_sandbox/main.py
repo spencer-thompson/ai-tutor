@@ -17,17 +17,13 @@ class Block(BaseModel):
     code: str
 
 
-class Wrapper(BaseModel):
-    json: Block
-
-
 @app.post("/execute")
-def execute_code(content: Wrapper):
+def execute_code(content: Block):
     """
     Execute and return a given code block
     """
     try:
-        result = InteractiveShell.instance().run_cell(content.json.code).result
+        result = InteractiveShell.instance().run_cell(content.code).result
     except ModuleNotFoundError as e:
         logger.error(e)
 

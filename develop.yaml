@@ -1,11 +1,11 @@
 # include:
 #   - path: ./plausible/compose.yaml
 #     project_directory: .
-env_file:
-  - path: ./.env
-    required: true # default
-  - path: ./dev.env
-    required: false
+# env_file:
+#   - path: ./.env
+#     required: true # default
+#   - path: ./dev.env
+#     required: false
 
 services:
   traefik:
@@ -65,7 +65,7 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./backend/
+          path: ./python_sandbox/
           target: /app
           ignore:
             - __pycache__/

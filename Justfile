@@ -7,7 +7,7 @@ default:
 # Start Development Server
 develop:
     docker compose -f ./develop.yaml build 
-    docker compose -f ./develop.yaml up --watch --env DOMAIN=rovermfg.localhost 
+    docker compose -f ./develop.yaml up --watch
     
 # Automatic Deployment
 deploy:
