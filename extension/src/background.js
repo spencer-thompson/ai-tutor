@@ -64,6 +64,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     token_data = await postData(`${aitutorUrl}token`, message.data);
 
     chrome.cookies.set(
+      // TODO: Add another cookie to `https://beta.aitutor.live`
       {
         url: aitutorDomain,
         name: "token",
