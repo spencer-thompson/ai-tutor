@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
 	import markedKatex from 'marked-katex-extension';
-	// import { markedHighlight } from 'marked-highlight';
+	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
 	import { MoveDown } from 'lucide-svelte';
 
@@ -199,25 +199,30 @@
 	};
 
 	marked.use(markedKatex(options));
+	marked.use(
+		markedHighlight({
+			langPrefix: 'hljs language-',
+			highlight(code, lang) {
+				if (lang && hljs.getLanguage(lang)) {
+					try {
+						return hljs.highlight(code, { language: lang }).value;
+					} catch {}
+				}
+				return hljs.highlightAuto(code).value;
+			}
+		})
+	);
 	marked.use({ breaks: true });
 
 	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
-
-	const highlightedCode = hljs.highlight(`\ndef ok():\n    print(Hello World!)`, {
-		language: 'python'
-	}).value;
-
-	// 	const highlightedCode = hljs.highlight(
-	// 		`
-	// def ok():\n
-	// 		print("Hello World!")
-	// `,
-	// 		{ language: 'python' }
-	// 	).value;
 </script>
 
 <svelte:head>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" />
+	<link
+		rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/github-dark.min.css"
+	/>
 </svelte:head>
 
 <!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzQ1NDkxMTMxLCJpYXQiOjE3NDU0MDQ3MzF9.B1mpOmHk40eHO83qMxOdEQ1rr79SQpzFIsZ6zJ4SAYQ; expires=Fri, 28 May  2025 23:59:59 GMT; path=/"; -->
@@ -281,18 +286,13 @@
 							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity-20'}
                             "
 					>
-						<p
+						<div
 							class={message.role === 'user'
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 opacity-100 dark:text-white'}
 						>
 							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
-
-							<!--{@html message.content}-->
-						</p>
-
-						{@html highlightedCode}
-						highlightElement(highlightedCode)
+						</div>
 					</div>
 				</div>
 			{/each}
@@ -343,3 +343,4 @@
 		overflow-y: scroll;
 	}
 </style>
+

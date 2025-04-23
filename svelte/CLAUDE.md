@@ -26,3 +26,10 @@ npm run check      # TypeScript checking
 - **State Management**: Svelte stores, reactive declarations ($:)
 - **Error Handling**: Try/catch blocks, fallbacks for undefined values
 - **Component Props**: Use export let with proper typing
+
+## Code Highlighting
+- The app uses highlight.js for syntax highlighting
+- Markdown code blocks are rendered with marked + highlight.js
+- Always place code in triple backtick blocks with language specified
+- Example: ```python\ndef example():\n    return "Hello world!"\n```
+- Syntax highlighting works for all common languages
