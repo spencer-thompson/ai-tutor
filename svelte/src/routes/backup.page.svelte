@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
 	import markedKatex from 'marked-katex-extension';
-	// import { markedHighlight } from 'marked-highlight';
+	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
 	import { MoveDown } from 'lucide-svelte';
 
@@ -79,25 +79,16 @@
 
 	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
 
-	let canScrollDown = true;
-
 	function scrolldown() {
-		if (
-			document.body.scrollHeight - (window.innerHeight + y) < scrollBufferHeight &&
-			canScrollDown
-		) {
+		if (document.body.scrollHeight - (window.innerHeight + y) < scrollBufferHeight) {
 			setTimeout(function () {
-				window.scrollTo(250, document.body.scrollHeight);
+				window.scrollTo(0, document.body.scrollHeight);
 				scrolldown();
 			}, 0);
 			// setTimeout(function () {
 			// 	window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 			// }, 0);
 		}
-	}
-
-	function scrollup() {
-		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
 	async function readData() {
@@ -129,7 +120,6 @@
 
 					if (done) {
 						console.log('Streaming complete');
-						canScrollDown = false;
 						return;
 					}
 					const decodedChunk = decoder.decode(value, { stream: true });
@@ -183,13 +173,11 @@
 
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
-		canScrollDown = true;
 
 		setTimeout(() => {
 			scrollBufferHeight = 10;
 		}, '300');
 		scrolldown();
-		// scrollup();
 		value = '';
 	}
 
@@ -202,18 +190,6 @@
 	marked.use({ breaks: true });
 
 	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
-
-	const highlightedCode = hljs.highlight(`\ndef ok():\n    print(Hello World!)`, {
-		language: 'python'
-	}).value;
-
-	// 	const highlightedCode = hljs.highlight(
-	// 		`
-	// def ok():\n
-	// 		print("Hello World!")
-	// `,
-	// 		{ language: 'python' }
-	// 	).value;
 </script>
 
 <svelte:head>
@@ -268,7 +244,10 @@
 		<h1 in:fly={{ y: -100, duration: 1000 }} class="ml-24 mt-3">AI Tutor Beta</h1>
 	{/if}
 	<!--<Drawer />-->
-	<div class="flex-1 flex flex-col" style="margin-top: 10px; margin-bottom: {height + 70}px">
+	<div
+		class="flex-1 flex flex-col-reverse"
+		style="margin-top: 10px; margin-bottom: {height + 70}px"
+	>
 		<div transition:fade class="w-full max-w-4xl mx-auto px-4">
 			{#each messages as message}
 				<div transition:slide class="flex items-start gap-2.5 mb-4">
@@ -276,23 +255,19 @@
 					<div
 						transition:scale
 						class="
-                     px-3 rounded-2xl {message.role === 'user'
-							? ' max-w-[580px] ml-auto bg-slate-400 bg-opacity-50 '
-							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity-20'}
+                    max-w-[620px] px-3 rounded-lg {message.role === 'user'
+							? ' ml-auto bg-primary-500 rounded-br-none'
+							: ' mr-auto bg-secondary-300 rounded-bl-none'}
                             "
 					>
 						<p
 							class={message.role === 'user'
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
-								: 'text-sm font-normal py-2.5 text-gray-900 opacity-100 dark:text-white'}
+								: 'text-sm font-normal py-2.5 text-gray-900 dark:text-black'}
 						>
 							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
-
 							<!--{@html message.content}-->
 						</p>
-
-						{@html highlightedCode}
-						highlightElement(highlightedCode)
 					</div>
 				</div>
 			{/each}
@@ -301,8 +276,8 @@
 	<div class="bottom-48"></div>
 
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
-		<div class="max-w-4xl mx-auto px-4">
-			<div class="bg-gray-800 rounded-3xl py-3 relative">
+		<div class="max-w-2xl mx-auto">
+			<div class="bg-gray-100 rounded-3xl py-3 relative">
 				<div class="flex flex-col w-full pr-24">
 					<textarea
 						{rows}
@@ -313,7 +288,7 @@
 						placeholder="Send message to AI Tutor..."
 						style="--height: auto"
 						bind:value
-						class="text-white flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
+						class="flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
 					></textarea>
 
 					<button

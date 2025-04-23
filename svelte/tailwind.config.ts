@@ -8,7 +8,11 @@ export default {
 	darkMode: 'class',
 	content: ['./src/**/*.{html,js,svelte,ts}', join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')],
 	theme: {
-		extend: {},
+		extend: {
+      opacity: {
+        'gray-rgba': 'rgba(33,33,33,.33)',
+      },
+    },
 	},
 	plugins: [
 		forms,
