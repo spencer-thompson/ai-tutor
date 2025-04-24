@@ -10,6 +10,7 @@
 	import markedKatex from 'marked-katex-extension';
 	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
+	import { courseBooleans } from '$lib/stores/courseBooleansStore';
 
 	let y: number;
 
@@ -96,6 +97,7 @@
 		const payload = {
 			messages,
 			courses: [101, 202],
+			// courses: courseBooleans.getAllCourses(),
 			model: 'gpt-4o'
 		};
 
