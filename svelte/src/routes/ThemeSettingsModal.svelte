@@ -12,6 +12,8 @@
 		theme = c;
 		// document.documentElement.setAttribute('data-theme', theme.toLowerCase());
 	}
+
+	// document.body.setAttribute('data-theme', value);
 </script>
 
 {#if $modalStore[0]}
@@ -20,10 +22,11 @@
 		<!--<button type="button" class="btn variant-filled"> Course1</button>-->
 
 		<div class="flex flex-wrap gap-3">
-			{#each ['skeleton', 'vintage', 'crimson'] as c}
+			{#each ['gold-nouveau', 'skeleton', 'wintry', 'sahara', 'rocket', 'hamlindigo', 'vintage', 'crimson', 'seafoam'] as c}
 				<button
 					class="btn {theme === c ? 'variant-filled' : 'variant-soft'}"
 					on:click={() => {
+						document.body.setAttribute('data-theme', c);
 						section(c);
 					}}
 					on:keypress

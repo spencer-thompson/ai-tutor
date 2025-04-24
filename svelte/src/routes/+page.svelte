@@ -34,6 +34,9 @@
 		}
 	}
 
+	const onFocus = () => (isFocused = true);
+	const onBlur = () => (isFocused = false);
+
 	let shouldShowButton = false;
 	let showAppBar = false;
 
@@ -83,10 +86,16 @@
 	}
 
 	// Replace \n inside LaTeX expressions with real newlines
+	// const formatLatexMath = (str) =>
+	// 	str.replace(/(\${1,2})([\s\S]*?)\1/g, (_, delim, content) => {
+	// 		const fixed = content.replace(/\\n\s*/g, '\n');
+	// 		return `${delim}${fixed}${delim}`;
+	// 	});
+
 	const formatLatexMath = (str) =>
-		str.replace(/(\${1,2})([\s\S]*?)\1/g, (_, delim, content) => {
-			const fixed = content.replace(/\\n\s*/g, '\n');
-			return `${delim}${fixed}${delim}`;
+		str.replace(/(\${1,2})\s*([\s\S]*?)\s*\1/g, (_, delim, content) => {
+			const trimmed = content.trim().replace(/\\n\s*/g, '\n');
+			return `${delim}${trimmed}${delim}`;
 		});
 
 	async function readData() {
@@ -241,6 +250,8 @@
 	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
 </script>
 
+<svelte:body data-sveltekit-preload-data="hover" data-theme="crimson" />
+
 <svelte:head>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" />
 	<link
@@ -329,14 +340,21 @@
 		</div>
 	</div>
 	<div class="bottom-48"></div>
+	<!-- <div class="bg-gradient-to-tr from-cyan-400 to indigo-400">yo soy the devil</div> -->
 
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
-		<div class="max-w-4xl mx-auto px-4">
-			<div class="bg-gray-800 rounded-3xl relative">
+		<div
+			class="max-w-4xl mx-auto rounded-3xl p-1 {isFocused
+				? 'bg-gradient-to-bl from-tertiary-500/30 to-secondary-500/30'
+				: ''}"
+		>
+			<div class=" bg-gray-800 rounded-3xl relative">
 				<div class="flex flex-col w-full pr-14">
 					<textarea
 						{rows}
 						on:resize={onResize}
+						on:blur={onBlur}
+						on:focus={onFocus}
 						use:resize
 						name="textareaContent"
 						bind:this={textarea}
@@ -349,12 +367,12 @@
 						on:click={() => {
 							expandTextArea();
 						}}
-						class=" absolute top-2 right-2 max-h-14 px-2 py-2 text-white rounded-xl focus:bg-secondary-600"
+						class=" absolute top-1 right-1 max-h-14 px-2 py-2 text-white rounded-xl focus:bg-secondary-600"
 					>
 						{#if expanded}
-							<SquareArrowDownLeft size="28" />
+							<SquareArrowDownLeft size="24" />
 						{:else}
-							<SquareArrowUpRight size="28" />
+							<SquareArrowUpRight size="24" />
 						{/if}
 					</button>
 
