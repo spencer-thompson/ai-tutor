@@ -2,10 +2,13 @@
 	import type { SvelteComponent } from 'svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { Check } from 'lucide-svelte';
+	import { userData } from '$lib/stores/userDataStore';
 
 	export let parent: SvelteComponent;
+	export let data;
 	const modalStore = getModalStore();
 	let color = 'red';
+
 	let flavors: Record<string, boolean> = {
 		course1: true,
 		course2: false,
@@ -22,6 +25,8 @@
 </script>
 
 {#if $modalStore[0]}
+	<pre>{JSON.stringify($userData, null, 2)}</pre>
+	<!-- {JSON.stringify(., null, 2)} -->
 	<div class="card p-4 w-modal shadow-xl space-y-4">
 		<header class="text-2xl font-bold">Select Courses</header>
 		<!--<button type="button" class="btn variant-filled"> Course1</button>-->

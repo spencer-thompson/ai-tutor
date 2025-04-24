@@ -41,6 +41,9 @@
 	const modalCourses: ModalSettings = {
 		type: 'component',
 		component: 'courses'
+		// meta: {
+		// 	course_data: data.apiData
+		// }
 	};
 	function openCoursesModal() {
 		modalStore.close();

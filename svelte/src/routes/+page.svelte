@@ -11,9 +11,9 @@
 	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
 
-	export let data;
-
 	let y: number;
+
+	export let data;
 
 	let name = 'textarea',
 		textarea = '',
@@ -84,13 +84,6 @@
 	function scrollup() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
-
-	// Replace \n inside LaTeX expressions with real newlines
-	// const formatLatexMath = (str) =>
-	// 	str.replace(/(\${1,2})([\s\S]*?)\1/g, (_, delim, content) => {
-	// 		const fixed = content.replace(/\\n\s*/g, '\n');
-	// 		return `${delim}${fixed}${delim}`;
-	// 	});
 
 	const formatLatexMath = (str) =>
 		str.replace(/(\${1,2})\s*([\s\S]*?)\s*\1/g, (_, delim, content) => {
@@ -260,7 +253,7 @@
 	/>
 </svelte:head>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzQ1NDkxMTMxLCJpYXQiOjE3NDU0MDQ3MzF9.B1mpOmHk40eHO83qMxOdEQ1rr79SQpzFIsZ6zJ4SAYQ; expires=Fri, 28 May  2025 23:59:59 GMT; path=/"; -->
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzQ1NTc1OTM3LCJpYXQiOjE3NDU0ODk1Mzd9.guGUqIoxMTrOKWEtOTA6M4gMNjHOeuT-I1NTBoWN0wM; expires=Fri, 28 May  2025 23:59:59 GMT; path=/"; -->
 
 <main class="flex flex-col min-h-screen pt-30">
 	<!--{#if shouldShowButton}-->
