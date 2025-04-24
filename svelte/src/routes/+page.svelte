@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SendHorizontal } from 'lucide-svelte';
+	import { SendHorizontal, MoveDown, SquareArrowDownLeft, SquareArrowUpRight } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
@@ -10,7 +10,6 @@
 	import markedKatex from 'marked-katex-extension';
 	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
-	import { MoveDown } from 'lucide-svelte';
 
 	export let data;
 
@@ -20,7 +19,10 @@
 		textarea = '',
 		height = 120,
 		value = ``,
-		inputHeight = 0;
+		inputHeight = 0,
+		full_rows = 3,
+		expanded = false,
+		isFocused = false;
 
 	function onResize(event) {
 		const { detail } = event;
@@ -51,33 +53,13 @@
 		});
 	});
 
-	let messages: Message[] = [
-		{ role: 'user', content: 'katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$', name: 'Guts' },
-		{
-			role: 'user',
-			content:
-				'**Partial Derivatives:**\n    $$ \\frac{\\partial f}{\\partial x} \\quad \\text{and} \\quad \\frac{\\partial f}{\\partial y} $$\n\n16.',
-			name: 'Guts'
-		},
-
-		{ role: 'assistant', content: '${Your Name}$', name: 'ai' },
-		{
-			role: 'assistant',
-			content: '$$ \\int \\cos^3(x) \\, dx = \\int \\cos(x) \\cdot (1 - \\sin^2(x)) \\, dx $$',
-			name: 'ai'
-		},
-		{
-			role: 'assistant',
-			content:
-				'Why hello there! I would like to see if this:\\n $$c = \\pm\\sqrt{a^{(2 + b)^2}}$$ \\n Appears in the center',
-			name: 'ai'
-		}
-	];
+	let messages: Message[] = [];
 
 	let buffer = '';
 	let scrollBufferHeight = 30;
 
-	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
+	$: rows = ((value.match(/\n/g) || []).length + 1) | full_rows;
+	$: full_rows = expanded ? 30 : 3;
 
 	let canScrollDown = true;
 
@@ -99,6 +81,13 @@
 	function scrollup() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
+
+	// Replace \n inside LaTeX expressions with real newlines
+	const formatLatexMath = (str) =>
+		str.replace(/(\${1,2})([\s\S]*?)\1/g, (_, delim, content) => {
+			const fixed = content.replace(/\\n\s*/g, '\n');
+			return `${delim}${fixed}${delim}`;
+		});
 
 	async function readData() {
 		console.log('calling');
@@ -140,20 +129,50 @@
 
 					const match = cleanedChunk.match(regex);
 
-					if (match) {
-						for (let i = 0; i < match.length; i++) {
-							buffer += match[i];
+					const matchList = match ? Array.from(match) : [];
+
+					if (matchList) {
+						for (let i = 0; i < matchList.length; i++) {
+							buffer += matchList[i];
 							if (messages.length > 0) {
-								messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+								console.log(`Match here: ${matchList}, length: ${matchList.length}`);
+								console.log(`Match here: ${matchList[i]}`);
+
+								// messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+
+								messages[messages.length - 1].content = marked.parse(
+									decodeUnicode(formatLatexMath(buffer.replace(/\\n/g, '\n')))
+								);
+
+								// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 
 								// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 							}
 						}
 					}
+
+					// if (match) {
+					// 	for (let i = 0; i < match.length; i++) {
+					// 		buffer += match[i];
+					// 		if (messages.length > 0) {
+					// 			console.log(`Match here: ${match}, length: ${match.length}`);
+					//
+					// 			// messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+					//
+					// 			messages[messages.length - 1].content = marked.parse(
+					// 				decodeUnicode(formatLatexMath(buffer))
+					// 			);
+					//
+					// 			// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+					//
+					// 			// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+					// 		}
+					// 	}
+					// }
 					scrolldown();
 
 					console.log(decodedChunk);
-					console.log(match);
+					// console.log(match);
 
 					await processChunk();
 				};
@@ -184,6 +203,7 @@
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
 		canScrollDown = true;
+		expanded = false;
 
 		setTimeout(() => {
 			scrollBufferHeight = 10;
@@ -191,6 +211,10 @@
 		scrolldown();
 		// scrollup();
 		value = '';
+	}
+
+	function expandTextArea() {
+		expanded = !expanded;
 	}
 
 	const options = {
@@ -283,7 +307,7 @@
 						class="
                      px-3 rounded-2xl {message.role === 'user'
 							? ' max-w-[580px] ml-auto bg-slate-400 bg-opacity-50 '
-							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity-20'}
+							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity- shadow-xl shadow-primary-500/20'}
                             "
 					>
 						<div
@@ -291,7 +315,13 @@
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 opacity-100 dark:text-white'}
 						>
-							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+							<!-- {@html marked.parse(decodeUnicode(message.content))} -->
+							{@html marked.parse(
+								decodeUnicode(formatLatexMath(message.content.replace(/\\n/g, '\n')))
+							)}
+
+							<!-- {@html marked.parse(decodeUnicode(processContent(message.content)))} -->
+							<!-- {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))} -->
 						</div>
 					</div>
 				</div>
@@ -302,26 +332,38 @@
 
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
 		<div class="max-w-4xl mx-auto px-4">
-			<div class="bg-gray-800 rounded-3xl py-3 relative">
-				<div class="flex flex-col w-full pr-24">
+			<div class="bg-gray-800 rounded-3xl relative">
+				<div class="flex flex-col w-full pr-14">
 					<textarea
 						{rows}
+						on:resize={onResize}
+						use:resize
 						name="textareaContent"
 						bind:this={textarea}
-						use:resize
-						on:resize={onResize}
 						placeholder="Send message to AI Tutor..."
-						style="--height: auto"
 						bind:value
-						class="text-white flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
+						class="placeholder-secondary-700 flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-white focus:ring-0"
 					></textarea>
+
+					<button
+						on:click={() => {
+							expandTextArea();
+						}}
+						class=" absolute top-2 right-2 max-h-14 px-2 py-2 text-white rounded-xl focus:bg-secondary-600"
+					>
+						{#if expanded}
+							<SquareArrowDownLeft size="28" />
+						{:else}
+							<SquareArrowUpRight size="28" />
+						{/if}
+					</button>
 
 					<button
 						on:click={() => {
 							sendMessage('user', textarea.value);
 						}}
-						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-primary-500 text-white rounded-xl focus:bg-primary-600"
-						><SendHorizontal size="24" /></button
+						class=" absolute bottom-2 right-2 max-h-14 px-2 py-2 bg-primary-500 text-black rounded-xl focus:bg-secondary-600"
+						><SendHorizontal size="28" /></button
 					>
 				</div>
 			</div>
@@ -338,9 +380,8 @@
 		padding: 1rem;
 		line-height: 1.5;
 		will-change: height;
-		transition: rows 250ms ease;
+		transition: rows 550ms ease;
 		overflow: hidden;
 		overflow-y: scroll;
 	}
 </style>
-
