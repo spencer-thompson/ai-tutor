@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SendHorizontal } from 'lucide-svelte';
+	import { SendHorizontal, MoveDown, SquareArrowDownLeft, SquareArrowUpRight } from 'lucide-svelte';
 	import { resize } from '$lib/components/textarea/resize';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { clipboard, Avatar } from '@skeletonlabs/skeleton';
@@ -10,17 +10,20 @@
 	import markedKatex from 'marked-katex-extension';
 	import { markedHighlight } from 'marked-highlight';
 	import hljs from 'highlight.js';
-	import { MoveDown } from 'lucide-svelte';
-
-	export let data;
+	import { courseBooleans } from '$lib/stores/courseBooleansStore';
 
 	let y: number;
+
+	export let data;
 
 	let name = 'textarea',
 		textarea = '',
 		height = 120,
 		value = ``,
-		inputHeight = 0;
+		inputHeight = 0,
+		full_rows = 3,
+		expanded = false,
+		isFocused = false;
 
 	function onResize(event) {
 		const { detail } = event;
@@ -31,6 +34,9 @@
 			height = event.detail.CR.height;
 		}
 	}
+
+	const onFocus = () => (isFocused = true);
+	const onBlur = () => (isFocused = false);
 
 	let shouldShowButton = false;
 	let showAppBar = false;
@@ -51,33 +57,13 @@
 		});
 	});
 
-	let messages: Message[] = [
-		{ role: 'user', content: 'katex: $c = \\pm\\sqrt{a ^ (2 + b) ^ 2}$', name: 'Guts' },
-		{
-			role: 'user',
-			content:
-				'**Partial Derivatives:**\n    $$ \\frac{\\partial f}{\\partial x} \\quad \\text{and} \\quad \\frac{\\partial f}{\\partial y} $$\n\n16.',
-			name: 'Guts'
-		},
-
-		{ role: 'assistant', content: '${Your Name}$', name: 'ai' },
-		{
-			role: 'assistant',
-			content: '$$ \\int \\cos^3(x) \\, dx = \\int \\cos(x) \\cdot (1 - \\sin^2(x)) \\, dx $$',
-			name: 'ai'
-		},
-		{
-			role: 'assistant',
-			content:
-				'Why hello there! I would like to see if this:\\n $$c = \\pm\\sqrt{a^{(2 + b)^2}}$$ \\n Appears in the center',
-			name: 'ai'
-		}
-	];
+	let messages: Message[] = [];
 
 	let buffer = '';
 	let scrollBufferHeight = 30;
 
-	$: rows = (value.match(/\n/g) || []).length + 1 || 1;
+	$: rows = ((value.match(/\n/g) || []).length + 1) | full_rows;
+	$: full_rows = expanded ? 30 : 3;
 
 	let canScrollDown = true;
 
@@ -100,11 +86,18 @@
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
+	const formatLatexMath = (str) =>
+		str.replace(/(\${1,2})\s*([\s\S]*?)\s*\1/g, (_, delim, content) => {
+			const trimmed = content.trim().replace(/\\n\s*/g, '\n');
+			return `${delim}${trimmed}${delim}`;
+		});
+
 	async function readData() {
 		console.log('calling');
 		const payload = {
 			messages,
 			courses: [101, 202],
+			// courses: courseBooleans.getAllCourses(),
 			model: 'gpt-4o'
 		};
 
@@ -140,20 +133,50 @@
 
 					const match = cleanedChunk.match(regex);
 
-					if (match) {
-						for (let i = 0; i < match.length; i++) {
-							buffer += match[i];
+					const matchList = match ? Array.from(match) : [];
+
+					if (matchList) {
+						for (let i = 0; i < matchList.length; i++) {
+							buffer += matchList[i];
 							if (messages.length > 0) {
-								messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+								console.log(`Match here: ${matchList}, length: ${matchList.length}`);
+								console.log(`Match here: ${matchList[i]}`);
+
+								// messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+
+								messages[messages.length - 1].content = marked.parse(
+									decodeUnicode(formatLatexMath(buffer.replace(/\\n/g, '\n')))
+								);
+
+								// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 
 								// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
 							}
 						}
 					}
+
+					// if (match) {
+					// 	for (let i = 0; i < match.length; i++) {
+					// 		buffer += match[i];
+					// 		if (messages.length > 0) {
+					// 			console.log(`Match here: ${match}, length: ${match.length}`);
+					//
+					// 			// messages[messages.length - 1].content = marked.parse(decodeUnicode(buffer));
+					//
+					// 			messages[messages.length - 1].content = marked.parse(
+					// 				decodeUnicode(formatLatexMath(buffer))
+					// 			);
+					//
+					// 			// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+					//
+					// 			// {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+					// 		}
+					// 	}
+					// }
 					scrolldown();
 
 					console.log(decodedChunk);
-					console.log(match);
+					// console.log(match);
 
 					await processChunk();
 				};
@@ -184,6 +207,7 @@
 	async function sendMessage(role: string, text: string) {
 		if (text.trim() != '') addMessage(role, text);
 		canScrollDown = true;
+		expanded = false;
 
 		setTimeout(() => {
 			scrollBufferHeight = 10;
@@ -191,6 +215,10 @@
 		scrolldown();
 		// scrollup();
 		value = '';
+	}
+
+	function expandTextArea() {
+		expanded = !expanded;
 	}
 
 	const options = {
@@ -217,6 +245,8 @@
 	const parsedContent = marked.parse('katex: $c = \\pm\\sqrt{a^2 + b^2}$');
 </script>
 
+<svelte:body data-sveltekit-preload-data="hover" data-theme="crimson" />
+
 <svelte:head>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" />
 	<link
@@ -225,7 +255,7 @@
 	/>
 </svelte:head>
 
-<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzQ1NDkxMTMxLCJpYXQiOjE3NDU0MDQ3MzF9.B1mpOmHk40eHO83qMxOdEQ1rr79SQpzFIsZ6zJ4SAYQ; expires=Fri, 28 May  2025 23:59:59 GMT; path=/"; -->
+<!-- document.cookie = "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjkzNzkwIiwidW5pIjoidXZ1IiwiZXhwIjoxNzQ1NTc1OTM3LCJpYXQiOjE3NDU0ODk1Mzd9.guGUqIoxMTrOKWEtOTA6M4gMNjHOeuT-I1NTBoWN0wM; expires=Fri, 28 May  2025 23:59:59 GMT; path=/"; -->
 
 <main class="flex flex-col min-h-screen pt-30">
 	<!--{#if shouldShowButton}-->
@@ -283,7 +313,7 @@
 						class="
                      px-3 rounded-2xl {message.role === 'user'
 							? ' max-w-[580px] ml-auto bg-slate-400 bg-opacity-50 '
-							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity-20'}
+							: ' max-w-[880px] mr-auto bg-gray-700 bg-opacity- shadow-xl shadow-primary-500/20'}
                             "
 					>
 						<div
@@ -291,7 +321,13 @@
 								? 'text-sm font-normal py-2.5 text-gray-900 dark:text-white'
 								: 'text-sm font-normal py-2.5 text-gray-900 opacity-100 dark:text-white'}
 						>
-							{@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))}
+							<!-- {@html marked.parse(decodeUnicode(message.content))} -->
+							{@html marked.parse(
+								decodeUnicode(formatLatexMath(message.content.replace(/\\n/g, '\n')))
+							)}
+
+							<!-- {@html marked.parse(decodeUnicode(processContent(message.content)))} -->
+							<!-- {@html marked.parse(decodeUnicode(message.content.replace(/\\n/g, '\n')))} -->
 						</div>
 					</div>
 				</div>
@@ -299,29 +335,48 @@
 		</div>
 	</div>
 	<div class="bottom-48"></div>
+	<!-- <div class="bg-gradient-to-tr from-cyan-400 to indigo-400">yo soy the devil</div> -->
 
 	<div class="fixed gap-2 inset-x-0 bottom-5 mx-4">
-		<div class="max-w-4xl mx-auto px-4">
-			<div class="bg-gray-800 rounded-3xl py-3 relative">
-				<div class="flex flex-col w-full pr-24">
+		<div
+			class="max-w-4xl mx-auto rounded-3xl p-1 {isFocused
+				? 'bg-gradient-to-bl from-tertiary-500/30 to-secondary-500/30'
+				: ''}"
+		>
+			<div class=" bg-gray-800 rounded-3xl relative">
+				<div class="flex flex-col w-full pr-14">
 					<textarea
 						{rows}
+						on:resize={onResize}
+						on:blur={onBlur}
+						on:focus={onFocus}
+						use:resize
 						name="textareaContent"
 						bind:this={textarea}
-						use:resize
-						on:resize={onResize}
 						placeholder="Send message to AI Tutor..."
-						style="--height: auto"
 						bind:value
-						class="text-white flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-black focus:ring-0"
+						class="placeholder-secondary-700 flex-1 bg-transparent border-none outline-none min-h-[40px] max-h-[500px] text-white focus:ring-0"
 					></textarea>
+
+					<button
+						on:click={() => {
+							expandTextArea();
+						}}
+						class=" absolute top-1 right-1 max-h-14 px-2 py-2 text-white rounded-xl focus:bg-secondary-600"
+					>
+						{#if expanded}
+							<SquareArrowDownLeft size="24" />
+						{:else}
+							<SquareArrowUpRight size="24" />
+						{/if}
+					</button>
 
 					<button
 						on:click={() => {
 							sendMessage('user', textarea.value);
 						}}
-						class=" absolute bottom-5 right-3 max-h-14 px-4 py-2 bg-primary-500 text-white rounded-xl focus:bg-primary-600"
-						><SendHorizontal size="24" /></button
+						class=" absolute bottom-2 right-2 max-h-14 px-2 py-2 bg-primary-500 text-black rounded-xl focus:bg-secondary-600"
+						><SendHorizontal size="28" /></button
 					>
 				</div>
 			</div>
@@ -338,9 +393,8 @@
 		padding: 1rem;
 		line-height: 1.5;
 		will-change: height;
-		transition: rows 250ms ease;
+		transition: rows 550ms ease;
 		overflow: hidden;
 		overflow-y: scroll;
 	}
 </style>
-

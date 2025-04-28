@@ -22,6 +22,8 @@
 		Lightbulb
 	} from 'lucide-svelte';
 
+	export let data;
+
 	hljs.registerLanguage('xml', xml); // for HTML
 	hljs.registerLanguage('css', css);
 	hljs.registerLanguage('javascript', javascript);
@@ -73,7 +75,6 @@
 <slot />
 
 <Modal components={modalRegistry} />
-
 <Drawer>
 	<div out:fade>
 		{#if $drawerStore.id === 'example-3'}
