@@ -2,7 +2,7 @@
 .venv/
 
 ### MONGO ###
-
+mongo/snapshots/*
 mongo-init.js
 
 ### JS ###

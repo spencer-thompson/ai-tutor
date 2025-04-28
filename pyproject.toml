@@ -3,34 +3,19 @@ name = "ai-tutor"
 version = "0.20"
 description = "An AI interface with the Canvas Learning Management System"
 readme = "README.md"
+requires-python = ">=3.12.8"
 dependencies = [
-  "streamlit>=1.39.0",
-  "openai",
-  "tiktoken",
-  "requests",
-  "bs4",
-  "lxml",
-  "ipython",
+    "anthropic>=0.50.0",
+    "bs4>=0.0.2",
+    "fastapi[standard]>=0.115.12",
+    "ipython>=9.1.0",
+    "lxml>=5.4.0",
+    "markdownify>=1.1.0",
+    "motor[srv]>=3.7.0",
+    "openai>=1.76.0",
+    "pandas>=2.2.3",
+    "pyjwt>=2.10.1",
+    "pytest>=8.3.5",
+    "qrcode>=8.1",
+    "streamlit>=1.44.1",
 ]
-
-[project.optional-dependencies]
-dev = ["black"]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.setuptools.packages.find]
-include = ["streamlit"]
-
-[tool.black]
-line-length = 120
-target-version = ["py37"]
-
-[tool.ruff]
-line-length = 120
-output-format = "grouped"
-target-version = "py37"
-
-[tool.ruff.format]
-docstring-code-format = true

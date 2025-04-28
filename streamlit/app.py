@@ -366,6 +366,8 @@ info_pages = (
 dev_pages = [
     st.Page("./page/session_state.py", title="Session State", icon=":material/settings:"),
 ]
+admin_pages = [st.Page("./page/analytics.py", title="Analytics", icon=":material/analytics:")]
+
 
 pages = {}
 pages["INFO"] = info_pages
@@ -375,9 +377,13 @@ if st.session_state.user.get("authenticated"):
         pages["AI"] = user_pages
         # pages["INFO"] = info_pages
 
+    if st.session_state.user["role"] in ["admin"]:
+        pages["ADMIN"] = admin_pages
+
     if st.session_state.user["role"] in ["dev"]:
         pages["AI"] = user_pages
         # pages["INFO"] = info_pages
+        pages["ADMIN"] = admin_pages
         pages["DEV"] = dev_pages
 
     pg = st.navigation({"PROFILE": account_pages} | pages, expanded=True)

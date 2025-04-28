@@ -16,19 +16,18 @@ from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from itertools import zip_longest
-from logging.config import dictConfig
 from typing import List
 
 import jwt
 from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
-from config import LogConfig
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
+from httpx import AsyncClient
 from markdownify import markdownify as md
-from models import CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
+from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import AsyncOpenAI
 
@@ -37,6 +36,7 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 DOMAIN = os.getenv("DOMAIN")
+PLAUSIBLE_API_KEY = os.getenv("PLAUSIBLE_API_KEY")
 SYSTEM_MESSAGE = [
     {
         "role": "system",
@@ -50,7 +50,6 @@ SYSTEM_MESSAGE = [
 
 tools = []
 
-# dictConfig(LogConfig().dict())
 logger = logging.getLogger("uvicorn")
 
 
@@ -64,7 +63,9 @@ async def db_lifespan(app: FastAPI):
     app.log = logging.getLogger("uvicorn")
     app.log.info(f"--- API Started at [{DOMAIN}] ---")
 
-    app.mongodb_client = AsyncIOMotorClient(CONNECTION_STRING)  # setup mongo
+    app.mongodb_client = AsyncIOMotorClient(
+        CONNECTION_STRING
+    )  # This sets up mongodb and lets us reference from the fastapi object
     app.mongodb = app.mongodb_client.get_database("aitutor")
     ping_response = await app.mongodb.command("ping")
 
@@ -118,6 +119,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
+    """
+    Check to see if an API key is valid.
+    """
     document = await app.mongodb["keys"].find_one({api_key: {"$exists": True}})
     if document:
         return [v for k, v in document.items() if k not in {"_id"}][0]
@@ -129,6 +133,11 @@ async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
 
 
 def create_access_token(data: dict):
+    """
+    Encode a new JWT using the canvas_id and university
+
+    The tokens expire after 1 day
+    """
     to_encode = data.copy()
     now = datetime.now(timezone.utc)
     expire = now + timedelta(days=1)
@@ -138,6 +147,11 @@ def create_access_token(data: dict):
 
 
 async def get_user_from_token(token: str):
+    """
+    Given a JWT token, checks if the token is valid.
+
+    If it is valid, it returns the user document from the database.
+    """
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
         id = payload.get("sub")
@@ -172,6 +186,8 @@ async def get_user_from_token(token: str):
             .to_list(None)
         )
 
+        # this is the crazy "join" for mongo
+        # Joining the course catalog with a users courses from canvas
         merged_courses = [
             {**c, **a}
             if (" ".join(c.get("course_code")) if c.get("course_code") else " ".join(c.get("name").split("-")[0:2]))
@@ -192,6 +208,8 @@ async def get_user_from_token(token: str):
 
 async def get_user_id_from_token(token: str):
     """
+    Takes in a JWT token.
+
     Returns a tuple of id, uni
     """
     try:
@@ -216,11 +234,17 @@ async def get_user_id_from_token(token: str):
 
 @app.get("/")  # this is a test endpoint just to see if it working
 async def read_root():
+    """
+    Test endpoint
+    """
     return {"Hello": "World"}
 
 
 @app.get("/key")
 async def get_key(api_key_value: dict = Depends(check_api_key)):
+    """
+    Get the value (notes) associated with an API key, if the key is valid.
+    """
     return api_key_value
 
 
@@ -268,6 +292,9 @@ async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = De
 
 @app.post("/user")
 async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_api_key)):
+    """
+    Add a new user into the database.
+    """
     user_dict = user_data.dict(exclude_none=True)
 
     for activity in user_dict["activity_stream"]:
@@ -320,6 +347,9 @@ async def update_user_settings(
 async def save_chat_session(
     messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
 ):
+    """
+    Saves the last chat message in the database.
+    """
     id, uni = await get_user_id_from_token(token)
 
     app.mongodb["users"].update_one(
@@ -331,12 +361,18 @@ async def save_chat_session(
 
 @app.get("/user_count")
 async def get_user_count(api_key_value: dict = Depends(check_api_key)):
+    """
+    Returns the total amount of users.
+    """
     total_users = len(await app.mongodb["users"].find().to_list(None))
     return {"total_users": total_users}
 
 
 @app.post("/course")
 async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(check_api_key)):
+    """
+    Insert or update a course into the database.
+    """
     course_dict = course_data.dict(exclude_none=True)
 
     if syllabus := course_dict.get("syllabus_body"):
@@ -356,8 +392,71 @@ async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(
     )
 
 
+@app.get("/analytics")
+async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depends(check_api_key)):
+    """
+    Get analytic data from Plausible.
+    """
+    url = "https://analytics.aitutor.live/api/v2/query"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {PLAUSIBLE_API_KEY}"}
+    filters = [["is_not", "event:props:canvas_id", ["(none)"]]]
+    # filters = [["is_not", "event:props:canvas_id", ["(none)"]], ["is_not", "event:props:length", ["(none)"]]]
+    dimensions = [
+        "event:props:canvas_id",
+        "event:goal",
+        # "event:props:length",
+        # "event:props:id",
+        # "event:page",
+    ]
+    if data.timeseries:
+        dimensions.insert(1, "time:day")
+
+    request_data = {
+        "site_id": "aitutor.live",
+        "metrics": ["events"],
+        "filters": filters,
+        "dimensions": dimensions,
+        "date_range": [data.start, data.end],
+    }
+
+    async with AsyncClient() as client:
+        r = await client.post(url, json=request_data, headers=headers)
+
+    results = r.json().get("results")
+
+    if not results:
+        return r.json()
+
+    if "event:props:canvas_id" in dimensions:
+        canvas_ids = [int(i.get("dimensions")[0]) for i in results]
+
+        matching_users = await app.mongodb["users"].find({"canvas_id": {"$in": canvas_ids}}).to_list(None)
+
+        users = [
+            {k: v for k, v in u.items() if k != "activity_stream" if k != "planner" if k != "chat_history"}
+            for u in matching_users
+        ]
+
+        print(users)
+
+        # final_data = []
+
+    # filtered_data = [{k: v for k, v in d.items() if k != 'age'} for d in data]
+
+    # matching_courses = [{u.get("canvas_id"): u.get("courses")} for u in matching_users]
+
+    # final_data = [c for c in matching_courses]
+
+    # NOTE: not yet working like I would like
+
+    return r.json()
+
+
 @app.post("/v1/chat")
 async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_key)):
+    """
+    Non streaming chat endpoint without extra features.
+    """
     completion = await app.openai.chat.completions.create(
         messages=SYSTEM_MESSAGE + messages,
         model=CHAT_MODEL,
@@ -369,6 +468,10 @@ async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_
 
 @app.post("/v1/chat_stream")
 async def chat_stream(messages: List[Message], api_key_value: dict = Depends(check_api_key)):
+    """
+    Streaming chat endpoint without any extra features.
+    """
+
     async def iter_response(messages):
         completion = await app.openai.chat.completions.create(
             messages=SYSTEM_MESSAGE + messages,
@@ -409,6 +512,8 @@ async def smart_chat_stream(
     messages = chat.messages
     model = chat.model
     course_descriptions = []
+    # this processes data from the user and the database
+    # and prepares it for the AI chat / function calling
     for c in user["courses"]:
         if c["id"] in chat.courses:
             if c.get("course_code"):

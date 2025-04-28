@@ -1,0 +1,586 @@
+* de6bbf3 | Guts | 4 days ago  HEAD -> main, origin/main, origin/HEAD
+| claude made highlighting work by doing something I forgot to try
+| 
+* 4f1ad14 | Guts | 4 days ago  
+| The katex issue is mostly ok. Changed the styling and appearance of the site. This commit is before claude has done anything to my code
+| 
+* 5a37911 | Spencer | 8 days ago  
+| figured out what we need to do for guts
+| 
+* 972c487 | Spencer | 8 weeks ago  
+| fixed more python bugs
+| 
+* a4b8eec | Spencer | 8 weeks ago  
+| removed the delete data button, also added a bunch of developer utilities and fixed a bug with ai executing python code
+| 
+* 1765be3 | Spencer | 9 weeks ago  
+| fixes #105, fixes #110, fixes #111 made a bunch of fixes to python and security
+| 
+* 89c30f4 | Guts Wright | 3 months ago  
+| added in katex parsing line
+| 
+* ccbb23c | Guts | 3 months ago  
+| Made a custom modal, and made some more buttons
+| 
+* b5ddc0d | Spencer | 3 months ago  
+| trying to debug the new chat stuff
+| 
+* e58c998 | Guts | 3 months ago  
+| katex actually is not fixed, but the scroll down button looks better
+| 
+* bb6ea24 | Guts | 3 months ago  
+| Katex is flipping working! lets goooooogit add .firefoxd &
+| 
+* 9d5b233 | Guts | 3 months ago  
+| Added a dynamic appBar
+| 
+* d3d5296 | Guts | 3 months ago  
+| marking a safe place to return to
+| 
+* 8daedfd | Spencer | 3 months ago  
+| Added python execution for better math, saving chats, fixed major bugs fixes. also regex done on backend #105, fixes #103, fixes #102, fixes #101, fixes #85 (closing in favor of svelte deployment), fixes #49
+| 
+* 2349b5e | Guts | 3 months ago  
+| Added a modal, need to customize
+| 
+* bbab9a9 | Guts | 3 months ago  
+| added the scroll to bottom of screen button
+| 
+* 6b80394 | Guts | 3 months ago  
+| App bar is looking good. Need to make it functional
+| 
+* d99a817 | Guts | 3 months ago  
+| Added an app rail with a transition
+| 
+* a6c4b67 | Guts | 3 months ago  
+| started adding appbar/apprail stuff, changed colors
+| 
+* f80f7f5 | Guts | 3 months ago  
+| ok this seems a viable solution for katex rendering, or something to base it off of
+| 
+* 9c935f3 | Guts | 3 months ago  
+| need to figure out how to identify and insert into a Katex element
+| 
+* 4ea3d94 | Guts | 3 months ago  
+| Okay we are getting somewhere with katex
+| 
+* 4516a17 | Guts | 3 months ago  
+| cleaned up +page.svelte and got rid of unnecessary files
+| 
+* 4687b43 | Guts | 3 months ago  
+| katex working
+| 
+* 23415a9 | Guts | 3 months ago  
+| started messing with katex
+| 
+* ff32c26 | Guts | 3 months ago  
+| emojis are appearing now
+| 
+* 358c79a | Guts | 3 months ago  
+| scroll is working better, code block is better. Parsing emoji's is weird. Getting weird escape characters in code blocks. everything seems to want to be wrapped in triple quotes
+| 
+* ad1715a | Spencer | 3 months ago  
+| fixed a bug maybe
+| 
+* ea35e40 | Spencer | 3 months ago  
+| hotfix
+|   
+*   5b45289 | Spencer | 3 months ago  
+|\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor  whoopsie merge
+| | 
+| * 3327c04 | Guts | 3 months ago  
+| | Added restart scrolling effect when the user is at the bottom of the screen
+| | 
+* | cf9de9f | Spencer | 3 months ago  
+|/  fixed #98, users should now stay logged in for longer, fixed #97, fixed #96 cookies now set from streamlit, fixed #95 now can login through the qr code
+| 
+* 3bbcf52 | Guts | 3 months ago  
+| Added avatars, added context of all past responses
+| 
+* b42bf0b | Guts | 3 months ago  
+| markdown is hard
+| 
+* a4b77a2 | Guts | 3 months ago  
+| looking good, just removed unused functions
+| 
+* 973665e | Guts | 3 months ago  
+| The scrolling is looking pretty good
+| 
+* a11d5a3 | Guts | 3 months ago  
+| Added in a function that checks when the user scrolls, just need to implement
+| 
+* 20fd61b | Guts | 3 months ago  
+| Automatically scrolls to bottom, need to get total height of scrollable window and set a range for auto scrolling or not.
+| 
+* 972b401 | Guts | 3 months ago  
+| figured out that skeleton ui is overriding markdown presets
+| 
+* be0ee76 | Guts | 3 months ago  
+| trying to work on markdown and automatic scrolling
+| 
+* 0bc6e30 | Guts | 3 months ago  
+| Working decently
+| 
+* a9daa6f | Guts | 3 months ago  
+| shows last messages, then deletes and shows new message
+| 
+* f561210 | Guts | 3 months ago  
+| Bubbles are one behind, and not streaming but still working
+| 
+* 3d0aa40 | Guts | 3 months ago  
+| Maybe add a hook file?
+| 
+* b33171e | Guts | 3 months ago  
+| Getting closer, the parsing is working
+|   
+*   0cb67f8 | Guts | 3 months ago  
+|\  Merging commits
+| |   
+| *   8b5e4c0 | Spencer | 3 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor whoopsie merge
+| | | 
+| * | 20ce0b9 | Spencer | 3 months ago  
+| | | fixes #75 and fixes #33
+| | | 
+* | | 8a79216 | Guts | 3 months ago  
+| |/  This has been tough
+|/|   
+| | 
+* | 268e0ef | Guts | 3 months ago  
+| | I am getting the messages, just having trouble yielding the results from the backend as they come to the frontend.
+| | 
+* | f63d725 | Guts | 3 months ago  
+|\| merging with Spencer's fixes to the code
+| |   
+| *   105f5a2 | Spencer | 3 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | | 
+| * | 1e693cf | Spencer | 3 months ago  
+| | | fixed #84 in the settings menu
+| | | 
+* | | 979c2cf | Guts | 3 months ago  
+| |/  Am able to send requests to the backend! Am having trouble consuming readable stream, also need to figure out displaying content fetched
+|/|   
+| | 
+* | 6deeab9 | Guts | 3 months ago  
+| | Made progress on API call. 'Invalid token' error, then internal server error'.
+| | 
+* | 9834071 | Guts | 3 months ago  
+|\| merging branches
+| |   
+| *   8d04bd7 | Spencer | 3 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | | 
+| * | e6fc71a | Spencer | 3 months ago  
+| | | I got the math display working, with a solid solution fixes #80, fixed #76 bug with chat control, fixed #74 the tutor now only shows upcoming assignments without a grade, also made some small polishes and overall ai behavior fixes. Also assignments / updates / whatever are now sorted by time
+| | | 
+* | | 22e6e18 | Guts | 3 months ago  
+| |/  Started to work on sending messages to docker container
+|/|   
+| | 
+* | 23f340e | Guts | 3 months ago  
+| | Changed dir back to svelte, working well
+| | 
+* | f5cbf39 | Guts | 3 months ago  
+| | removed svelte directory
+| | 
+* | d3713df | Guts | 3 months ago  
+| | Changed name of v2svelte to just svelte
+| | 
+* | 89fb4aa | Guts | 3 months ago  
+|\| merging
+| | 
+| * 57e7298 | Spencer | 3 months ago  
+| | added a tips page fixes #77 informed the tutor about the 1 week time window fixes #81, reduced costs by using gpt-4o-mini for the initial message fixes #77, fixes #73
+| | 
+| * 53f96f9 | Spencer | 3 months ago  
+| | svelte docker container for development should be able to be run
+| | 
+| * 7c174c6 | Guts Wright | 3 months ago  
+| | switched v2svelte to svelte
+| | 
+| * 12b6d80 | Spencer | 3 months ago  
+| | fixed a little bug
+| | 
+* | 0b815e1 | Guts | 3 months ago  
+|/  From desktop commit
+| 
+* 23640e0 | Guts | 3 months ago  
+| started to add the cookie pull
+| 
+* fa7a6ab | Guts | 3 months ago  
+| uncommented stuff
+| 
+* 846d93a | Guts | 3 months ago  
+| Shouldn't be too hard to add markdown
+| 
+* 18a1b60 | Guts | 3 months ago  
+| removed flutter 'frontend' directory
+| 
+* 9192ee7 | Guts | 3 months ago  
+| Messages are aligned, button is in the same div as text area (looks better)
+| 
+* e326ba8 | Guts | 3 months ago  
+| Made some css changes, this is a safe place to stop
+| 
+* 57eacd9 | Guts | 3 months ago  
+| postioning is better
+| 
+* 5ce8933 | Guts | 3 months ago  
+| Still doesn't look good, but I'll take a stab at it in a litte
+|   
+*   849d44a | Guts | 3 months ago  
+|\  merging commits
+| | 
+| * 775e37e | Spencer | 4 months ago  
+| | tutor now sends first message with added settings, fixes #64, fixed #68, fixed #70, fixed #71, fixed #72 pretty much a bunch of bug fixes and new tech debt
+| | 
+| * b4d77be | Spencer | 4 months ago  
+| | hotfix
+| | 
+| * 331c90d | Spencer | 4 months ago  
+| | fixed hallucinations, and also properly implemented upcoming assignments, updates, and system messages fixes #65 fixes #66 fixes #63 fixes #62 fixes #54 fixes #43 fixes #38
+| | 
+| * 50b43fe | Spencer | 4 months ago  
+| | added pyenv, also got analytics working fixes #61
+| | 
+| * 82afbe9 | Spencer | 4 months ago  
+| | added about page from noble
+| |   
+| *   bdfd960 | Spencer | 4 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | | 
+| | * 4724fdd | Noble Beazel | 4 months ago  
+| | | Create about.md
+| | | 
+| * | 81e1e63 | Spencer | 4 months ago  
+| |/  got analytics working fixes #60, also made some polishes and small fixes
+| | 
+| * 77c4b65 | Spencer | 4 months ago  
+| | fixed the time issue, and the bug regarding context, also moved the privacy policy fixes #57, microsoft edge store is taken care of fixes #48
+| | 
+* | 21539cd | Guts | 3 months ago  
+|/  Added the start of the v2 of the website (this is in svelte)
+|   
+*   10fe0d4 | Guts | 5 months ago  
+|\  merging
+| | 
+| * b97fc2e | Spencer | 5 months ago  
+| | fixed issue with date
+| | 
+* | 4e5e0a9 | Guts | 5 months ago  
+|/  QR code mostly works, so do streamed responses
+| 
+* ad1f91f | Guts | 5 months ago  
+| added package name for testing to androidManifest
+| 
+* 7f96c5f | Guts | 5 months ago  
+| Added group buttons, and made ugly customizations to another group of buttons
+| 
+* 4c90393 | Guts | 5 months ago  
+| Added more colors, customized typingIndicator, refactored for easier readablility
+| 
+* c1f9009 | Guts | 5 months ago  
+| Can now copy and paste and clear all messages (to start a new chat). Still needs lots of polishing
+|   
+*   ca9a804 | Guts | 5 months ago  
+|\  Merge request
+| | 
+| * 3a73a63 | Spencer | 5 months ago  
+| | extension is live fixes #55, started moving context, also fixed #53
+| | 
+| * 587b3bf | Spencer | 5 months ago  
+| | giant json incoming
+| | 
+| * 0a9042a | Spencer | 5 months ago  
+| | added issue template
+| | 
+| * 35734d1 | Noble Beazel | 5 months ago  
+| | Create ISSUE_TEMPLATE
+| | 
+* | 715ca84 | Guts | 5 months ago  
+|/  Fixed Android Build error and added typing indicator, (it's not working yet)
+| 
+* c5d62be | Spencer | 5 months ago  
+| big updates, added privacy policy, and published to chrome web store fixes #46, added users settings to the database so they persist fixes #50, can now give the ai links to go and browse fixes #37, users have roles in the database fixes #26
+| 
+* d8bf6ce | Spencer | 5 months ago  
+| big updates, added privacy policy, and published to chrome web store fixes #46, added users settings to the database so they persist fixes #50, can now give the ai links to go and browse fixes #37, users have roles in the database fixes #26
+| 
+* 548996f | Spencer | 5 months ago  
+| I was suffering with jwt fixes #52, also added query param with privacy policy fixes #45
+|   
+*   477e211 | Spencer | 5 months ago  
+|\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | 
+| * d92bf24 | Noble Beazel | 5 months ago  
+| | Create privacy-policy.md
+| | 
+* | 5d13b86 | Spencer | 5 months ago  
+|/  worked on extension
+| 
+* 69b5091 | Guts Wright | 5 months ago  
+| Added Laptop Extension ID to CORS
+| 
+* c535336 | Guts | 5 months ago  
+| Qr Scans then goes into chat interface
+| 
+* 30f1b40 | Spencer | 5 months ago  
+| updated extension, working on publishing to the app store (for extensions)
+| 
+* dd8419b | Guts | 5 months ago  
+| Added CORS extension ID
+| 
+* 57134cb | Guts | 5 months ago  
+| Small changes
+|   
+*   745a43e | Guts | 5 months ago  
+|\  Merging commits
+| | 
+| * 7a2f923 | Spencer | 5 months ago  
+| | WE ARE DEPLOYED fixes #39, query params are working fixes #40
+| | 
+| * 292e4e7 | Spencer | 5 months ago  
+| | removed old mongo init js
+| |   
+| *   191ca41 | Spencer | 5 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | | 
+| * | 389526c | Spencer | 5 months ago  
+| | | my code from hell night
+| | | 
+* | | b46d162 | Guts | 5 months ago  
+| |/  Added dark theme toggle, works for appbar and systemUI
+|/|   
+| | 
+* | 251685c | Guts | 5 months ago  
+| | Added a side drawer that needs configuration
+| | 
+* | 416c588 | Guts | 5 months ago  
+| | Added shaders, looks decent
+| | 
+* | 28b1e5c | Guts | 5 months ago  
+| | Figured out Transparency for qr code scanner, now just need to design it
+| | 
+* | 93c9fb5 | Guts | 5 months ago  
+| | Deleted unused example files, started playing with QR code functionality
+| | 
+* | c878882 | Guts | 5 months ago  
+|/  Removed unnecessary files, started refactoring for qr code
+|   
+*   56e7637 | Spencer | 5 months ago  
+|\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor whoopsie merge
+| | 
+| * 37a58eb | Guts Wright | 5 months ago  
+| | added qr_code example code, need to refactor
+| | 
+* | 2ef8bd8 | Spencer | 5 months ago  
+|/  trying to get function calls working
+| 
+* 117bd44 | Spencer | 6 months ago  
+| finally fixed the centered icons, got extension working with sidebar (kinda) some cool new features
+| 
+* 84c2e01 | Guts | 6 months ago  
+| Started messing with themes
+| 
+* 354ef9c | Guts | 6 months ago  
+| Changed to non-streamed response. Context is working properly. Emoji's are appearing on screen but are not colorful.
+|   
+*   8c7dd7f | Guts | 6 months ago  
+|\  merging to most recent commit
+| | 
+| * c75f2ac | Spencer | 6 months ago  
+| | cookies now set properly fixes #42, I did write the docker compose for deployment but have not deployed fixes #41
+| | 
+* | 1f54d73 | Guts | 6 months ago  
+|/  Can print off messages one after the next in a tree-like fashion
+| 
+* c64dca5 | Guts | 6 months ago  
+| Able to receive the stream response, hard to display it :/
+| 
+* a98a9ec | Spencer | 6 months ago  
+| extension is working to get courses fixes #35, converting html to markdown so the ai can understand, and not waste space and money in mongo fixes #36, user experience is working more as expected, all courses selected by default fixes #34
+| 
+* ea5d2a0 | Spencer | 6 months ago  
+| updated from demo, and small changes
+| 
+* d29e8bf | Guts | 6 months ago  
+| up to date
+| 
+* 87f1c59 | Guts | 6 months ago  
+| Bubble height and width change dynamically
+| 
+* b6e3c73 | Noble Beazel | 6 months ago  
+| Update meeting-notes.md
+| 
+* 1fc746b | Spencer | 6 months ago  
+| added default role, got course buttons working, ready for demo hehe fixes #30, fixes #29, fixes #28
+| 
+* 6f9e5dd | Spencer | 6 months ago  
+| we are gettind deep
+| 
+* 62227da | Spencer | 6 months ago  
+| fixes #20, also working on the settings page and login logic
+| 
+* 53a4db0 | Spencer | 6 months ago  
+| I got it working and its so dope. Log in works (without extension) fixes #27, also added a settings page for configuration, got data points fixes #16, looked into streaming response fixes #19
+| 
+* 25aea77 | Spencer | 6 months ago  
+| working on JWTs not tested yet, fixes #25
+| 
+* d6d0cb5 | Spencer | 6 months ago  
+| starting on jwts
+| 
+* ad7cc93 | Guts Wright | 6 months ago  
+| fixes #18 the extension can read query params
+| 
+* 2758fa3 | Guts | 6 months ago  
+| added localhost to allow_origins list
+| 
+* 9fa0e92 | Guts | 6 months ago  
+| refactored basic_chat_ui.dart
+| 
+* e187821 | Guts | 6 months ago  
+| GPT to flutter app working! Other changes made: * Added localhost to main.py * Added a comment file (comments.py) we can delete later * basic_chat_ui code is ugly and will need refactoring
+| 
+* 0edea85 | Guts | 6 months ago  
+| the opposite user is showing text bubbles
+| 
+* c2ea939 | Spencer | 6 months ago  
+| added temperature and top_p as well as added the markdown system messages to the chat endpoint
+| 
+* 392a746 | Guts | 6 months ago  
+| checking the errors
+| 
+* b8b1e49 | Guts | 6 months ago  
+| Need to change height dynamically, show avatars, and status...
+| 
+* 1282354 | Guts | 6 months ago  
+| Markdown works, finallygit status! hahaha
+| 
+* 943c7d2 | Spencer | 6 months ago  
+| updated the styles css to be injected in the haed for less jank, properly pulling activity stream fixes #17
+|   
+*   8297886 | Spencer | 6 months ago  
+|\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | 
+| * b0afa01 | Noble Beazel | 6 months ago  
+| | Update meeting-notes.md
+| | 
+| * f8291ad | Noble Beazel | 6 months ago  
+| | Update meeting-notes.md
+| | 
+* | 8e95391 | Spencer | 6 months ago  
+|/  got a bunch of stuff done
+| 
+* 556eac4 | Spencer | 6 months ago  
+| it be working from canvas yeehaw fixes #8
+| 
+* 0a6602c | Spencer | 6 months ago  
+| we really cooking now fixes #7 api keys are working now, also fixes #12 got streaming api working
+| 
+* b918864 | Spencer | 6 months ago  
+| added better typing for the Message model
+| 
+* 766c26d | Spencer | 6 months ago  
+| oofda mongo makes me sad sometimes
+|   
+*   eb295a9 | Spencer | 6 months ago  
+|\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor
+| | 
+| * 150550d | Asmaa Alsharif | 6 months ago  
+| | Added text to testing.txt
+| | 
+* | 75fb052 | Spencer | 6 months ago  
+|/  added content.js with better canvas func
+| 
+* 4630976 | Spencer | 6 months ago  
+| cleaned up the backend main.py and also docker compose
+| 
+* a3d330b | Spencer | 6 months ago  
+| fixes #10 and fixes #11 giant commit, got mongo working, got fastapi working, all docker containers are running from develop.yaml, removed dependencies, cleaned up some comments, now using async openai library, pretty baller
+| 
+* c205b77 | Spencer | 6 months ago  
+| added some stuff lol
+| 
+* a9eea15 | Noble Beazel | 6 months ago  
+| Update README.md
+| 
+* 60313ca | Noble Beazel | 6 months ago  
+| Update README.md
+| 
+* c896247 | Spencer | 6 months ago  
+| found a good reference doc and updated some varaibles
+| 
+* f6cd281 | Spencer | 6 months ago  
+| major updates hehe
+| 
+* cee0a89 | Spencer | 6 months ago  
+| mega commit >:D
+| 
+* 107b1ab | Guts | 6 months ago  
+| played with file picker, which isn't supported on web but should be on ios and android
+|   
+*   2a357d4 | Guts | 6 months ago  
+|\  merging with current branch
+| | 
+| * 530245b | Noble Beazel | 6 months ago  
+| | Create demo-plan.md
+| | 
+| * 9335f7e | Noble Beazel | 6 months ago  
+| | Create project-proposal.md
+| | 
+| * 8c6890d | Noble Beazel | 6 months ago  
+| | Create scope-statement.md
+| | 
+| * 6bba9f0 | Noble Beazel | 6 months ago  
+| | Create meeting-notes.md
+| | 
+| * 857a90f | Spencer | 7 months ago  
+| | added doc folder
+| | 
+| * 691dd42 | Spencer | 7 months ago  
+| | added noble as codeowner
+| | 
+* | 2b1686f | Guts | 6 months ago  
+|/  basic flutter chat ui
+|   
+*   c5daba6 | Guts | 7 months ago  
+|\  merging, added files from the extension folder
+| | 
+| * 8296e46 | Spencer | 7 months ago  
+| | working?
+| | 
+* | 4af4874 | Guts | 7 months ago  
+| | Added playground flutter app to test widgets
+| | 
+* | e8ec499 | Guts | 7 months ago  
+|/  Added lots of comments to figure out what is going on so I can actually write my own flutter code
+| 
+* 8610c9b | Spencer Thompson | 7 months ago  
+| notes from mobile
+|   
+*   005f8a8 | Guts Wright | 7 months ago  
+|\  merging
+| |   
+| *   d0742be | Spencer | 7 months ago  
+| |\  Merge branch 'main' of github.com:spencer-thompson/ai-tutor idk
+| | | 
+| * | 8b825a2 | Spencer | 7 months ago  
+| | | got database up and running, need to figure out canvas
+| | | 
+* | | 998fc15 | Guts Wright | 7 months ago  
+| |/  Added lib files back in
+|/|   
+| | 
+* | fc9e79d | Guts Wright | 7 months ago  
+| | added back in lib folder, error with null value upon logging in
+| | 
+* | bad667d | Guts | 7 months ago  
+|/  frontend is the flutter folder which will contain the chat UI
+| 
+* 7d0e0ad | Spencer | 7 months ago  
+| first commit, getting this party started
+| 
+* bf04373 | Spencer Thompson | 7 months ago  
+  Initial commit

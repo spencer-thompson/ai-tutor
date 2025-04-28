@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Literal, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 # class UserModel(BaseModel):
 #     """
@@ -32,7 +32,7 @@ class Chat(BaseModel):
 
     messages: List[Message]
     courses: Optional[List[int]] = None
-    model: Optional[Literal["gpt-4o", "gpt-4o-mini", "o1"]] = "gpt-4o"
+    model: Optional[Literal["gpt-4o", "gpt-4o-mini", "o1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"]] = "gpt-4.1"
 
 
 class Rubric(BaseModel):
@@ -169,3 +169,13 @@ class CanvasData(BaseModel):
     activity_stream: List[Activity]
     planner: Optional[List[PlannerItem]] = None
     # effective_local: str
+
+
+class AnalyticsRequest(BaseModel):
+    timeseries: Optional[bool] = False
+    duration: Optional[bool] = False
+    # metrics: Optional[List[Literal["events", "pageviews", "visitors"]]]
+    # start: Annotated[str, constr(pattern=r"^\d{4}-\d{2}-\d{2}$")]
+    # end: Annotated[str, constr(pattern=r"^\d{4}-\d{2}-\d{2}$")]
+    start: str = datetime.now().strftime("%Y-%m-%d")
+    end: str = (datetime.now() - timedelta(weeks=1)).strftime("%Y-%m-%d")

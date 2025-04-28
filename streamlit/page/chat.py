@@ -10,7 +10,9 @@ PATTERNS = [  # patterns for converting latex to markdown math
 ]
 
 
-def runner(courses, model: Literal["gpt-4o", "gpt-4o-mini", "o1"] = "gpt-4o"):
+def runner(
+    courses, model: Literal["gpt-4o", "gpt-4o-mini", "o1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"] = "gpt-4.1"
+):
     """
     Helper function for the tutor, yields token as they are received
     """
@@ -177,7 +179,7 @@ if (
         },
     )
     with st.chat_message("assistant"):
-        st.write_stream(runner(selected_courses, model="gpt-4o-mini"))
+        st.write_stream(runner(selected_courses, model="gpt-4.1-nano"))
 
     st.session_state.messages.pop(0)
     st.session_state.has_sent_message = True

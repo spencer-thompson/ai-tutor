@@ -361,29 +361,34 @@ async def openai_formatted_iter_response(messages: List[Dict[str, Dict]], descri
             yield json.dumps({"content": token})
 
 
-async def openai_iter_response(messages: List[Message], descriptions, context, model: str = "gpt-4o", recursive=False):
+async def openai_iter_response(messages: List[Message], descriptions, context, model: str = "gpt-4.1", recursive=False):
+    """
+    This is the giant crazy wrapper around the OpenAI streaming endpoint.
+    """
     if not recursive:
         logger.info(f"CHAT - Used model: {model}")
         mod = await moderate(messages)
 
+        # This is moderation, just checking to see if chats are inappropriate
+        # This ensures that OpenAI doesn't ban our account
         if mod.flagged:
             logger.warning(
                 f"FLAG - Flagged `{messages[-1].content}`\t for: {[c for c, f in mod.categories.dict().items() if f]}"
             )
             categories = [cat for cat, flg in mod.categories.dict().items() if flg]
-            if any("self-harm" in c for c in categories):
+            if any("self-harm" in c for c in categories):  # check for self-harm and send uvu student resources
                 logger.warning(
                     f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: self-harm"
                 )
                 yield "I am worried you might not be doing too well, we have some [awesome resources](https://www.uvu.edu/studenthealth/) 🤍"
                 return
-            if any("sexual" in c for c in categories):
+            if any("sexual" in c for c in categories):  # check for sexual messages and stop them
                 logger.warning(
                     f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: sexual"
                 )
                 yield "That is not cool bro"
                 return
-            if any("graphic" in c for c in categories):
+            if any("graphic" in c for c in categories):  # checks for graphic violence
                 logger.warning(
                     f"STOPPED - {context['user'].get('first_name')} {context['user'].get('last_name')} ({context['user'].get('canvas_id')}) for: graphic"
                 )
