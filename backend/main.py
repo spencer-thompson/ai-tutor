@@ -392,6 +392,17 @@ async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(
     )
 
 
+@app.get("/analytics_data")
+async def get_all_analytics_data(api_key_value: dict = Depends(check_api_key)):
+    users = await app.mongodb["users"].find().to_list(None)
+    cleaned_users = [
+        {k: v for k, v in u.items() if k != "_id" if k != "activity_stream" if k != "planner"} for u in users
+    ]
+
+    # return [v for k, v in document.items() if k not in {"_id"}][0]
+    return cleaned_users
+
+
 @app.get("/analytics")
 async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depends(check_api_key)):
     """

@@ -1,6 +1,9 @@
 .envrc
 .venv/
 
+### Experiential credit ###
+experiential_credit.zip
+
 ### MONGO ###
 mongo/snapshots/*
 mongo-init.js
