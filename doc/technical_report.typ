@@ -1,12 +1,12 @@
 #set page(margin: 1.2cm)
 #set text(28pt, font: "Berkeley Mono", weight: 700)
-// #show math.equation: set text(font: )
 #set enum(indent: 1em)
 #set list(indent: 1em)
 #set math.mat(align: center, delim: "[", gap: 0.75em)
 #set math.vec(align: right)
 #set math.cases(gap: 0.5em)
 #set table(align: left)
+#set par(justify: true)
 #show heading: h => [
   #set text(navy, weight: 700)
   #v(0.3cm)
@@ -52,19 +52,56 @@
 
 = Introduction
 
+This project, the AI Tutor, is a project that has now been under development for quite some time.
+We have seen some exciting success regarding utilizing artificial intelligence in real world application.
+
+This report outlines Why, How, and What this project is all about, with a focus on the technical design, implementation and solution.
+
 == Background
 
-- Version 2
-- Complete rewrite
+As previously mentioned, the AI Tutor project started back in early 2024.
+In discussions with the excellent faculty in Tech Management Department at Utah Valley University,
+we hypothesized that using the new and exciting technology of large language models,
+we could provide excellent, _personalized_ tutoring to students 24/7.
+
+So we set out to develop a simple application to accomplish this goal.
+The original AI Tutor was indeed a success.
+Quickly the project gained attention among multiple departments and more than a handful of students.
+Although, given the rather breakneck pace of development, there was a rather rapid accumulation of technical debt.
+Some of the core features that we wanted had become quite difficult.
+
+After the original scope of the project had been completed, we still had a desire to have a system that was better suited for both students and professors.
+As the lead developer, I had the feeling that a fresh start might be better than attempting to pay down a significant amount of technical debt.
+Therefore, this report is particularly focused on:
+
+- The evolution of the project as a whole.
+
+- The features that gives the AI Tutor an advantage over *every other alternative*.
+
+- The design and implementation of the tutor, as well as the challenges faced along the way.
 
 === Context
 
-- AI Hype
+A rather interesting piece of context to keep in mind while reading this report is that: during the duration of this project, every single piece of technology has changed *drastically*.
+Oftentimes the APIs or services that we were utilizing evolved or changed overnight.
+This could possibly be attributed to the incredible amount of development and hype around the use of generative AI.
+
+The point being, many other competitors both at our own university and others, were quickly building and iterating on similar ideas.
+Our team built and deployed *two* complete iterations, while other teams have yet to deploy their projects.
 
 === Purpose
 
-- Custom personalized tutoring
-- 24/7 access
+From the beginning our project was focused on providing a rather niche ideal.
+We all had this idea of a tutor or assistant that had intimate knowledge of a student's courses.
+This would give the tutor the ability to provide:
+
+- 24/7 access to students to assist with coursework.
+
+- Personalized responses to student questions that were unique to _each_ student.
+
+- Answer questions about the syllabus, upcoming assignments, grades and more.
+
+The hope and idea being that, this could be an incredibly valuable resource for students, faculty and the university as a whole.
 
 == Scope
 
