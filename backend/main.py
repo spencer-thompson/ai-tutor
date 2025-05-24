@@ -91,6 +91,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://aitutor.live",
+        "https://beta.aitutor.live",
         "https://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",

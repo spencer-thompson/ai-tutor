@@ -1,7 +1,9 @@
 rsync -avrPluxz \
+    --exclude='*/node_modules/***' \
     --include='deploy.yaml' \
     --include='develop.yaml' \
     --include='.env' \
+    --include='svelte/***' \
     --include='mongo/***' \
     --include='backend/***' \
     --include='compose/***' \
