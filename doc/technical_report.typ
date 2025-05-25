@@ -105,94 +105,160 @@ The hope and idea being that, this could be an incredibly valuable resource for 
 
 == Scope
 
+Considering this second phase of the project, the scope was relatively straight forward.
+We wanted to continue our vision of the first tutor and have more of the features that we had originally been interested in.
+
+
+// TODO:
+
 === Goals
+
+Primarily we wanted:
+
+// TODO:
 
 === Limitations
 
 - Other opportunities
 - A very difficult semester
 
+
+// TODO:
+
 = Design
 
-- Browser Extension
+The overall design of the project can be a bit confusing at first. Really there are *five* major distinct pieces.
+
+- *Browser Extension*
+  - For user authentication and communication with the Canvas API.
+
+- *Frontend*
+  - The chat interface for using the AI Tutor.
+
+- *Backend*
+  - Where all the data processing and external API calls happen.
+
+- *Analytics*
+  - The service that monitors and displays the user Telemetry data.
+
+- *Database*
+  - Where we store everything we need.
+
+
 
 == Data
 
-=== Analytics
+The order in which each piece will be explained is the rough order that they function.
+As a whole, the system is essentially two data pipelines with a unified user interface.
+Essentially these two pipelines are:
+
+- Analytics
+  - Telemetry and usage data gathered from students.
+
+- Canvas
+  - Student data regarding assignments, courses, submissions, etc.
 
 === Pipeline
 
+While the analytics data is interesting and deserves its own time in the spotlight, it is not the focus of the project.
+
+The Canvas data is really where things get interesting.
+// TODO:
+
 === Storage
 
+- Mongo
+// TODO:
 
+=== Analytics
+
+// TODO:
 == Security
 
 - JWT
 - Keys
 - SSH
 - 2FA?
+// TODO:
 
 == AI Behavior
 
+// TODO:
 - Class specific behavior / answers
 
 = Implementation
 
+// TODO:
 - Lessons Learned from first iteration
+
+#figure(image("ai-tutor-2-diagram-light.png"), caption: "AI Tutor Infrastructure Diagram")
 
 == Infrastructure
 
 - Hetzner VPS
+// TODO:
 - Cost reduction
 - Docker & Compose
 
 == Frontend
 
+// TODO:
 - User Interface
 - Prioritize good User Experience
 
 === Browser Extension
 
 - Side panel
+// TODO:
 - Cookies
 
 === Chat Interface
 
 - Streamlit
+// TODO:
 
 == Backend
 
 - FastAPI
+// TODO:
 
 === AI
 
 - OpenAI API
+// TODO:
 
 === Tools
 
 - Catalog
+// TODO:
 - Upcoming Assignments
 - Grades
 
 === Telemetry
 
+// TODO:
 - Plausible Analytics
 
 == Database
 
 - MongoDB
+// TODO:
 - Document Based
 
 = Challenges
 
+// TODO:
 == Permissions
 
 - UVU
+// TODO:
 - Competing Team
 
 == API Inconsistency
 
+// TODO:
 === Canvas LMS
+// TODO:
 
 - Name vs Course Code
 
