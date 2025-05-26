@@ -93,7 +93,10 @@ Our team built and deployed *two* complete iterations, while other teams have ye
 
 From the beginning our project was focused on providing a rather niche ideal.
 We all had this idea of a tutor or assistant that had intimate knowledge of a student's courses.
-This would give the tutor the ability to provide:
+
+== Goals
+
+Primarily we wanted:
 
 - 24/7 access to students to assist with coursework.
 
@@ -103,27 +106,28 @@ This would give the tutor the ability to provide:
 
 The hope and idea being that, this could be an incredibly valuable resource for students, faculty and the university as a whole.
 
-== Scope
+== Limitations
 
-Considering this second phase of the project, the scope was relatively straight forward.
-We wanted to continue our vision of the first tutor and have more of the features that we had originally been interested in.
+During the duration of this project, there were really two main issues.
 
+1. Incredibly Busy Semester.
 
-// TODO:
+2. Canvas API Key Permissions.
 
-=== Goals
+The first problem is simply that the developer team and I had incredibly difficult and loaded semesters.
+In addition, we had several other job opportunities open up.
+Given that graduation is just over the horizon, it is absolutely true that this somewhat hindered our development.
 
-Primarily we wanted:
+Regardless though, this first problem pales in comparison to the other.
+Our university had a competing team that was also working on an AI assistant.
+We diligently attempted to work with this other team, over the course of a year,
+but they were obstinate, they insisted that they wanted to hire outside talent.
 
-// TODO:
+Part of this problem was that they were unwilling to give us an API Key.
+This could also have been university permissions issue.
 
-=== Limitations
-
-- Other opportunities
-- A very difficult semester
-
-
-// TODO:
+*Not having* a proper API Key was a truly difficult challenge.
+Especially given that our team had already deployed to active courses, while they had not.
 
 = Design
 
@@ -144,8 +148,6 @@ The overall design of the project can be a bit confusing at first. Really there 
 - *Database*
   - Where we store everything we need.
 
-
-
 == Data
 
 The order in which each piece will be explained is the rough order that they function.
@@ -163,28 +165,35 @@ Essentially these two pipelines are:
 While the analytics data is interesting and deserves its own time in the spotlight, it is not the focus of the project.
 
 The Canvas data is really where things get interesting.
-// TODO:
 
-=== Storage
+- I knew that we needed to grab data from the Canvas LMS, which is #link("https://github.com/instructure/canvas-lms")[#text(blue)[#underline[Open Source]]].
+  After thoroughly reading the documentation and looking into the source code, I knew I was on the right track.
 
-- Mongo
-// TODO:
+- We also needed to process that data and cross reference it with our own users.
+
+- Lastly, we needed a way to securely store and retrieve our mix of user data and course data.
+
+$
+  "Canvas" quad arrow quad "Our Code" quad arrow quad "Storage"
+$
 
 === Analytics
 
-// TODO:
-== Security
+From the beginning, we also knew that we wanted to get some data to attempt to answer the question:
 
-- JWT
-- Keys
-- SSH
-- 2FA?
-// TODO:
+#align(center)[
+  *Does AI Tutoring help students?*
+]
+
+~
+
+In addition to the data pipeline, we also needed a smaller pipeline to get user telemetry data to dive into answering this question.
 
 == AI Behavior
 
-// TODO:
-- Class specific behavior / answers
+From the first iteration of the AI Tutor, we knew that the behavior of the AI Tutor itself was particularly important.
+It was difficult just to get the tutor not to send super long messages, let alone get it to answer questions with a high accuracy.
+We needed something extra to get the results that we wanted and needed.
 
 = Implementation
 
@@ -199,6 +208,13 @@ The Canvas data is really where things get interesting.
 // TODO:
 - Cost reduction
 - Docker & Compose
+
+== Security
+
+- JWT
+- Keys
+- SSH
+- 2FA?
 
 == Frontend
 
