@@ -46,7 +46,7 @@
 #show outline.entry.where(level: 1): set block(above: 1.2em)
 #set heading(hanging-indent: 0.78cm, numbering: "1.")
 #set text(11pt, font: "Berkeley Mono", weight: 400)
-#v(0.4cm)
+#v(1cm)
 #outline(title: smallcaps("Table of Contents"))
 
 
@@ -129,6 +129,10 @@ This could also have been university permissions issue.
 *Not having* a proper API Key was a truly difficult challenge.
 Especially given that our team had already deployed to active courses, while they had not.
 
+~
+
+#line(length: 100%, stroke: silver)
+
 = Design
 
 The overall design of the project can be a bit confusing at first. Really there are *five* major distinct pieces.
@@ -195,43 +199,90 @@ From the first iteration of the AI Tutor, we knew that the behavior of the AI Tu
 It was difficult just to get the tutor not to send super long messages, let alone get it to answer questions with a high accuracy.
 We needed something extra to get the results that we wanted and needed.
 
+~
+
+#line(length: 100%, stroke: silver)
+
 = Implementation
 
-// TODO:
-- Lessons Learned from first iteration
+In the first iteration of the AI Tutor was relatively stateless. It did not have a backend, and it did not have a database.
+
+This was quite limiting in term of functionality, and therefore, this time around we had a complete redesign of the entire system.
+Initially we just had a frontend with _too much_ functionality, and we hosted that on Google Cloud.
 
 #figure(image("ai-tutor-2-diagram-light.png"), caption: "AI Tutor Infrastructure Diagram")
 
 == Infrastructure
 
-- Hetzner VPS
-// TODO:
-- Cost reduction
-- Docker & Compose
+This time around we wanted to have something more robust with the ability to add one or two entire dimensions of features.
+Given that we initially hosted on Google Cloud, and didn't really use any of the features of the Google Cloud except for the compute engine,
+we decided to use something more cost effective and simple.
+
+We settled on using a virtual private server from Hetzner.
+This decision probably saved us \$40 to \$50 dollars a month, I would estimate that we saved an order of magnitude of money by switching to Hetzner.
+
+Something that we didn't change from the first AI Tutor was that we used Docker and Docker compose.
+Docker has made everything much easier to deploy as well as iterate quickly.
+Using *Traefik* also made this process of development and deployment faster and less painful.
 
 == Security
 
-- JWT
-- Keys
-- SSH
-- 2FA?
+This bit of implementation was perhaps one of the most clever and interesting pieces of the project as a whole.
+Coming back to the limitations that I mentioned previously, we did not have access to a developer API key.
+We had expended a tremendous amount of effort to do this, but with no success.
+There was a point where hope was starting to be lost, although, perhaps it was pure stubbornness or competition with the official UVU team, I *had* to find a solution.
+
+I had already created a personal API key, and I toyed with the idea of having each user create an API key,
+but knew that it would be too much an impediment to the user experience.
+
+*So*, I decided to get creative. In the process of trying to make something incredibly secure, yet give us access to the data we needed, I realized that we could use the _JavaScript Console_ in the browser.
+This shouldn't be a surprise to anyone in web development, but I was curious if I could make an API request from the console.
+Assuming it wouldn't work I gave it a try. To my surprise I got back exactly what I had requested from the API.
+
+At this moment, I was surprised that there was no protection against this kind of request, but I knew that most likely there were CORS (Cross-Origin Resource Sharing) limits / restrictions.
+These are usually included by default on many web applications so that you have to explicitly allow a URL or service to access information.
+
+So I got to thinking, is this something that we could make work? I realized that a browser extension, can indeed run arbitrary JavaScript to interact with a website as long as the user gives permission.
+*As long as* the CORS policy allowed browser extensions, which I doubted heavily for security reasons, than this could totally work.
+
+I whipped up a quick little browser extension and tested it out. Sure enough it worked like a charm.
+
+- This was a *truly incredible moment*.
+
+Given this discovery, I decided that we would use a browser extension to provide pseudo-access to the Canvas API.
+For authentication, we just had the browser extension set a cookie on the site as a JSON web token.
+This simplified and almost removed security as a concern because we could just use the current users existing login as our login.
+
+Further still, our database, and sensitive data is not accessible from the outside web, so in order to get data, a request would need a valid JSON web token as well as an API key that I created.
+
+I can confidently say that our site is incredibly secure.
 
 == Frontend
 
-// TODO:
-- User Interface
-- Prioritize good User Experience
+Something important to our team is that we wanted to have a really solid user experience.
+Given the constraint that we had a small team, with experience focused on data, this was an interesting challenge.
 
-=== Browser Extension
+The first iteration of the project used a library for creating simple websites called #link("https://streamlit.io/")[#text(blue)[#underline[Streamlit]]].
+This library made it incredibly easy to create and deploy very simple websites.
 
-- Side panel
-// TODO:
-- Cookies
+Another option that we considered is to use a different library, #link("https://svelte.dev/")[#text(blue)[#underline[Svelte]]], which was more in depth.
 
 === Chat Interface
 
-- Streamlit
-// TODO:
+In the end we settled on both, initially though we focused on Streamlit, and created a beta written in Svelte.
+
+At first Streamlit was excellent, there was already a lot of easy ways to build AI chat applications, although after two or three months, it became apparent that Streamlit didn't have everything that we needed.
+We managed to implement some rather hacky and interesting solution to this problem with Streamlit, but still we wanted a better solution.
+
+We then decided to dive into the Svelte option. We didn't get quite to a position that we were satisfied with, but it was very cool nonetheless.
+Svelte gave us the freedom we really wanted, but also required a lot more effort to design and implement everything we needed.
+
+=== Browser Extension
+
+The browser extension that I mentioned earlier is the key step of not only authentication but also the data pipeline for Canvas / course data.
+For Google Chrome and Chromium based web browsers we also configured the extension to provide a side bar on *any site* to access the tutor.
+This feature turned out to be truly a favorite among users which was cool, even though it was a small addition.
+We simply just embedded the streamlit frontend as an Iframe within the side panel.
 
 == Backend
 
@@ -260,6 +311,11 @@ We needed something extra to get the results that we wanted and needed.
 - MongoDB
 // TODO:
 - Document Based
+
+
+~
+
+#line(length: 100%, stroke: silver)
 
 = Challenges
 
@@ -292,6 +348,10 @@ We needed something extra to get the results that we wanted and needed.
 
 - Developing / Adding features for an application in use is difficult
 
+~
+
+#line(length: 100%, stroke: silver)
+
 = Solutions
 
 == Workarounds
@@ -304,7 +364,12 @@ We needed something extra to get the results that we wanted and needed.
 
 - JWT / Cookie
 
+~
+
+#line(length: 100%, stroke: silver)
+
 = Conclusion
+
 
 == Findings
 
