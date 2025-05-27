@@ -286,32 +286,76 @@ We simply just embedded the streamlit frontend as an Iframe within the side pane
 
 == Backend
 
-- FastAPI
-// TODO:
+I knew that at its heart, this project needed a brain, or central area to take care of the heavy lifting.
+
+After some research #link("https://fastapi.tiangolo.com/")[#text(blue)[#underline[FastAPI]]] looked like an excellent option.
+I just wanted something that we could use to offload the functionality, and create a barrier of sorts for security and clean design.
+FastAPI worked excellent for this.
+
+Essentially, FastAPI just lets you as a developer write functions with decorators, and the function becomes the API (http) endpoint.
+There are great support, examples, and documentation.
 
 === AI
 
-- OpenAI API
-// TODO:
+This is an *AI* Tutor after all, and we had some chaos this time around.
+Primarily, I am talking about providers.
+Originally we had a grant from #link("https://openai.com/")[#text(blue)[#underline[OpenAI]]] that we were using for credits to provide chat completions.
+
+Although, one day recently after deployment, our credits were not working.
+Within a couple hours, I had completely switched us over to using the #link("https://www.anthropic.com/")[#text(blue)[#underline[Anthropic]]] API.
+Even though we didn't stay with Anthropic, I do think it is interesting to note that their AI behavior seemed to be more emotionally intelligent than OpenAI.
 
 === Tools
 
-- Catalog
-// TODO:
-- Upcoming Assignments
+The real magic of the AI though, is the tool use / function calling.
+This functionality is what really made this version of the AI special and unique.
+This features essentially allows the AI to choose a _tool_, which is essentially just a defined JSON schema.
+Then when generating a response, the tool call itself can be extracted and used in code.
+
+The tools that we gave to our AI Tutor are:
+
 - Grades
+  - Show grades of assignments and courses overall.
+
+- Course Questions
+  - Access to information about upcoming assignments, recently submitted assignments, discussions, announcements, and more.
+
+- Catalog
+  - Access to the UVU course catalog with information about prerequisites, credit hours and more.
+
+- Read Webpages
+  - If the user pasted a URL or URLs, the AI could read those pages for the user.
+
+- Execute Python Code
+  - If calculation or precision was needed the AI could execute python code in a sandboxed environment.
+
+These tools really made the AI feel and be truly useful to users.
 
 === Telemetry
 
-// TODO:
-- Plausible Analytics
+As I have mentioned previously, we needed to collect some telemetry in order to answer some research questions.
+As I had experience with #link("https://plausible.io/")[#text(blue)[#underline[Plausible Analytics]]],
+I setup the self hosted version and collected data about how our users use the site.
+One of the reasons I like Plausible is that it is privacy conscious.
+
+#figure(image("plausible.png"), caption: "Plausible Analytics Dashboard")
 
 == Database
 
-- MongoDB
-// TODO:
-- Document Based
+The last portion of the implementation is the database.
+After seeing the data that was coming back from the Canvas API, I just felt uncomfortable dealing with the inconsistencies of that data.
+SQL didn't necessarily feel quite right.
 
+So, we decided to go with #link("https://www.mongodb.com/")[#text(blue)[#underline[MongoDB]]], a document based database.
+The real reasons why this decision was made are:
+
+- We had a lot of JSON data, which fit well into Mongo.
+
+- Saving chats would be incredibly easy.
+
+- It would allow very quick prototyping and iteration.
+
+This turned out tremendously well.
 
 ~
 
@@ -325,6 +369,7 @@ We simply just embedded the streamlit frontend as an Iframe within the side pane
 - UVU
 // TODO:
 - Competing Team
+
 
 == API Inconsistency
 
