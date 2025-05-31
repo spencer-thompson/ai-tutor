@@ -363,26 +363,70 @@ This turned out tremendously well.
 
 = Challenges
 
-// TODO:
+This project has been incredibly interesting and satisfying, partly due to the unique problems and creative solutions these problems required.
+
 == Permissions
 
-- UVU
-// TODO:
-- Competing Team
+The main pain point of the development of the Tutor was the resistance we got from the official university IT department.
+They did not want to provide us an API key, as mentioned previously, due to security and competition.
 
+This lead to quite a bit of hopelessness in the beginning of the project.
+While we did find unique solutions to these issues it was consistently difficult nonetheless.
 
 == API Inconsistency
 
-// TODO:
-=== Canvas LMS
-// TODO:
+Another interesting problem that we encountered was the different APIs that we encountered along the way.
+The two that I had the most trouble with were:
 
-- Name vs Course Code
+- *Canvas*
 
-=== Plausible Analytics
+- Plausible Analytics
 
-- Weirdest API I have ever seen
-- Cartesian products galore
+Regarding *Canvas*, this one was tricky and frustrating because there was just so much inconsistency.
+Reading the documentation hinted that, over time this software had so many features added that there was no clear or well defined structure.
+This may seem like a naive statement, and perhaps to some extent that is true.
+At a basic level, the very simplified schema of the Canvas Instructure database probably looked something along the lines of:
+
+#grid(
+  columns: (1fr, 8fr, 1fr),
+  [],
+  [
+    - *Courses* have *Users* and *Users* have *Courses*
+      - (many to many)
+
+    - *Courses* have:
+      - *Assignments*, *Discussions*, *Submissions*, *Announcements*, etc.
+      - (one to many)
+  ],
+)
+
+~
+
+Now, on its own this would have been fine. Given that *Courses* and *Users* is many to many it does get complex.
+But this would be manageable, except that there are so many more little tables in their database.
+Further still, many of these tables don't have restrictions like the classic (and lifesaving) SQL:
+
+#align(center)[
+  #text(20pt)[
+    ```sql
+    NOT NULL
+    ```
+  ]
+]
+
+So often, there were fields returned by the API call that were `NULL` and with no defined schema that I could find, this caused endless bugs.
+
+One other rather interesting quirk of the Canvas API is that Courses have a `course_name` and `course_code` field.
+I only much later found out that the `course_name` field could be changed by the user which was frustrating to say the least.
+
+=== Analytics
+
+I wanted to add one more little interesting bit about working with APIs.
+As I have mentioned, we used *Plausible Analytics* for our telemetry.
+I initially _assumed_ that their API would be nice and neat, given that that piece of software is open source and written in Elixir, a popular functional programming language.
+
+What I did not expect, was that when making queries to the API to get custom analytics data, really this was just essentially a Cartesian product of everything I was asking for.
+When dealing with high dimensional data, this is helpful, although the implementation just seemed quite frustrating.
 
 == Messy Data
 
