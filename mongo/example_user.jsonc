@@ -1,0 +1,466 @@
+// This is a query directly copy and pasted for my user from the database
+{
+  _id: ObjectId('67384b16a3150992d38a3752'),
+  canvas_id: 1948325,
+  institution: 'uvu',
+  activity_stream: [
+        {
+      id: 251912133,
+      kind: 'Conversation',
+      title: 'Team 7',
+      html_url: 'https: //uvu.instructure.com/conversations/13497638',
+      course_id: 617535,
+      created_at: '2025-08-25T16: 21: 44Z',
+      updated_at: '2025-08-25T16: 29: 42Z',
+      read_state: true
+        },
+        {
+      id: 251849424,
+      kind: 'Submission',
+      title: 'Week 1 Form a Team',
+      html_url: 'https: //uvu.instructure.com/courses/617535/assignments/8303302/submissions/1948325',
+      course_id: 617535,
+      created_at: '2025-08-24T23: 18: 33Z',
+      updated_at: '2025-08-25T06: 39: 51Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 10,
+      assignment_id: 8303302,
+      points_possible: 10,
+      submission_comments: [
+                {
+          author_name: 'Jingpeng (JP) Tang',
+          comment: 'Please let me your meeting time with me when you have a full team. Thanks.'
+                }
+            ]
+        },
+        {
+      id: 250676427,
+      kind: 'DiscussionTopic',
+      title: 'Discussion 1: Introduction to You and Your Work',
+      message: "Say hello, introducing yourself to the class. Not everyone here was in HONR 400R last term, so it's important!  One original contribution to the discussion and a response to another student are expected for full credit, but our enrichment and enjoyment will undoubtedly increase if you are willing to share more.\n" +
+        '\n' +
+        '**The original contributions can introduce your unique perspective on one or more of the starter ideas offered below or thoughtful responses or insights to what someone else has posted.** Your contributions or responses should be at least **three or more sentences in length** and include appropriate capitalization, spelling, and punctuation.\n' +
+        '\n' +
+        '**PROMPTS (Choose 2):**\n' +
+        '\n' +
+        '* Introduce us to your topic and where it stands in relation to your discipline. Why is it important?\n' +
+        '* What has been the most satisfying aspect of this thesis or project process for you?\n' +
+        '* Who has been the most help to you in making progress on your thesis or project?\n' +
+        "* What have you done to successfully overcome barriers like writer's block or procrastination?\n" +
+        '* Share a news story or article that relates to your topic or field--something intrigued you, shook up your world view, and/or made the subject seem relevant. Briefly indicate why you thought it was important.\n' +
+        '\n' +
+        '**What do I need to do to complete this assignment?**\n' +
+        '\n' +
+        'Post to the discussion using these guidelines and take this work seriously as a kind of peer-to-peer support. Consider responding to the prompts provided or introduce a new idea that you have about what someone else has said. The key is, you can choose what you talk about. Please feel free to be yourself. Share your uniqueness with us while remaining mindful of the necessity to remain civil in a public discussion.\n' +
+        '\n' +
+        '**How will I submit this assignment?**\n' +
+        '\n' +
+        `Click "Reply" to share your thoughts in the general discussion or immediately below another person's contribution to elaborate on what they said.\n` +
+        '\n' +
+        '**How will this assignment be graded?**\n' +
+        '\n' +
+        'Contributions to discussions are graded based on completeness. **Discussion posts should add significantly to the conversation and support your point of view in at least two, three or more sentence posts.**\n' +
+        '\n' +
+        'Comments that do not add significantly to a discussion or otherwise violate community standards of civility are not eligible for credit.\n' +
+        '\n' +
+        '**Why am I being asked to do this assignment?**\n' +
+        '\n' +
+        "Engagement of learners with each other and with the course instructor is imperative for building a sense of community in an online class, especially since all of you are engaged in an entirely new (and even scary) process at the same time. The online format inhibits the kinds of discussions we'd have in more intimate in-person groups. **We enrich each other and reap enormous benefits when we cultivate a communal vibe in a virtual environment.** You will build relationships with each other through these online discussions.",
+      html_url: 'https: //uvu.instructure.com/courses/630949/discussion_topics/4161143',
+      course_id: 630949,
+      created_at: '2025-07-23T22: 38: 19Z',
+      updated_at: '2025-08-25T04: 28: 09Z',
+      read_state: true
+        },
+        {
+      id: 251855410,
+      kind: 'Conversation',
+      title: 'Software Engineering II Project',
+      html_url: 'https: //uvu.instructure.com/conversations/13494761',
+      course_id: 617535,
+      created_at: '2025-08-25T00: 41: 57Z',
+      updated_at: '2025-08-25T00: 43: 37Z',
+      read_state: true
+        },
+        {
+      id: 251853520,
+      kind: 'Submission',
+      title: 'Pre Lecture 5',
+      html_url: 'https: //uvu.instructure.com/courses/611658/assignments/8343819/submissions/1948325',
+      course_id: 611658,
+      created_at: '2025-08-25T00: 06: 26Z',
+      updated_at: '2025-08-25T00: 24: 32Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 3,
+      assignment_id: 8343819,
+      points_possible: 3
+        },
+        {
+      id: 251328560,
+      kind: 'DiscussionTopic',
+      title: 'Find a Team',
+      message: 'Please introduce yourself and give your ideas about the Term Project. The goal of this discussion is to find a team.',
+      html_url: 'https: //uvu.instructure.com/courses/617535/discussion_topics/4145750',
+      course_id: 617535,
+      created_at: '2025-08-20T15: 45: 58Z',
+      updated_at: '2025-08-24T23: 11: 20Z',
+      read_state: true
+        },
+        {
+      id: 251816880,
+      kind: 'Announcement',
+      title: 'Week 2 To-Do-List ',
+      message: 'Hello everyone,\n\nPlease finish Week 2 Module.\n\nThanks,\n\nJP',
+      html_url: 'https: //uvu.instructure.com/courses/617535/announcements/4145748',
+      course_id: 617535,
+      created_at: '2025-08-24T06: 00: 22Z',
+      updated_at: '2025-08-24T06: 00: 22Z',
+      read_state: false
+        },
+        {
+      id: 251815268,
+      kind: 'Message',
+      title: 'Assignment Due Date Changed: Week 2 Meeting Log, CS-4400-X01 | 2025 Fall - Full Term',
+      message: 'The due date for the assignment, Week 2 Meeting Log, for the course, CS-4400-X01 | 2025 Fall - Full Term, has changed to:\n' +
+        'Aug 31 at 11: 59pm\n' +
+        'Click here to view the assignment:\n' +
+        'https: //uvu.instructure.com/courses/617535/assignments/8303318\n' +
+        '\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\n' +
+        'You received this email because you are participating in one or more classes using Canvas. To change or turn off email notifications, visit:\n' +
+        'https: //uvu.instructure.com/profile/communication',
+      html_url: 'https: //uvu.instructure.com/courses/617535/assignments/8303318',
+      course_id: 617535,
+      created_at: '2025-08-24T04: 44: 31Z',
+      updated_at: '2025-08-24T04: 44: 31Z',
+      read_state: true
+        },
+        {
+      id: 251815100,
+      kind: 'Message',
+      title: 'Assignment Created - Week 2 Meeting Log, CS-4400-X01 | 2025 Fall - Full Term',
+      message: 'A new assignment has been created for your course, CS-4400-X01 | 2025 Fall - Full Term\n' +
+        'Week 2 Meeting Log\n' +
+        'due: Aug 24 at 11: 59pm\n' +
+        'Click here to view the assignment:\n' +
+        'https: //uvu.instructure.com/courses/617535/assignments/8303318\n' +
+        '\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\n' +
+        'You received this email because you are participating in one or more classes using Canvas. To change or turn off email notifications, visit:\n' +
+        'https: //uvu.instructure.com/profile/communication',
+      html_url: 'https: //uvu.instructure.com/courses/617535/assignments/8303318',
+      course_id: 617535,
+      created_at: '2025-08-24T04: 40: 28Z',
+      updated_at: '2025-08-24T04: 40: 28Z',
+      read_state: true
+        },
+        {
+      id: 251504155,
+      kind: 'DiscussionTopic',
+      title: '01 - Discussion: Your Programming Background',
+      message: 'Provide a paragraph on your background in programming languages. There are many topics you can discuss:\n' +
+        '\n' +
+        '* What programming languages do you know?\n' +
+        '* How well do you know these langauges?\n' +
+        '* What is your favorite programming language? Why?\n' +
+        '* What is your least favorite programming language? Why?\n' +
+        '* What do you hope to learn about Rust this semester?\n' +
+        '\n' +
+        'Grading:\n' +
+        '\n' +
+        '* 1 point: Any response\n' +
+        '* 1 point: Any response greater than one sentence\n' +
+        '* 1 point: Any response greater than one paragraph\n' +
+        '* 1 point EC each, up to two points EC: Each respectful and constructive response to another poster',
+      html_url: 'https: //uvu.instructure.com/courses/620055/discussion_topics/4226876',
+      course_id: 620055,
+      created_at: '2025-08-21T05: 38: 13Z',
+      updated_at: '2025-08-23T23: 18: 30Z',
+      read_state: false
+        },
+        {
+      id: 251792871,
+      kind: 'Announcement',
+      title: 'Week 2 Game Plan',
+      message: 'Alright Crew,\n' +
+        '\n' +
+        'Week two is our first full week and our path will remain steep.\n' +
+        '\n' +
+        'Below is a table outlining the reading and prelecture for each day, as well as the Tuesday and Sunday deadlines for Homework 1 and Homework 2.\n' +
+        '\n' +
+        'Remember that the PreLecture assignments are due 5 minutes before class.\n' +
+        '\n' +
+        'Warm regards,\n' +
+        '\n' +
+        'York\n' +
+        '\n' +
+        '|  |  |  |  |\n' +
+        '| --- | --- | --- | --- |\n' +
+        '| Date | Read before class on / assignment due regarding | Assignment | Weekday |\n' +
+        '| 8/25/2025 | 22.4 - 22.5 | Pre-Lect 5 | Monday |\n' +
+        '| 8/26/2025 | 23.1 - 23.2 | Pre-Lect 6 | Tuesday |\n' +
+        '| 8/26/2025 | 21.1 - 22.3 | HW 1 | Tuesday @11: 59 pm |\n' +
+        '| 8/27/2025 | 23.3 - 23.5 | Pre-Lect 7 | Wednesday |\n' +
+        '| 8/28/2025 | 24.1 - 24.2 | Pre-Lect 8 | Thursday |\n' +
+        '| 8/31/2025 | 22.4 - 24.2 | HW 2 | Sunday 11: 59pm |',
+      html_url: 'https: //uvu.instructure.com/courses/611658/announcements/4230659',
+      course_id: 611658,
+      created_at: '2025-08-23T20: 42: 22Z',
+      updated_at: '2025-08-23T20: 42: 22Z',
+      read_state: true
+        },
+        {
+      id: 251662219,
+      kind: 'Announcement',
+      title: 'Syllabus Quiz',
+      message: 'Hi,\n' +
+        '\n' +
+        'I would like to let you know that, the syllabus quiz is due tonight.\n' +
+        '\n' +
+        'Have a wonderful day!\n' +
+        '\n' +
+        'Dr. B',
+      html_url: 'https: //uvu.instructure.com/courses/613158/announcements/4171037',
+      course_id: 613158,
+      created_at: '2025-08-22T06: 00: 12Z',
+      updated_at: '2025-08-22T06: 00: 12Z',
+      read_state: false
+        },
+        {
+      id: 251660503,
+      kind: 'Submission',
+      title: 'Syllabus Quiz',
+      html_url: 'https: //uvu.instructure.com/courses/613158/assignments/8380188/submissions/1948325',
+      course_id: 613158,
+      created_at: '2025-08-22T04: 50: 35Z',
+      updated_at: '2025-08-22T04: 50: 35Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 20,
+      assignment_id: 8380188,
+      points_possible: 20
+        },
+        {
+      id: 251660232,
+      kind: 'Submission',
+      title: 'Pre Lecture 4',
+      html_url: 'https: //uvu.instructure.com/courses/611658/assignments/8343802/submissions/1948325',
+      course_id: 611658,
+      created_at: '2025-08-22T04: 42: 30Z',
+      updated_at: '2025-08-22T04: 50: 23Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 3,
+      assignment_id: 8343802,
+      points_possible: 3
+        },
+        {
+      id: 251580311,
+      kind: 'Announcement',
+      title: 'HW Help Sessions',
+      message: 'Hey everyone!\n' +
+        '\n' +
+        "Hopefully you're handling this super busy week well. I will be holding help sessions throughout the semester to help you with your homework and as a review for tests (those usually happen on fridays). After looking through the responses to the survey, I've scheduled for what seemed the best time. The help sessions will be:\n" +
+        '\n' +
+        'Fridays from 10am-12pm in room PS 015\n' +
+        '\n' +
+        "In the first session (tomorrow), I'll be there to help with any problems/questions you have from HW 0 and HW 1. See you then!\n" +
+        '\n' +
+        'Your IA,\n' +
+        '\n' +
+        'Jay Bettinger',
+      html_url: 'https: //uvu.instructure.com/courses/611658/announcements/4228357',
+      course_id: 611658,
+      created_at: '2025-08-21T20: 03: 02Z',
+      updated_at: '2025-08-21T20: 03: 02Z',
+      read_state: true
+        },
+        {
+      id: 251578125,
+      kind: 'Announcement',
+      title: "Answer to today's whiteboard exercise...",
+      message: 'Several of you asked about the answer to the problem we started working on the boards today in class.  I believe it is 14.5 N/C in the x-direction.',
+      html_url: 'https: //uvu.instructure.com/courses/611658/announcements/4228342',
+      course_id: 611658,
+      created_at: '2025-08-21T19: 48: 28Z',
+      updated_at: '2025-08-21T19: 48: 28Z',
+      read_state: false
+        },
+        {
+      id: 251556996,
+      kind: 'Submission',
+      title: 'Pre Lecture 3',
+      html_url: 'https: //uvu.instructure.com/courses/611658/assignments/8343803/submissions/1948325',
+      course_id: 611658,
+      created_at: '2025-08-21T17: 50: 40Z',
+      updated_at: '2025-08-21T17: 50: 40Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 2.64,
+      assignment_id: 8343803,
+      points_possible: 3
+        },
+        {
+      id: 251506446,
+      kind: 'Announcement',
+      title: 'Bring Laptop',
+      message: 'Hi everyone,\n' +
+        '\n' +
+        'In every class, we will be doing some programming, so please make sure to bring a laptop.\n' +
+        '\n' +
+        'Thanks,\n' +
+        '\n' +
+        'Dr. B',
+      html_url: 'https: //uvu.instructure.com/courses/613158/announcements/4171036',
+      course_id: 613158,
+      created_at: '2025-08-21T06: 00: 08Z',
+      updated_at: '2025-08-21T06: 00: 08Z',
+      read_state: false
+        },
+        {
+      id: 251502595,
+      kind: 'Message',
+      title: 'Assignment Created - 04 - Discussion: Differences Between Other OOP and Rust, CS-3390R-601 | 2025 Fall - Full Term',
+      message: 'A new assignment has been created for your course, CS-3390R-601 | 2025 Fall - Full Term\n' +
+        '04 - Discussion: Differences Between Other OOP and Rust\n' +
+        'due: Sep 17 at 11: 59pm\n' +
+        'Click here to view the assignment:\n' +
+        'https: //uvu.instructure.com/courses/620055/assignments/8567455\n' +
+        '\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\n' +
+        'You received this email because you are participating in one or more classes using Canvas. To change or turn off email notifications, visit:\n' +
+        'https: //uvu.instructure.com/profile/communication',
+      html_url: 'https: //uvu.instructure.com/courses/620055/assignments/8567455',
+      course_id: 620055,
+      created_at: '2025-08-21T05: 06: 22Z',
+      updated_at: '2025-08-21T05: 06: 22Z',
+      read_state: true
+        },
+        {
+      id: 251496627,
+      kind: 'Submission',
+      title: 'Syllabus Quiz',
+      html_url: 'https: //uvu.instructure.com/courses/611658/assignments/8471689/submissions/1948325',
+      course_id: 611658,
+      created_at: '2025-08-21T04: 11: 38Z',
+      updated_at: '2025-08-21T04: 11: 38Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 21,
+      assignment_id: 8471689,
+      points_possible: 21
+        },
+        {
+      id: 251494630,
+      kind: 'Submission',
+      title: 'Post Lecture 2',
+      html_url: 'https: //uvu.instructure.com/courses/611658/assignments/8343820/submissions/1948325',
+      course_id: 611658,
+      created_at: '2025-08-21T03: 50: 26Z',
+      updated_at: '2025-08-21T03: 58: 22Z',
+      read_state: false,
+      late: false,
+      missing: false,
+      seconds_late: 0,
+      score: 3,
+      assignment_id: 8343820,
+      points_possible: 3
+        }
+    ],
+  avatar_url: 'https: //uvu.instructure.com/images/thumbnails/108193113/vyP3ASV6HPG5oeCt5mvuBXUunTK7JGEj2S8QUZh6',
+  courses: [
+        {
+      id: 613736,
+      name: 'CS-3310-002 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu'
+        },
+        {
+      id: 620055,
+      name: 'CS-3390R-601 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu'
+        },
+        {
+      id: 617535,
+      name: 'CS-4400-X01 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu',
+      current_score: 100
+        },
+        {
+      id: 620582,
+      name: 'DEV_AI-Tutor-Development-Alsharif',
+      role: 'teacher',
+      institution: 'uvu'
+        },
+        {
+      id: 630949,
+      name: 'HONR-4980R-HONR-4990R-X01-FALL 2025-XLIST | McPherson',
+      role: 'student',
+      institution: 'uvu'
+        },
+        {
+      id: 613158,
+      name: 'MATH-4610-001 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu',
+      current_score: 100
+        },
+        {
+      id: 611658,
+      name: 'PHYS-2220-002 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu',
+      current_score: 99
+        },
+        {
+      id: 620158,
+      name: 'PHYS-2225-206 | 2025 Fall - Full Term',
+      role: 'student',
+      institution: 'uvu'
+        }
+    ],
+  first_name: 'Spencer',
+  last_name: 'Thompson',
+  role: 'dev',
+  settings: {
+    bio: 'I like linux and neovim',
+    notify_updates: false,
+    first_message: false,
+    show_courses: true,
+    shown_courses: {
+      '591208': true,
+      '593197': true,
+      '594427': true,
+      '597123': false,
+      '597389': true,
+      '597496': true,
+      '598558': true,
+      '601093': true,
+      '603933': true,
+      '604641': true,
+      '605405': false,
+      '605628': true,
+      '605631': true,
+      '613158': true,
+      '613736': true,
+      '617535': true,
+      '620055': true,
+      '620158': true,
+      '620582': false,
+      '630949': true
+        }
+    }
+}
