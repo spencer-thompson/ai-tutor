@@ -124,46 +124,99 @@ if "token" not in st.session_state:
 
 
 if "backend" not in st.session_state:  # maybe change to a class?
+    logging.info("Initializing backend connection...")
     base_url = os.getenv("BACKEND")
-    headers = {
-        os.getenv("BACKEND_API_KEY_NAME"): os.getenv("BACKEND_API_KEY"),
-    }
-    if st.session_state.token:
-        headers = headers | {"Authorization": f"Bearer {st.session_state.token}"}
+    api_key_name = os.getenv("BACKEND_API_KEY_NAME")
+    api_key = os.getenv("BACKEND_API_KEY")
+
+    logging.info(f"Backend base URL: {base_url}")
+    logging.info(f"Backend API Key Name from env: '{api_key_name}'")
+    logging.info(f"Backend API Key from env is {'SET' if api_key else 'NOT SET'}")
+
+    if not api_key_name or not api_key:
+        logging.critical("API key environment variables are not set! Backend calls will fail.")
+
+    def get_current_headers():
+        """Constructs headers for each request, ensuring they are always up-to-date."""
+        headers = {
+            "Content-Type": "application/json",
+            api_key_name: api_key,
+        }
+        if st.session_state.get("token"):
+            headers["Authorization"] = f"Bearer {st.session_state.token}"
+        return headers
+
+    def _log_request(method: str, url: str, headers: dict, data: dict | None):
+        """Helper to log outgoing request details."""
+        # Sanitize headers for logging to avoid leaking secrets
+        sanitized_headers = headers.copy()
+        if api_key_name in sanitized_headers:
+            sanitized_headers[api_key_name] = "*****"
+        if "Authorization" in sanitized_headers:
+            sanitized_headers["Authorization"] = "Bearer *****"
+
+        logging.info("--- Preparing Outgoing Request ---")
+        logging.info(f"Method: {method}")
+        logging.info(f"URL: {url}")
+        logging.info(f"Headers: {sanitized_headers}")
+        if data:
+            # Use json.dumps for pretty printing the body
+            logging.info(f"Body: {json.dumps(data, indent=2)}")
+        logging.info("----------------------------------")
 
     def backend_get(endpoint: str = "", data: dict | None = None):
-        r = requests.get(url=base_url + endpoint, headers=headers, json=data)
-        r.raise_for_status()
-        return r.json()
-
-        # if r.status_code == 200:
-        #     return r.json()
-        # else:
-        #     st.warning(f"Error: {r.status_code}")
-        #     return r.json()
+        try:
+            url = base_url + endpoint
+            headers = get_current_headers()
+            _log_request("GET", url, headers, data)
+            r = requests.get(url=url, headers=headers, json=data)
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"HTTP Error on GET to {url}: {e}")
+            logging.error(f"Response Body: {e.response.text}")
+            raise
 
     def backend_post(endpoint: str = "", data: dict | None = None):
-        r = requests.post(url=base_url + endpoint, headers=headers, json=data)
-        if r.status_code == 200:
+        try:
+            url = base_url + endpoint
+            headers = get_current_headers()
+            _log_request("POST", url, headers, data)
+            r = requests.post(url=url, headers=headers, json=data)
+            r.raise_for_status()
             return r.json()
-        else:
-            st.warning(f"Error: {r.status_code}")
-            return r.json()
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"HTTP Error on POST to {url}: {e}")
+            logging.error(f"Response Body: {e.response.text}")
+            raise
 
     def backend_post_stream(endpoint: str = "", data: dict | None = None):
-        r = requests.post(url=base_url + endpoint, headers=headers, json=data, stream=True)
-        r.raise_for_status()
-        for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
-            if chunk:
-                try:
+        try:
+            url = base_url + endpoint
+            headers = get_current_headers()
+            _log_request("POST (stream)", url, headers, data)
+            r = requests.post(url=url, headers=headers, json=data, stream=True)
+            r.raise_for_status()
+            for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
+                if chunk:
                     yield json.loads(chunk)
-                except UnicodeDecodeError as e:
-                    st.error(e)
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"HTTP Error on streaming POST to {url}: {e}")
+            logging.error(f"Response Body: {e.response.text}")
+            raise
 
     def backend_delete(endpoint: str = "", data: dict | None = None):
-        r = requests.delete(url=base_url + endpoint, headers=headers, json=data)
-        r.raise_for_status()
-        return r.json()
+        try:
+            url = base_url + endpoint
+            headers = get_current_headers()
+            _log_request("DELETE", url, headers, data)
+            r = requests.delete(url=url, headers=headers, json=data)
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"HTTP Error on DELETE to {url}: {e}")
+            logging.error(f"Response Body: {e.response.text}")
+            raise
 
     st.session_state.backend = namedtuple("Backend", ["get", "post", "post_stream", "delete"])(
         backend_get,
@@ -233,8 +286,22 @@ if "user" not in st.session_state:
         st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True
     except requests.exceptions.HTTPError as e:
-        logging.warning(e)
-        st.session_state.user = default_user  # figure out how to tell a user to login
+        is_invalid_token = False
+        try:
+            # Check if the error is specifically due to an invalid user token from the backend
+            if e.response and e.response.json().get("detail") == "Invalid token":
+                is_invalid_token = True
+        except (json.JSONDecodeError, AttributeError):
+            # Not a JSON response or no 'detail' key, treat as a generic error
+            pass
+
+        if is_invalid_token:
+            logging.warning("Invalid or expired user token detected. Clearing token to force re-authentication.")
+            st.session_state.token = None
+            st.session_state.delete_cookie("token")
+        else:
+            logging.warning(f"An HTTP error occurred while fetching user data: {e}")
+        st.session_state.user = default_user
 
 
 # if "user_count" not in st.session_state:

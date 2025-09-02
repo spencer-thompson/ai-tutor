@@ -11,6 +11,7 @@ THOUGHTS:
 import json
 import logging
 import os
+import sys
 import re
 from collections import namedtuple
 from contextlib import asynccontextmanager
@@ -21,19 +22,26 @@ from typing import List
 import jwt
 from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
-from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from httpx import AsyncClient
 from markdownify import markdownify as md
 from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo.errors import ConnectionFailure, OperationFailure
 from openai import AsyncOpenAI
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
+# --- Database Connection Details ---
+# These are read from environment variables set in docker-compose.
+MONGO_APP_USERNAME = os.getenv("MONGO_APP_USERNAME")
+MONGO_APP_PASSWORD = os.getenv("MONGO_APP_PASSWORD")
+MONGO_HOST = os.getenv("MONGO_HOST", "mongo")
+MONGO_DATABASE = os.getenv("MONGO_DATABASE", "aitutor")
+MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 DOMAIN = os.getenv("DOMAIN")
 PLAUSIBLE_API_KEY = os.getenv("PLAUSIBLE_API_KEY")
@@ -57,28 +65,48 @@ logger = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
     """
-    This just safely starts and stops FastAPI with mongo
+    Safely starts and stops the FastAPI application, including the database connection.
     """
 
     app.log = logging.getLogger("uvicorn")
     app.log.info(f"--- API Started at [{DOMAIN}] ---")
 
-    app.mongodb_client = AsyncIOMotorClient(
-        CONNECTION_STRING
-    )  # This sets up mongodb and lets us reference from the fastapi object
-    app.mongodb = app.mongodb_client.get_database("aitutor")
-    ping_response = await app.mongodb.command("ping")
+    # --- Database Connection ---
+    try:
+        # Check for all required environment variables at startup
+        required_vars = {
+            "MONGO_APP_USERNAME": MONGO_APP_USERNAME,
+            "MONGO_APP_PASSWORD": MONGO_APP_PASSWORD,
+            "MONGO_HOST": MONGO_HOST,
+            "MONGO_DATABASE": MONGO_DATABASE,
+            "JWT_SECRET_KEY": JWT_SECRET_KEY,
+            "BACKEND_API_KEY_NAME": BACKEND_API_KEY_NAME,
+        }
+        missing_vars = [key for key, value in required_vars.items() if not value]
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+        mongo_uri = f"mongodb://{MONGO_APP_USERNAME}:{MONGO_APP_PASSWORD}@{MONGO_HOST}/?authSource={MONGO_AUTH_SOURCE}"
+        redacted_uri = f"mongodb://{MONGO_APP_USERNAME}:<REDACTED>@{MONGO_HOST}/?authSource={MONGO_AUTH_SOURCE}"
+
+        app.log.info("Attempting to connect to MongoDB...")
+        app.log.info(f"Connection String: {redacted_uri}")
+
+        app.mongodb_client = AsyncIOMotorClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        await app.mongodb_client.admin.command("ping")  # Verifies connection and auth
+        app.mongodb: AsyncIOMotorDatabase = app.mongodb_client[MONGO_DATABASE]
+
+        app.log.info(f"Successfully connected to MongoDB database '{MONGO_DATABASE}'.")
+
+    except (ValueError, ConnectionFailure, OperationFailure) as e:
+        app.log.error(f"DATABASE CONNECTION FAILED: {e}")
+        # Raising an exception during lifespan startup will prevent FastAPI from starting.
+        raise RuntimeError("Could not connect to the database. Exiting.") from e
 
     app.openai = AsyncOpenAI()  # Setup OpenAI
     app.anthropic = AsyncAnthropic()
 
     app.patterns = namedtuple("Pattern", ["clean_markdown"])(re.compile(r"(\n){2,}"))
-
-    if int(ping_response["ok"]) != 1:
-        raise Exception("Problem connecting to database cluster.")
-
-    else:
-        logger.info("Connected to database cluster.")
 
     yield
 
@@ -96,6 +124,8 @@ app.add_middleware(
         "http://localhost:8080",
         "http://localhost:5555",
         "http://localhost:5173",
+        f"http://{DOMAIN}",
+        f"https://{DOMAIN}",
         f"http://beta.{DOMAIN}",
         "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
@@ -123,9 +153,10 @@ async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
     """
     Check to see if an API key is valid.
     """
-    document = await app.mongodb["keys"].find_one({api_key: {"$exists": True}})
+    # A more standard way to check for a key is to query for its value.
+    document = await app.mongodb["keys"].find_one({"key": api_key})
     if document:
-        return [v for k, v in document.items() if k not in {"_id"}][0]
+        return document.get("description", "Valid Key")
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -162,9 +193,17 @@ async def get_user_from_token(token: str):
             raise HTTPException(status_code=403, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        user_courses_list = user.get("courses")
+        if not user_courses_list:
+            # If user has no courses, no need to perform course merge logic.
+            return user
+
         courses = (
             await app.mongodb["courses"]
-            .find({"institution": uni, "id": {"$in": [c["id"] for c in user.get("courses")]}})
+            .find({"institution": uni, "id": {"$in": [c["id"] for c in user_courses_list]}})
             .to_list(None)
         )
 
@@ -187,17 +226,25 @@ async def get_user_from_token(token: str):
             .to_list(None)
         )
 
-        # this is the crazy "join" for mongo
-        # Joining the course catalog with a users courses from canvas
-        merged_courses = [
-            {**c, **a}
-            if (" ".join(c.get("course_code")) if c.get("course_code") else " ".join(c.get("name").split("-")[0:2]))
-            == a.get("code")
-            else c
-            for c, a in zip_longest(courses[:], catalog_courses, fillvalue={})
-        ]
+        # Create a lookup map from the catalog data for efficient merging.
+        catalog_map = {item["code"]: item for item in catalog_courses}
+        
+        # Create a map of the user's courses by ID for efficient updates.
+        user_courses_map = {c["id"]: c for c in user_courses_list}
 
-        user["courses"] = [u | c for u in user["courses"] for c in merged_courses if u["id"] == c["id"]]
+        # Iterate through the detailed courses and merge catalog data.
+        for course in courses:
+            course_code_str = (
+                " ".join(course.get("course_code").split(" ")[0:2])
+                if course.get("course_code")
+                else " ".join(course.get("name").split("-")[0:2])
+            )
+            if course["id"] in user_courses_map and (catalog_entry := catalog_map.get(course_code_str)):
+                # Merge the detailed course data and catalog data into the user's course entry.
+                user_courses_map[course["id"]].update(course)
+                user_courses_map[course["id"]].update(catalog_entry)
+
+        user["courses"] = list(user_courses_map.values())
         return user
 
     except jwt.ExpiredSignatureError:
@@ -241,6 +288,21 @@ async def read_root():
     return {"Hello": "World"}
 
 
+@app.get("/health", tags=["System"])
+async def health_check(request: Request):
+    """
+    Health check endpoint. Confirms API is running and can connect to the database.
+    """
+    try:
+        # The 'ping' command is cheap and confirms connectivity and authentication.
+        await request.app.mongodb.command("ping")
+        return {"status": "ok", "database": "ok"}
+    except Exception as e:
+        # If this fails, it indicates a problem with the database connection.
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Database connection error: {e}")
+
+
 @app.get("/key")
 async def get_key(api_key_value: dict = Depends(check_api_key)):
     """
@@ -250,7 +312,7 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
 
 
 @app.get("/token")
-async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def refresh_token(token: str = Depends(oauth2_scheme)):
     """
     Returns a valid JSON Web Token.
     Uses the current token to generate or refresh, a new token.
@@ -283,7 +345,7 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
 
 
 @app.get("/user", response_model=User)
-async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def get_user(token: str = Depends(oauth2_scheme)):
     """
     Returns the currently logged in user (from JWT)
     Strips away tons of course information.
@@ -322,7 +384,7 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
 
 
 @app.delete("/user")
-async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def delete_user(token: str = Depends(oauth2_scheme)):
     """
     Delete All User Data for logged in User.
     """
@@ -332,9 +394,7 @@ async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict =
 
 
 @app.post("/user_settings")
-async def update_user_settings(
-    settings: Settings, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def update_user_settings(settings: Settings, token: str = Depends(oauth2_scheme)):
     id, uni = await get_user_id_from_token(token)
 
     app.mongodb["users"].update_one(
@@ -345,9 +405,7 @@ async def update_user_settings(
 
 
 @app.post("/save_chat")
-async def save_chat_session(
-    messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def save_chat_session(messages: List[Message], token: str = Depends(oauth2_scheme)):
     """
     Saves the last chat message in the database.
     """
@@ -449,18 +507,9 @@ async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depen
             for u in matching_users
         ]
 
-        print(users)
-
-        # final_data = []
-
-    # filtered_data = [{k: v for k, v in d.items() if k != 'age'} for d in data]
-
-    # matching_courses = [{u.get("canvas_id"): u.get("courses")} for u in matching_users]
-
-    # final_data = [c for c in matching_courses]
-
-    # NOTE: not yet working like I would like
-
+        # TODO: The 'users' variable is populated but not yet used in the final response.
+        # Future work could involve merging this user data with the analytics results.
+        
     return r.json()
 
 
@@ -503,7 +552,7 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
 
 
 @app.post("/v1/smart_chat")
-async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme)):
     """
     Sends full response with smart features
     `{"content": "the ai response"}` or `{"flagged": bool}`
@@ -512,9 +561,7 @@ async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_va
 
 
 @app.post("/v1/smart_chat_stream")
-async def smart_chat_stream(
-    chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def smart_chat_stream(chat: Chat, token: str = Depends(oauth2_scheme)):
     """
     Sends back chunks as they are generated from the AI.
     Response is an iterator in the form of:
