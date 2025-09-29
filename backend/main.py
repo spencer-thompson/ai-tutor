@@ -10,6 +10,7 @@ THOUGHTS:
 
 import json
 import logging
+from logger.Logger import Logger
 import os
 import re
 from collections import namedtuple
@@ -51,6 +52,7 @@ SYSTEM_MESSAGE = [
 tools = []
 
 logger = logging.getLogger("uvicorn")
+data_logger = Logger()
 
 
 # --- INIT ---
@@ -62,6 +64,7 @@ async def db_lifespan(app: FastAPI):
 
     app.log = logging.getLogger("uvicorn")
     app.log.info(f"--- API Started at [{DOMAIN}] ---")
+    data_logger.data("Connecting to MongoDB", {"operation": "connect", "database": "aitutor"})
 
     app.mongodb_client = AsyncIOMotorClient(
         CONNECTION_STRING
@@ -75,15 +78,17 @@ async def db_lifespan(app: FastAPI):
     app.patterns = namedtuple("Pattern", ["clean_markdown"])(re.compile(r"(\n){2,}"))
 
     if int(ping_response["ok"]) != 1:
+        data_logger.data("MongoDB connection failed", {"operation": "connect", "database": "aitutor"})
         raise Exception("Problem connecting to database cluster.")
-
     else:
         logger.info("Connected to database cluster.")
+        data_logger.data("Connected to MongoDB", {"operation": "connect", "database": "aitutor"})
 
     yield
 
     app.mongodb_client.close()  # Shutdown
     app.log.info("--- API Stopped ---")
+    data_logger.data("Disconnected from MongoDB", {"operation": "disconnect", "database": "aitutor"})
 
 
 app = FastAPI(lifespan=db_lifespan)
@@ -162,6 +167,7 @@ async def get_user_from_token(token: str):
             raise HTTPException(status_code=403, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
+        data_logger.data("Loaded user data", {"operation": "load", "user_id": id, "institution": uni})
         courses = (
             await app.mongodb["courses"]
             .find({"institution": uni, "id": {"$in": [c["id"] for c in user.get("courses")]}})
@@ -173,7 +179,6 @@ async def get_user_from_token(token: str):
             .find(
                 {
                     "institution": uni,
-                    # "code": {"$in": [" ".join(c.get("name").split("-")[0:2]) for c in courses]},
                     "code": {
                         "$in": [
                             " ".join(c.get("course_code").split(" ")[0:2])
@@ -187,8 +192,6 @@ async def get_user_from_token(token: str):
             .to_list(None)
         )
 
-        # this is the crazy "join" for mongo
-        # Joining the course catalog with a users courses from canvas
         merged_courses = [
             {**c, **a}
             if (" ".join(c.get("course_code")) if c.get("course_code") else " ".join(c.get("name").split("-")[0:2]))
@@ -202,7 +205,6 @@ async def get_user_from_token(token: str):
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=403, detail="Invalid token")
 
@@ -319,6 +321,7 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
         },
         upsert=True,
     )
+    data_logger.data("Saved user data", {"operation": "save", "user_id": user_dict["canvas_id"], "institution": user_dict["institution"]})
 
 
 @app.delete("/user")
@@ -328,6 +331,7 @@ async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict =
     """
     id, uni = await get_user_id_from_token(token)
     result = app.mongodb["users"].delete_one({"canvas_id": id, "institution": uni})
+    data_logger.data("Deleted user data", {"operation": "delete", "user_id": id, "institution": uni, "deleted_count": result.deleted_count})
     return {"deleted_count": result.deleted_count}
 
 
@@ -342,6 +346,7 @@ async def update_user_settings(
         {"$set": {"settings": settings.dict(exclude_none=True)}},
         upsert=True,
     )
+    data_logger.data("Updated user settings", {"operation": "update", "user_id": id, "institution": uni})
 
 
 @app.post("/save_chat")
@@ -358,6 +363,7 @@ async def save_chat_session(
         {"$set": {"chat_history": [message.dict(exclude_none=True) for message in messages]}},
         upsert=True,
     )
+    data_logger.data("Saved chat history", {"operation": "save", "user_id": id, "institution": uni, "message_count": len(messages)})
 
 
 @app.get("/user_count")
@@ -391,11 +397,13 @@ async def post_courses(course_data: CanvasCourse, api_key_value: dict = Depends(
         {"$set": course_dict},
         upsert=True,
     )
+    data_logger.data("Saved course data", {"operation": "save", "course_id": course_dict["id"], "institution": course_dict["institution"]})
 
 
 @app.get("/analytics_data")
 async def get_all_analytics_data(api_key_value: dict = Depends(check_api_key)):
     users = await app.mongodb["users"].find().to_list(None)
+    data_logger.data("Loaded all analytics data", {"operation": "load", "data_type": "analytics", "user_count": len(users)})
     cleaned_users = [
         {k: v for k, v in u.items() if k != "_id" if k != "activity_stream" if k != "planner"} for u in users
     ]
@@ -433,6 +441,7 @@ async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depen
 
     async with AsyncClient() as client:
         r = await client.post(url, json=request_data, headers=headers)
+    data_logger.data("Queried analytics data", {"operation": "query", "data_type": "analytics", "date_range": [data.start, data.end]})
 
     results = r.json().get("results")
 
@@ -475,6 +484,7 @@ async def chat(messages: List[Message], api_key_value: dict = Depends(check_api_
         temperature=0.7,
         top_p=0.9,
     )
+    data_logger.data("Processed chat message", {"operation": "chat", "message_count": len(messages)})
     return completion.choices[0].message
 
 
@@ -484,6 +494,7 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
     Streaming chat endpoint without any extra features.
     """
 
+    data_logger.data("Streaming chat message", {"operation": "chat_stream", "message_count": len(messages)})
     async def iter_response(messages):
         completion = await app.openai.chat.completions.create(
             messages=SYSTEM_MESSAGE + messages,
@@ -508,6 +519,7 @@ async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_va
     Sends full response with smart features
     `{"content": "the ai response"}` or `{"flagged": bool}`
     """
+    data_logger.data("Processed smart chat", {"operation": "smart_chat", "user_id": chat.user_id if hasattr(chat, 'user_id') else None})
     return {"content": "Not implemented yet"}
 
 
@@ -521,6 +533,7 @@ async def smart_chat_stream(
     `{"content": "the ai response"}`
     """
     user = await get_user_from_token(token)
+    data_logger.data("Streaming smart chat", {"operation": "smart_chat_stream", "user_id": user.get("canvas_id") if user else None})
     messages = chat.messages
     model = chat.model
     course_descriptions = []
