@@ -3,6 +3,9 @@
 # Usage: ./bootstrap.sh [--no-build] [--force] [--auto]
 set -euo pipefail
 
+# Uncomment the next line to debug script execution step-by-step:
+set -x
+
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 COMPOSE_FILE="$REPO_ROOT/develop.yaml"
 TEMPLATE_ENV="$REPO_ROOT/template.env"
@@ -39,15 +42,16 @@ EOF
 done
 
 check_command() {
-  command -v "$1" >/dev/null 2>&1 || { echo "Required command '$1' not found. Aborting." >&2; exit 1; }
+  command -v "$1" >/dev/null 2>&1 || { echo "Required command '$1' not found. Aborting."; exit 1; }
 }
 
 check_env_var() {
   local var_name=$1
   local file=$2
   if ! grep -q -E "^${var_name}=" "$file"; then
-    echo "[bootstrap] [ERROR] Required variable '${var_name}' is not defined in '$file'." >&2
-    echo "[bootstrap] Please add it and try again. You may need to copy it from 'template.env' or 'dev.env'." >&2
+    echo "[bootstrap] [ERROR] Required variable '${var_name}' is not defined in '$file'."
+    echo "[bootstrap] Please add it and try again. You may need to copy it from 'template.env' or 'dev.env'."
+    echo "[bootstrap] [DEBUG] Exiting due to missing env var: $var_name"
     exit 1
   fi
 }
@@ -65,26 +69,26 @@ check_port() {
 
   if command -v lsof >/dev/null 2>&1; then
     if lsof -i :"$port" -sTCP:LISTEN -t >/dev/null; then
-      echo "$err_msg" >&2
-      echo "[bootstrap] The following process is using port $port:" >&2
-      lsof -i :"$port" -sTCP:LISTEN >&2
-      echo "$hint_msg" >&2
+      echo "$err_msg"
+      echo "[bootstrap] The following process is using port $port:"
+      lsof -i :"$port" -sTCP:LISTEN
+      echo "$hint_msg"
       exit 1
     fi
   elif command -v ss >/dev/null 2>&1; then
     if ss -lnt | grep -q ":$port "; then
-      echo "$err_msg" >&2; echo "$hint_msg" >&2; exit 1
+      echo "$err_msg"; echo "$hint_msg"; exit 1
     fi
   elif command -v netstat >/dev/null 2>&1; then
     if netstat -lnt | grep -q ":$port "; then
-      echo "$err_msg" >&2; echo "$hint_msg" >&2; exit 1
+      echo "$err_msg"; echo "$hint_msg"; exit 1
     fi
   else
-    echo "********************************************************************************" >&2
-    echo "[bootstrap] [CRITICAL WARNING] Cannot check for port conflicts." >&2
-    echo "[bootstrap] Required tools ('lsof', 'ss', or 'netstat') not found." >&2
-    echo "[bootstrap] If startup fails, it may be because port $port is already in use." >&2
-    echo "********************************************************************************" >&2
+    echo "********************************************************************************"
+    echo "[bootstrap] [CRITICAL WARNING] Cannot check for port conflicts."
+    echo "[bootstrap] Required tools ('lsof', 'ss', or 'netstat') not found."
+    echo "[bootstrap] If startup fails, it may be because port $port is already in use."
+    echo "********************************************************************************"
   fi
 }
 
@@ -167,23 +171,41 @@ fi
 echo "[bootstrap] Using environment file: $CHOSEN_ENV_FILE"
 
 echo "[bootstrap] Validating required environment variables..."
-  check_env_var "MONGO_ROOT_USERNAME" "$CHOSEN_ENV_FILE"
-  check_env_var "MONGO_ROOT_PASSWORD" "$CHOSEN_ENV_FILE"
-  check_env_var "MONGO_DATABASE" "$CHOSEN_ENV_FILE"
-  check_env_var "MONGO_APP_USERNAME" "$CHOSEN_ENV_FILE"
-  check_env_var "MONGO_APP_PASSWORD" "$CHOSEN_ENV_FILE"
-  # Check for either API key variable to exist for compatibility.
-  if ! (grep -q -E "^BACKEND_API_KEY=" "$CHOSEN_ENV_FILE" || grep -q -E "^AITUTOR_API_KEY=" "$CHOSEN_ENV_FILE"); then
-    echo "[bootstrap] [ERROR] Required API key variable is not defined in '$CHOSEN_ENV_FILE'." >&2
-    echo "[bootstrap] Please add either 'BACKEND_API_KEY' or 'AITUTOR_API_KEY' and try again." >&2
-    exit 1
-  fi
+check_env_var "MONGO_ROOT_USERNAME" "$CHOSEN_ENV_FILE"
+check_env_var "MONGO_ROOT_PASSWORD" "$CHOSEN_ENV_FILE"
+check_env_var "MONGO_DATABASE" "$CHOSEN_ENV_FILE"
+check_env_var "MONGO_APP_USERNAME" "$CHOSEN_ENV_FILE"
+check_env_var "MONGO_APP_PASSWORD" "$CHOSEN_ENV_FILE"
+# Check for either API key variable to exist for compatibility.
+if ! (grep -q -E "^BACKEND_API_KEY=" "$CHOSEN_ENV_FILE" || grep -q -E "^AITUTOR_API_KEY=" "$CHOSEN_ENV_FILE"); then
+  echo "[bootstrap] [ERROR] Required API key variable is not defined in '$CHOSEN_ENV_FILE'." >&2
+  echo "[bootstrap] Please add either 'BACKEND_API_KEY' or 'AITUTOR_API_KEY' and try again." >&2
+  echo "[bootstrap] [DEBUG] Exiting due to missing API key variable"
+  exit 1
+fi
+
+echo "[bootstrap] Environment variable validation complete."
+
+# Debug: Show which env file and first few lines (not secrets)
+echo "[bootstrap] DEBUG: Using env file $CHOSEN_ENV_FILE"
+head -n 10 "$CHOSEN_ENV_FILE" | grep -v -i 'key\|password' || true
 
 compose_args=(--env-file "$CHOSEN_ENV_FILE")
 
 # Read DOMAIN and HOST_PORT from the chosen env file and sanitize them
 DOMAIN=$(get_env_value "DOMAIN" "$CHOSEN_ENV_FILE")
 HOST_PORT=$(get_env_value "HOST_PORT" "$CHOSEN_ENV_FILE")
+
+echo "[bootstrap] DEBUG: DOMAIN='$DOMAIN' (from $CHOSEN_ENV_FILE)"
+echo "[bootstrap] DEBUG: HOST_PORT='$HOST_PORT'"
+
+# Warn if DOMAIN looks like a typo or is empty
+if [[ -z "$DOMAIN" ]]; then
+  echo "[bootstrap] [WARNING] DOMAIN variable is empty. Defaulting to 'localhost'."
+  DOMAIN="localhost"
+elif [[ "$DOMAIN" =~ localhos$ ]]; then
+  echo "[bootstrap] [WARNING] DOMAIN variable ends with 'localhos'. Did you mean 'localhost'?"
+fi
 
 # Proactively check if the domain is likely configured in the hosts file
 if [[ -n "$DOMAIN" && "$DOMAIN" != "localhost" ]]; then
