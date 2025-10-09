@@ -20,7 +20,7 @@ from openai import AsyncOpenAI
 
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 
 def system_message(bio: str = "", descriptions: str = ""):
@@ -59,6 +59,7 @@ anthropic = AsyncAnthropic()
 
 async def get_markdown_webpage(urls: list[str]) -> str:
     pat = re.compile(r"(\n){2,}")
+    logger.info(f"Fetching webpage content for URLs: {urls}")
 
     async def get_page(url: str):
         async with AsyncClient() as client:
@@ -109,6 +110,7 @@ async def get_python_result(code: str):
     Calls to another docker container
     """
 
+    logger.info(f"Executing python code in sandbox: {code[:100]}...")
     async with AsyncClient() as client:
         r = await client.post("http://python:8081/execute", json={"code": code})
 
@@ -504,11 +506,13 @@ async def openai_iter_response(messages: List[Message], descriptions, context, m
 
 async def anthropic_iter_response(messages, context):
     messages = [{"role": m.role, "content": m.content} for m in messages]
+    model_name = "claude-3-5-sonnet-20241022"
+    logger.info(f"ANTHROPIC CHAT - Used model: {model_name}")
     response = await anthropic.messages.create(
         max_tokens=8192,
         system=system_message()[0].get("content"),
         messages=context + messages,
-        model="claude-3-5-sonnet-20241022",
+        model=model_name,
         stream=True,
         temperature=0.7,
         top_p=0.9,

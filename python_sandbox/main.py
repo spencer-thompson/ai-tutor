@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 
 class Block(BaseModel):

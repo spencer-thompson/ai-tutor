@@ -17,21 +17,32 @@ from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from itertools import zip_longest
+from logging.config import dictConfig
 from typing import List
 
 import jwt
 from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
+from config import LogConfig
 from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from httpx import AsyncClient
 from markdownify import markdownify as md
-from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
+from models import (
+    AnalyticsRequest,
+    CanvasCourse,
+    CanvasData,
+    Chat,
+    Message,
+    Settings,
+    Token,
+    User,
+)
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from pymongo.errors import ConnectionFailure, OperationFailure
 from openai import AsyncOpenAI
+from pymongo.errors import ConnectionFailure, OperationFailure
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -58,7 +69,7 @@ SYSTEM_MESSAGE = [
 
 tools = []
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 
 # --- INIT ---
@@ -67,8 +78,8 @@ async def db_lifespan(app: FastAPI):
     """
     Safely starts and stops the FastAPI application, including the database connection.
     """
-
-    app.log = logging.getLogger("uvicorn")
+    dictConfig(LogConfig().dict())
+    app.log = logging.getLogger(__name__)
     app.log.info(f"--- API Started at [{DOMAIN}] ---")
 
     # --- Database Connection ---
@@ -99,7 +110,7 @@ async def db_lifespan(app: FastAPI):
         app.log.info(f"Successfully connected to MongoDB database '{MONGO_DATABASE}'.")
 
     except (ValueError, ConnectionFailure, OperationFailure) as e:
-        app.log.error(f"DATABASE CONNECTION FAILED: {e}")
+        app.log.exception(f"DATABASE CONNECTION FAILED: {e}")
         # Raising an exception during lifespan startup will prevent FastAPI from starting.
         raise RuntimeError("Could not connect to the database. Exiting.") from e
 
@@ -136,6 +147,14 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Request: {request.method} {request.url.path} - From: {request.client.host}")
+    response = await call_next(request)
+    logger.info(f"Response: {response.status_code}")
+    return response
 
 
 @app.middleware("http")
@@ -244,13 +263,12 @@ async def get_user_from_token(token: str):
                 user_courses_map[course["id"]].update(course)
                 user_courses_map[course["id"]].update(catalog_entry)
 
-        user["courses"] = list(user_courses_map.values())
-        return user
-
     except jwt.ExpiredSignatureError:
+        logger.warning("Token has expired")  # Log the specific error
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
+        logger.warning("Invalid token received")  # Log the specific error
         raise HTTPException(status_code=403, detail="Invalid token")
 
 
@@ -271,9 +289,11 @@ async def get_user_id_from_token(token: str):
         return id, uni
 
     except jwt.ExpiredSignatureError:
+        logger.warning("Token has expired")  # Log the specific error
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
+        logger.warning("Invalid token received")  # Log the specific error
         raise HTTPException(status_code=403, detail="Invalid token")
 
 
@@ -299,7 +319,7 @@ async def health_check(request: Request):
         return {"status": "ok", "database": "ok"}
     except Exception as e:
         # If this fails, it indicates a problem with the database connection.
-        logger.error(f"Health check failed: {e}")
+        logger.exception(f"Health check failed: {e}")
         raise HTTPException(status_code=503, detail=f"Database connection error: {e}")
 
 
@@ -328,9 +348,11 @@ async def refresh_token(token: str = Depends(oauth2_scheme)):
         return {"token": new_token}
 
     except jwt.ExpiredSignatureError:
+        logger.warning("Token has expired")  # Log the specific error
         raise HTTPException(status_code=401, detail="Token has expired")
 
     except jwt.InvalidTokenError:
+        logger.warning("Invalid token received")  # Log the specific error
         raise HTTPException(status_code=403, detail="Invalid token")
 
 
@@ -340,6 +362,7 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
     Returns a valid JSON Web Token.
     Currently, tokens expire after 1 day.
     """
+    logger.info(f"Created token for sub: {token_data.sub}, uni: {token_data.uni}")
     access_token = create_access_token(data={"sub": str(token_data.sub), "uni": token_data.uni})
     return {"token": access_token}
 
@@ -360,6 +383,9 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
     """
     user_dict = user_data.dict(exclude_none=True)
 
+    logger.info(
+        f"Upserting user. canvas_id: {user_dict.get('canvas_id')}, institution: {user_dict.get('institution')}"
+    )
     for activity in user_dict["activity_stream"]:
         if message := activity.get("message"):
             activity["message"] = app.patterns.clean_markdown.subn(r"\n\n", md(message))[0]
@@ -389,6 +415,7 @@ async def delete_user(token: str = Depends(oauth2_scheme)):
     Delete All User Data for logged in User.
     """
     id, uni = await get_user_id_from_token(token)
+    logger.info(f"Deleting user data for id: {id}, uni: {uni}")
     result = app.mongodb["users"].delete_one({"canvas_id": id, "institution": uni})
     return {"deleted_count": result.deleted_count}
 
@@ -411,6 +438,7 @@ async def save_chat_session(messages: List[Message], token: str = Depends(oauth2
     """
     id, uni = await get_user_id_from_token(token)
 
+    logger.info(f"Saving chat history for user id: {id}")
     app.mongodb["users"].update_one(
         {"canvas_id": id, "institution": uni},
         {"$set": {"chat_history": [message.dict(exclude_none=True) for message in messages]}},

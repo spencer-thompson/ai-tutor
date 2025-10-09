@@ -4,12 +4,19 @@ import logging
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, OperationFailure
 
-# Configure logging to be clear and informative
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - [DB] - %(message)s',
-    stream=sys.stdout,
-)
+# WARNING: This is a standalone utility script for testing database connections.
+# Do NOT import this module into the main FastAPI application, because it
+# configures the root logger with `logging.basicConfig()` which can interfere
+# with centralized logging configured by the application. If you need to call
+# code here from other modules, import functions and ensure the root logging
+# configuration is performed by the application entrypoint instead.
+if __name__ == "__main__":
+    # Configure logging only when the script is executed directly.
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - [DB] - %(message)s',
+        stream=sys.stdout,
+    )
 
 # --- Database Configuration ---
 # Read credentials and configuration from environment variables
