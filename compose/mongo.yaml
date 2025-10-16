@@ -2,30 +2,26 @@ services:
   mongo:
     image: mongo
     restart: unless-stopped
-    entrypoint:
-      - /usr/bin/mongod
-      - --bind_ip_all
-    # ports:
-    #   - "27017:27017"
+    ports:
+      - "27017:27017"
     networks:
       - web
     volumes:
+      # This volume persists the database data
       - mongo-data:/data/db
+      # This mounts initialization scripts. The mongo image runs any .sh or .js
+      # files in this directory on first startup.
+      - ../mongo:/docker-entrypoint-initdb.d
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      # Credentials for the root user, used by Mongo for its own setup
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      # The database to be created automatically
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
-
-  # mongo-express: # view from web
-  #   image: mongo-express
-  #   restart: unless-stopped
-  #   ports:
-  #     - 8081:8081
-  #   environment:
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: example
-  #     ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
-  #     ME_CONFIG_BASICAUTH: false
+      # Custom variables passed to our init scripts
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+      BACKEND_API_KEY: ${BACKEND_API_KEY}
 
 volumes:
   mongo-data:
