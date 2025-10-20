@@ -53,7 +53,7 @@ services:
     build:
       context: ./streamlit/
       dockerfile: Dockerfile
-    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    command: uv run streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN}
