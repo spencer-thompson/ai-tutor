@@ -1,0 +1,13 @@
+[project]
+name = "ai-tutor-backend"
+version = "0.1.0"
+requires-python = ">=3.12.8"
+dependencies = [
+    "anthropic>=0.71.0",
+    "fastapi[standard]>=0.119.1",
+    "ipython>=9.6.0",
+    "markdownify>=1.2.0",
+    "motor[srv]>=3.7.1",
+    "openai>=2.6.0",
+    "pyjwt>=2.10.1",
+]

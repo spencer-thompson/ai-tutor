@@ -7,7 +7,13 @@ WORKDIR /app
 COPY ./requirements.txt .
 
 # RUN pip install -r requirements.txt --upgrade
-RUN uv pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Copy dependencies
+COPY ./pyproject.toml .
+COPY ./uv.lock .
+
+# Update dependencies
+RUN uv sync --frozen --no-cache
 
 COPY . .
 
