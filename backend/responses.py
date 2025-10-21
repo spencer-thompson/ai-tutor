@@ -48,6 +48,7 @@ agent = {
             Based on the user message, indicate which agent is needed to properly respond.
             If the user is asking a question related to coursework, or without providing context
             choose the Tutor agent, otherwise pick what seems best.
+            If the user is asking to search the web use the assistant agent.
             Additionally, choose how much reasoning would be needed to effectively help the user,
             and how verbose, or long the output should be.
             """,
@@ -175,10 +176,11 @@ async def get_stream(message):
 
     print(f"Using Reasoning: {route['reasoning']}")
     print(f"Using Verbosity: {route['verbosity']}")
+    print()
 
     stream = await openai.responses.create(
         model="gpt-5-nano",
-        tools=[t.get("tool") for t in tools.values()],
+        tools=[t.get("tool") for t in tools.values()] + [{"type": "web_search"}],
         tool_choice="auto",
         input=message,
         stream=True,
@@ -191,6 +193,7 @@ async def get_stream(message):
 
     async for event in stream:
         # print(event.type)
+        # print()
         if event.type == "response.created":
             time_response_created = time.perf_counter()
 
@@ -205,12 +208,25 @@ async def get_stream(message):
         # if event.type == "response.function_call_arguments.delta":
         #     print(event)
 
+        # if "response.output_item" in event.type:
+        #     print(event)
+
+        # TODO: Working on this now
+        # if "response.web_search_call" in event.type:
+        #     print(event)
+
+        # if event.type == "response.web_search_call.completed":
+        #     print(event)
+
         if event.type == "response.function_call_arguments.done":
             print("Calling tool")
             print(event.arguments)
 
         if event.type == "response.completed":
             time_response_completed = time.perf_counter()
+
+            print()
+            print(event)
 
             tokens_used = {
                 "input_tokens": event.response.usage.input_tokens,
@@ -225,7 +241,9 @@ async def get_stream(message):
 
 
 async def main() -> None:
-    async for event in get_stream("How do I take an integral?"):
+    async for event in get_stream(
+        "Can you use the web search tool to search the web to find tesla stock current price?"
+    ):
         print(event, flush=True, end="")
 
 
