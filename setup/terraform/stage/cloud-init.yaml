@@ -1,0 +1,13 @@
+#cloud-config
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - "__REPLACE_WITH_PUBLIC_KEY__"
+
+package_update: true
+package_upgrade: true
+
+runcmd:
+  - [ sh, -c, 'echo "Provision complete" > /var/log/provision.log' ]
