@@ -1,14 +1,57 @@
+"""
+             _ ._  _ , _ ._
+           (_ ' ( `  )_  .__)
+         ( (  (    )   `)  ) _)
+        (__ (_   (_ . _) _) ,__)
+            `~~`\\' . /`~~`
+            ,::: ;   ; :::,
+           ':::::::::::::::'
+ _______________/_ __ \\______________
+|                                     |
+| This is the epic new API for OPENAI |
+|_____________________________________|
+"""
+
 import asyncio
 import json
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 from openai import AsyncOpenAI
+
+from models import Message
 
 openai = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
 )
+
+
+# added_descriptions = (
+#     f"## Courses\n\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
+# )
+
+
+def general_system_message(bio: str = "", descriptions: str = "") -> str:
+    added_bio = f'## Customization\n\n"{bio}"\n- From the user' if bio else ""
+    added_descriptions = (
+        f"## Courses\n\nYou are an expert tutor in these courses: \n{descriptions}" if descriptions else ""
+    )
+    return f"""
+    # Instructions
+
+    You are the AI Tutor for Utah Valley University with a bright and excited attitude and tone.
+    Respond in a concise and effictive manner. Format your response in github flavored markdown.
+
+    {added_bio}
+
+    {added_descriptions}
+
+    ## Current Date and Time
+
+    * {datetime.now(tz=timezone(timedelta(hours=-7))).strftime("%H:%M on %A, %Y-%m-%d")}
+    """
 
 
 def tutor_system_message():
@@ -21,19 +64,6 @@ def tutor_system_message():
 
     Your responses should guide the student to learn the material in a fun, effective and friendly manner.
     Help the student think by asking one or two guiding questions.
-    """
-
-
-def general_system_message():
-    return f"""
-    # Instructions
-
-    You are the AI Tutor for Utah Valley University with a bright and excited attitude and tone.
-    Respond in a concise and effictive manner. Format your response in github flavored markdown.
-
-    ## Current Date and Time
-
-    * {datetime.now(tz=timezone(timedelta(hours=-7))).strftime("%H:%M on %A, %Y-%m-%d")}
     """
 
 
@@ -82,6 +112,9 @@ agent = {
 
 
 async def moderate(message: str):
+    """
+    Moderate a string and return a warning if the message is bad.
+    """
     response = await openai.moderations.create(
         input=message,
     )
@@ -133,10 +166,23 @@ agent_tools = {
 }
 
 
-async def get_stream(message):
+async def openai_responses_api_iter(
+    messages_list: List[Message],
+    descriptions: str = "",
+    context: dict = dict(),
+    recursive=False,
+):
+    """
+    New Responses API compatible with current code.
+    Currently only uses GPT-5 and variants.
+    """
     time_start = time.perf_counter()
 
-    mod = await moderate(message)
+    # filter out the "name" parameter
+    messages = [{k: m[k] for k in ("role", "content")} for m in messages_list]
+    first_message = messages[-1]
+
+    mod = await moderate(first_message["content"])  # NOTE: this is a bit messy
     if mod:
         yield mod
         return
@@ -145,13 +191,24 @@ async def get_stream(message):
 
     # TODO: add time checks
 
+    course_descriptions = f"## Courses\n\nThese are the student's courses: \n{descriptions}" if descriptions else ""
+
+    if user := context.get("user"):
+        bio = user.get("bio")
+        if bio is None:
+            bio = ""
+    else:
+        bio = ""
+
     agent_router = await openai.responses.create(
         model="gpt-5-nano",
-        input=message,
+        input=messages,
         tools=[t.get("tool") for t in agent_tools.values()],
-        instructions="""
+        instructions=f"""
         Given an input message, determine which agent would most effectively help the user.
         Keep in mind you are providing these parameters for yourself in a future response.
+
+        {course_descriptions}
         """,
         reasoning={"effort": "minimal"},
         tool_choice="required",
@@ -168,11 +225,9 @@ async def get_stream(message):
 
     if route["agent"] == "Tutor":
         print(f"Using Agent: {route['agent']}")
-        system_message = general_system_message() + tutor_system_message()
+        system_message = general_system_message(bio, descriptions) + tutor_system_message()
     else:
-        system_message = general_system_message()
-
-    # print([t.get("tool") for t in tools.values()])
+        system_message = general_system_message(bio, descriptions)
 
     print(f"Using Reasoning: {route['reasoning']}")
     print(f"Using Verbosity: {route['verbosity']}")
@@ -182,7 +237,7 @@ async def get_stream(message):
         model="gpt-5-nano",
         tools=[t.get("tool") for t in tools.values()] + [{"type": "web_search"}],
         tool_choice="auto",
-        input=message,
+        input=messages,
         stream=True,
         instructions=system_message,
         reasoning={"effort": route["reasoning"]},
@@ -193,7 +248,6 @@ async def get_stream(message):
 
     async for event in stream:
         # print(event.type)
-        # print()
         if event.type == "response.created":
             time_response_created = time.perf_counter()
 
@@ -225,8 +279,8 @@ async def get_stream(message):
         if event.type == "response.completed":
             time_response_completed = time.perf_counter()
 
-            print()
-            print(event)
+            # print()
+            # print(event)
 
             tokens_used = {
                 "input_tokens": event.response.usage.input_tokens,
@@ -239,11 +293,13 @@ async def get_stream(message):
     print(f"Start to end: {time_response_completed - time_start}")
     print(f"created to end: {time_response_completed - time_response_created}")
 
+    # TODO: add recursive call?
+    # Previously this was done on tool calls only
+
 
 async def main() -> None:
-    async for event in get_stream(
-        "Can you use the web search tool to search the web to find tesla stock current price?"
-    ):
+    messages = [{"role": "user", "content": "Tell me a joke"}]
+    async for event in openai_responses_api_iter(messages):
         print(event, flush=True, end="")
 
 
