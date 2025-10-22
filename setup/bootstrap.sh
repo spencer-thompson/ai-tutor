@@ -9,6 +9,7 @@
 #   --force      Overwrite existing .env.local/.env if present.
 #   --auto       Don't prompt; use defaults.
 #   --reset      Stop services and delete all associated data volumes.
+#   --push       Build, tag, and push images to object storage.
 #   -h, --help   Show this help message.
 #
 
@@ -31,6 +32,7 @@ NO_BUILD=0
 FORCE=0
 AUTO=0
 RESET=0
+PUSH=0
 
 # --- Logging -----------------------------------------------------------------
 
@@ -85,9 +87,10 @@ parse_args() {
       --force) FORCE=1; shift ;;
       --auto) AUTO=1; shift ;;
       --reset) RESET=1; shift ;;
+      --push) PUSH=1; shift ;;
       -h|--help) 
         # Using sed to extract the usage and options from the script's own comments.
-        sed -n 's/^# //p' "$0" | sed -n '/(Usage)/,/(Show this help message)/p'
+        sed -n 's/^# //p' "$0" | sed -n '/Usage:/,/(Show this help message)/p'
         exit 0
         ;; 
       *) 
@@ -165,13 +168,24 @@ check_env_var() {
 
 get_env_value() {
   local var_name=$1
-  grep -E "^${var_name}=" "$CHOSEN_ENV_FILE" | head -n 1 | cut -d'=' -f2- | sed 's/ #.*//' | sed 's/^[ 	]*//;s/[ 	]*$//' | sed 's/$//'
+  # 1. Grep for the line starting with the variable name.
+  # 2. Use cut to get everything after the first '='.
+  # 3. Use sed to remove any trailing comments.
+  # 4. Use xargs to trim leading/trailing whitespace and handle special characters robustly.
+  #    This avoids issues with values containing slashes, etc.
+  # 5. The final sed command removes potential carriage returns from Windows-style line endings.
+  grep -E "^${var_name}=" "$CHOSEN_ENV_FILE" | head -n 1 | cut -d'=' -f2- | sed 's/[[:space:]]*#.*$//' | xargs | sed 's/\r$//'
 }
 
 check_prerequisites() {
   msg "Checking prerequisites..."
   check_command "docker"
-  check_command "curl"
+  if [[ $PUSH -eq 1 ]]; then
+    check_command "aws"
+    msg_ok "AWS CLI found."
+  else
+    check_command "curl"
+  fi
   DOCKER_COMPOSE_CMD=$(get_docker_compose_cmd)
   msg_ok "Prerequisites met."
 }
@@ -196,6 +210,10 @@ reset_environment() {
 run_docker_compose() {
   local compose_args=("--env-file" "$CHOSEN_ENV_FILE")
   
+  # When pushing, we always want to build.
+  if [[ $PUSH -eq 1 ]]; then
+    NO_BUILD=0
+  fi
   if [[ $NO_BUILD -eq 0 ]]; then
     msg "Building Docker images..."
     $DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" "${compose_args[@]}" build
@@ -207,6 +225,65 @@ run_docker_compose() {
   msg "Starting development stack..."
   msg "MongoDB will be initialized automatically on first run. Check '$DOCKER_COMPOSE_CMD logs mongo'."
   $DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" "${compose_args[@]}" up -d
+}
+
+push_images_to_bucket() {
+  msg "Starting image push process..."
+  local s3_endpoint=$(get_env_value "S3_ENDPOINT_URL")
+  local s3_bucket=$(get_env_value "S3_BUCKET")
+  local image_tag=$(get_env_value "IMAGE_TAG")
+
+  if [[ -z "$s3_endpoint" || -z "$s3_bucket" || -z "$image_tag" ]]; then
+    msg_error "S3_ENDPOINT_URL, S3_BUCKET, and IMAGE_TAG must be defined in $CHOSEN_ENV_FILE for --push to work."
+  fi
+
+  # Ensure images are built
+  # When pushing, we always want to build, and run_docker_compose handles the build logic.
+  # We call it here to ensure images are available for saving.
+  NO_BUILD=0 run_docker_compose # Temporarily override NO_BUILD for this call if it was set
+
+  # These are the services with a 'build' directive in develop.yaml
+  local services_to_push=("fastapi" "python" "streamlit")
+  local all_tagged_images=()
+
+  # Reliably get the project name. Docker Compose uses the directory name by default.
+  # We can find it by inspecting the name of a running container for one of our services.
+  # The container name is typically <project_name>-<service_name>-<index>.
+  # Fallback to directory name if no container is running or label not found.
+  local project_name=$($DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" ps -q fastapi | xargs docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}' 2>/dev/null || basename "$REPO_ROOT")
+  if [[ -z "$project_name" ]]; then
+    msg_error "Could not determine Docker Compose project name. Ensure services are running or define PROJECT_NAME in your .env file."
+  fi
+
+  for service in "${services_to_push[@]}"; do
+    local image_name="${project_name}-${service}"
+    local tagged_image_name="${image_name}:${image_tag}"
+    all_tagged_images+=("$tagged_image_name")
+    msg "Collected image for combined tarball: $tagged_image_name"
+  done
+
+  local combined_tarball_name="ai-tutor-staging.tar.gz" # Consistent with user_data.tpl and plan.md
+
+  msg "Saving all collected images to a single tarball: $combined_tarball_name..."
+  docker save "${all_tagged_images[@]}" | gzip > "$combined_tarball_name"
+
+  msg "Uploading $combined_tarball_name to s3://${s3_bucket}/images/ ..."
+  aws --endpoint-url "$s3_endpoint" s3 cp "$combined_tarball_name" "s3://${s3_bucket}/images/${combined_tarball_name}"
+
+  if [[ $? -eq 0 ]]; then
+    msg_ok "Successfully uploaded ${combined_tarball_name}."
+    rm "$combined_tarball_name" # Clean up the local tarball after successful upload
+  else
+    msg_error "Failed to upload ${combined_tarball_name}."
+  fi
+
+  msg "Uploading compose file to s3://${s3_bucket}/compose/ ..."
+  aws --endpoint-url "$s3_endpoint" s3 cp "$COMPOSE_FILE" "s3://${s3_bucket}/compose/develop.yaml"
+  if [[ $? -eq 0 ]]; then
+    msg_ok "Successfully uploaded compose file."
+  else
+    msg_error "Failed to upload compose file."
+  fi
 }
 
 wait_for_services() {
@@ -273,11 +350,17 @@ main() {
     reset_environment
   fi
   
+  if [[ $PUSH -eq 1 ]]; then
+    check_prerequisites
+    setup_environment
+    push_images_to_bucket
+  else
   check_prerequisites
   setup_environment
   run_docker_compose
   wait_for_services
   print_summary
+  fi
 }
 
 main "$@"
