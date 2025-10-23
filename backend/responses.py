@@ -15,13 +15,19 @@
 import asyncio
 import json
 import os
+import re
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import Dict, List
 
 from openai import AsyncOpenAI
 
 from models import Message
+
+PATTERNS = [  # patterns for converting latex to markdown math
+    {"rgx": re.compile(r"\\\s*?\(|\\\s*?\)", re.DOTALL), "new": r"$"},
+    {"rgx": re.compile(r"\\\s*?\[|\\\s*?\]", re.DOTALL), "new": r"$$"},
+]
 
 openai = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
@@ -166,8 +172,34 @@ agent_tools = {
 }
 
 
+async def openai_formatted_responses_iter(messages: List[Dict[str, Dict]], descriptions, context):
+    completion = ""
+    previous_tokens = []
+    sliding_window_limit = 3
+    async for token in openai_responses_api_iter(messages=messages, descriptions=descriptions, context=context):
+        previous_tokens.append(token)
+        window_size = len(previous_tokens) if len(previous_tokens) <= sliding_window_limit else sliding_window_limit
+        sliding_window = "".join(previous_tokens[-window_size:])
+
+        for pat in PATTERNS:
+            if match := pat["rgx"].search(sliding_window):
+                previous_tokens = [sliding_window[: match.start()], pat["new"], sliding_window[match.end() :]]
+
+        if len(previous_tokens) >= sliding_window_limit:
+            popped_token = previous_tokens.pop(0)  # lol an actual stack in the wild
+            completion += popped_token
+            # yield popped_token
+            yield json.dumps({"content": popped_token})
+
+    if previous_tokens:  # flush out rest of sliding window
+        for token in previous_tokens:
+            completion += token
+            # yield token
+            yield json.dumps({"content": token})
+
+
 async def openai_responses_api_iter(
-    messages_list: List[Message],
+    messages: List[Message],
     descriptions: str = "",
     context: dict = dict(),
     recursive=False,
@@ -179,7 +211,7 @@ async def openai_responses_api_iter(
     time_start = time.perf_counter()
 
     # filter out the "name" parameter
-    messages = [{k: m[k] for k in ("role", "content")} for m in messages_list]
+    messages = [{k: dict(m)[k] for k in ("role", "content")} for m in messages]
     first_message = messages[-1]
 
     mod = await moderate(first_message["content"])  # NOTE: this is a bit messy
@@ -235,7 +267,8 @@ async def openai_responses_api_iter(
 
     stream = await openai.responses.create(
         model="gpt-5-nano",
-        tools=[t.get("tool") for t in tools.values()] + [{"type": "web_search"}],
+        tools=[t.get("tool") for t in tools.values()],
+        # tools=[t.get("tool") for t in tools.values()] + [{"type": "web_search"}],
         tool_choice="auto",
         input=messages,
         stream=True,

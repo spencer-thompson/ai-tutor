@@ -11,8 +11,8 @@ THOUGHTS:
 import json
 import logging
 import os
-import sys
 import re
+import sys
 from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -20,7 +20,6 @@ from itertools import zip_longest
 from typing import List
 
 import jwt
-from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
 from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,10 +27,13 @@ from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from httpx import AsyncClient
 from markdownify import markdownify as md
-from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from pymongo.errors import ConnectionFailure, OperationFailure
 from openai import AsyncOpenAI
+from pymongo.errors import ConnectionFailure, OperationFailure
+
+from ai import openai_formatted_iter_response
+from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
+from responses import openai_formatted_responses_iter
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -228,7 +230,7 @@ async def get_user_from_token(token: str):
 
         # Create a lookup map from the catalog data for efficient merging.
         catalog_map = {item["code"]: item for item in catalog_courses}
-        
+
         # Create a map of the user's courses by ID for efficient updates.
         user_courses_map = {c["id"]: c for c in user_courses_list}
 
@@ -509,7 +511,7 @@ async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depen
 
         # TODO: The 'users' variable is populated but not yet used in the final response.
         # Future work could involve merging this user data with the analytics results.
-        
+
     return r.json()
 
 
@@ -599,6 +601,10 @@ async def smart_chat_stream(chat: Chat, token: str = Depends(oauth2_scheme)):
 
     context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 
+    # return StreamingResponse(
+    #     openai_formatted_iter_response(messages, descriptions, context, model), media_type="application/json"
+    # )
+
     return StreamingResponse(
-        openai_formatted_iter_response(messages, descriptions, context, model), media_type="application/json"
+        openai_formatted_responses_iter(messages, descriptions, context), media_type="application/json"
     )
