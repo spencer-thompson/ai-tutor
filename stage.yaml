@@ -42,7 +42,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.fastapi.entrypoints=websecure
-      - traefik.http.routers.fastapi.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.fastapi.rule=Host(`api.${STG_DOMAIN}`)
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=production
       - traefik.http.services.backend.loadbalancer.server.port=8080
@@ -54,7 +54,7 @@ services:
     command: uv run streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     restart: unless-stopped
     environment:
-      DOMAIN: ${DOMAIN}
+      DOMAIN: ${STG_DOMAIN}
       BACKEND: ${BACKEND}
       BASE_URL: ${BASE_URL}
       BACKEND_API_KEY: ${BACKEND_API_KEY}
@@ -77,9 +77,9 @@ services:
       - traefik.enable=true
       # - traefik.http.routers.streamlit.entrypoints=web,websecure
       - traefik.http.routers.streamlit.entrypoints=websecure
-      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.streamlit.rule=Host(`${STG_DOMAIN}`)
       - traefik.http.routers.www-streamlit.entrypoints=websecure
-      - traefik.http.routers.www-streamlit.rule=Host(`www.${DOMAIN}`)
+      - traefik.http.routers.www-streamlit.rule=Host(`www.${STG_DOMAIN}`)
       - traefik.http.routers.www-streamlit.middlewares=redirect-to-non-www
       - traefik.http.routers.www-streamlit.tls.certresolver=production
       - traefik.http.routers.streamlit.tls=true
@@ -100,7 +100,7 @@ services:
       - traefik
       - fastapi
     environment:
-      DOMAIN: ${DOMAIN}
+      DOMAIN: ${STG_DOMAIN}
       API_KEY: ${API_KEY}
     networks:
       - web
@@ -108,11 +108,11 @@ services:
       - traefik.enable=true
       # - traefik.http.routers.svelte.entrypoints=web
       - traefik.http.routers.svelte.entrypoints=websecure
-      - traefik.http.routers.svelte.rule=Host(`beta.${DOMAIN}`)
+      - traefik.http.routers.svelte.rule=Host(`beta.${STG_DOMAIN}`)
       - traefik.http.routers.svelte.tls.certresolver=production
       # - traefik.http.middlewares.svelte-https.redirectscheme.scheme=https # WARN: untested
       # - traefik.http.routers.www-svelte.entrypoints=web
-      # - traefik.http.routers.www-svelte.rule=Host(`www.${DOMAIN}`)
+      # - traefik.http.routers.www-svelte.rule=Host(`www.${STG_DOMAIN}`)
       # - traefik.http.routers.www-svelte.middlewares=redirect-to-non-www
       - traefik.http.services.svelte.loadbalancer.server.port=3000
 
