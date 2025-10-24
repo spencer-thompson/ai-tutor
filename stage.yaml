@@ -91,36 +91,36 @@ services:
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://$1"
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
 
-  svelte:
-    build:
-      context: ./svelte/
-      dockerfile: DeployDockerfile
-    command: node -r dotenv/config /app/build/index.js
-    depends_on:
-      - traefik
-      - fastapi
-    environment:
-      DOMAIN: ${STG_DOMAIN}
-      API_KEY: ${API_KEY}
-    networks:
-      - web
-    labels:
-      - traefik.enable=true
-      # - traefik.http.routers.svelte.entrypoints=web
-      - traefik.http.routers.svelte.entrypoints=websecure
-      - traefik.http.routers.svelte.rule=Host(`beta.${STG_DOMAIN}`)
-      - traefik.http.routers.svelte.tls.certresolver=production
-      # - traefik.http.middlewares.svelte-https.redirectscheme.scheme=https # WARN: untested
-      # - traefik.http.routers.www-svelte.entrypoints=web
-      # - traefik.http.routers.www-svelte.rule=Host(`www.${STG_DOMAIN}`)
-      # - traefik.http.routers.www-svelte.middlewares=redirect-to-non-www
-      - traefik.http.services.svelte.loadbalancer.server.port=3000
-
-      # MIDDLEWARES
-      # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^http?://www\\.(.*)"
-      # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=http://$1"
-      # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
-      #
+  # svelte:
+  #   build:
+  #     context: ./svelte/
+  #     dockerfile: DeployDockerfile
+  #   command: node -r dotenv/config /app/build/index.js
+  #   depends_on:
+  #     - traefik
+  #     - fastapi
+  #   environment:
+  #     DOMAIN: ${STG_DOMAIN}
+  #     API_KEY: ${API_KEY}
+  #   networks:
+  #     - web
+  #   labels:
+  #     - traefik.enable=true
+  #     # - traefik.http.routers.svelte.entrypoints=web
+  #     - traefik.http.routers.svelte.entrypoints=websecure
+  #     - traefik.http.routers.svelte.rule=Host(`beta.${STG_DOMAIN}`)
+  #     - traefik.http.routers.svelte.tls.certresolver=production
+  #     # - traefik.http.middlewares.svelte-https.redirectscheme.scheme=https # WARN: untested
+  #     # - traefik.http.routers.www-svelte.entrypoints=web
+  #     # - traefik.http.routers.www-svelte.rule=Host(`www.${STG_DOMAIN}`)
+  #     # - traefik.http.routers.www-svelte.middlewares=redirect-to-non-www
+  #     - traefik.http.services.svelte.loadbalancer.server.port=3000
+  #
+  #     # MIDDLEWARES
+  #     # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^http?://www\\.(.*)"
+  #     # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=http://$1"
+  #     # - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
+  #     #
 
 networks:
   web:

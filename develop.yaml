@@ -61,12 +61,12 @@ services:
       - traefik.http.routers.backend.entrypoints=web
       - traefik.http.routers.backend.rule=Host(`api.${DEV_DOMAIN}`)
       - traefik.http.services.backend.loadbalancer.server.port=8080
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-    #   start_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api.${DEV_DOMAIN}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   python:
     build:
@@ -109,7 +109,7 @@ services:
       - ./mongo/mongo-dev-init.js:/docker-entrypoint-initdb.d/init-db.js:ro
     # healthcheck:
     #   test: |
-    #     mongosh --host localhost --port 27017 --eval 'db.adminCommand("ping")'
+    #     mongosh --host 0.0.0.0 --port 27017 --eval 'db.adminCommand("ping")'
     #   interval: 10s
     #   timeout: 5s
     #   retries: 5
@@ -166,11 +166,11 @@ services:
       - traefik.http.services.streamlit.loadbalancer.server.port=8501
     # # we might have issues with using localhost in docker
     # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8501/"]
+    #   test: ["CMD", "curl", "-f", "http://${DEV_DOMAIN}"]
     #   interval: 10s
     #   timeout: 5s
     #   retries: 5
-    #   start_period: 30s
+    #   start_period: 20s
 
   # ntfy:
   #   image: binwiederhier/ntfy
