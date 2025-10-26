@@ -12,14 +12,14 @@ services:
     image: traefik:latest
     restart: unless-stopped
     command:
-      # - "--log.level=DEBUG"
+      - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
+      # - "${HOST_PORT:-80}:80"
       - "80:80"
-      - "8000:8000"
     networks:
       - web
     volumes:
@@ -29,7 +29,9 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    command: fastapi dev main.py --host 0.0.0.0 --port 8080
+    # command: fastapi dev main.py --host 0.0.0.0 --port 8080
+    # command: /app/.venv/bin/fastapi dev main.py --host 0.0.0.0 --port 8080
+    command: uv run fastapi dev main.py --host 0.0.0.0 --port 8080
     develop:
       watch:
         - action: sync
@@ -41,28 +43,38 @@ services:
       CHAT_MODEL: ${CHAT_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
+      BACKEND_API_KEY: ${DEV_BACKEND_API_KEY}
       PLAUSIBLE_API_KEY: ${PLAUSIBLE_API_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MONGO_USERNAME: ${MONGO_USERNAME}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+      MONGO_DATABASE: ${MONGO_DATABASE}
+      MONGO_HOST: mongo
+      MONGO_AUTH_SOURCE: ${MONGO_AUTH_SOURCE:-admin}
     depends_on:
       - mongo
       - traefik
-    ports:
-      - "8080:8080"
     networks:
       - web
     labels:
       - traefik.enable=true
-      - traefik.http.routers.fastapi.entrypoints=web
-      - traefik.http.routers.fastapi.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.backend.entrypoints=web
+      - traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`)
       - traefik.http.services.backend.loadbalancer.server.port=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api.${DOMAIN}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   python:
     build:
       context: ./python_sandbox/
       dockerfile: Dockerfile
-    command: fastapi dev main.py --host 0.0.0.0 --port 8081
+    command: uv run fastapi dev main.py --host 0.0.0.0 --port 8081
     develop:
       watch:
         - action: sync
@@ -73,70 +85,68 @@ services:
     depends_on:
       - traefik
       - fastapi
-    ports:
-      - "8081:8081"
     networks:
       - web
 
   mongo:
     image: mongo
     restart: unless-stopped
-    # build:
-    #   context: ./mongo/
-    #   dockerfile: Dockerfile
-    entrypoint:
-      - /usr/bin/mongod
-      - --bind_ip_all
-    # entrypoint: sh -c "mongod --bind_ip_all && mongosh --file /tmp/mongo-dev-init.js"
-    # - "--auth"
-    # - "--authenticationDatabase"
-    # - "admin"
-    # oh my god
-    # command: >
-    #   bash -c "
-    #   mongod --bind_ip_all;
-    #   mongoimport -d aitutor -c users --file /tmp/users.json --drop;
-    #   mongoimport -d aitutor -c keys --file /tmp/keys.json --drop;
-    #   mongosh --file /tmp/mongo-dev-init.js;
-    #   "
+    environment:
+      # These are ROOT credentials, used only by Mongo to create the root user on first launch.
+      # Your .env file should define MONGO_ROOT_USERNAME and MONGO_ROOT_PASSWORD.
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-aitutor}
+      # Custom variables passed to our init scripts for creating the application user and API key.
+      # These are read by mongo-dev-init.js using getenv().
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+      BACKEND_API_KEY: ${DEV_BACKEND_API_KEY}
     ports:
       - "27017:27017"
     networks:
       - web
     volumes:
-      # - ./dev/users.json:/tmp/users.json
-      # - ./dev/keys.json:/tmp/keys.json
-      # - ./mongo/mongo-dev-init.js:/tmp/mongo-dev-init.js
-      # - ./dev/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - mongo-data:/data/db
-      # - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # in case of issues again
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      - ./mongo/mongo-dev-init.js:/docker-entrypoint-initdb.d/init-db.js:ro
+    # healthcheck:
+    #   test: |
+    #     mongosh --host 0.0.0.0 --port 27017 --eval 'db.adminCommand("ping")'
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 20s
 
-      # MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
   # mongo-express: # view from web
   #   image: mongo-express
   #   restart: unless-stopped
-  #   ports:
-  #     - 8081:8081
   #   environment:
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: example
-  #     ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME:-root}
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-example}
+  #     ME_CONFIG_MONGODB_SERVER: mongo
   #     ME_CONFIG_BASICAUTH: false
+  #     ME_CONFIG_SITE_BASEURL: /mongo-express
+  #   depends_on:
+  #     mongo:
+  #       condition: service_healthy
+  #   networks:
+  #     - web
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.mongo-express.rule=Host(`${DEV_DOMAIN}`) && PathPrefix(`/mongo-express`)"
+  #     - "traefik.http.routers.mongo-express.entrypoints=web"
+  #     - "traefik.http.services.mongo-express.loadbalancer.server.port=8081"
 
   streamlit:
     build:
       context: ./streamlit/
       dockerfile: Dockerfile
-    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    command: uv run streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     environment:
       DOMAIN: ${DOMAIN}
-      BACKEND: ${BACKEND}
-      BASE_URL: ${BASE_URL}
-      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      BACKEND: ${BACKEND:-http://fastapi:8080/}
+      BASE_URL: ${BASE_URL:-http://fastapi:8080/}
+      BACKEND_API_KEY: ${DEV_BACKEND_API_KEY}
       BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
       PLAUSIBLE_API_KEY: ${PLAUSIBLE_API_KEY}
     develop:
@@ -148,15 +158,21 @@ services:
             - __pycache__/
     depends_on:
       - fastapi
-    # ports:
-    #   - "8501:8501"
+      - traefik
     networks:
       - web
     labels:
       - traefik.enable=true
       - traefik.http.routers.streamlit.entrypoints=web
-      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`) # && !PathPrefix(`/ntfy`)
+      - traefik.http.routers.streamlit.rule=Host(`${DOMAIN}`)
       - traefik.http.services.streamlit.loadbalancer.server.port=8501
+    # # we might have issues with using localhost in docker
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://${DEV_DOMAIN}"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 20s
 
   # ntfy:
   #   image: binwiederhier/ntfy
@@ -174,7 +190,7 @@ services:
   #     test:
   #       [
   #         "CMD-SHELL",
-  #         "wget -q --tries=1 http://${DOMAIN}/ntfy/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1",
+  #         "wget -q --tries=1 http://${DEV_DOMAIN}/ntfy/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1",
   #       ]
   #     interval: 60s
   #     timeout: 10s
@@ -183,7 +199,7 @@ services:
   #   labels:
   #     - traefik.enable=true
   #     - traefik.http.routers.ntfy.entrypoints=web
-  #     - traefik.http.routers.ntfy.rule=Host(`ntfy.${DOMAIN}`) # && PathPrefix(`/ntfy`))
+  #     - traefik.http.routers.ntfy.rule=Host(`ntfy.${DEV_DOMAIN}`) # && PathPrefix(`/ntfy`))
   #     # - traefik.http.services.ntfy.loadbalancer.server.port=8501
   #   networks:
   #     - web
