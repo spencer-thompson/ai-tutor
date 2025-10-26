@@ -21,7 +21,7 @@ set -euo pipefail
 
 # Paths
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
-COMPOSE_FILE="$REPO_ROOT/develop.yaml"
+COMPOSE_FILE="$REPO_ROOT/stage.yaml"
 TEMPLATE_ENV="$REPO_ROOT/template.env"
 DEV_ENV="$REPO_ROOT/dev.env"
 ENV_LOCAL="$REPO_ROOT/.env.local"
