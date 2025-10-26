@@ -53,11 +53,13 @@
 - We managed to fix some issues with initializing a fresh instance of the database for development.
   This was something that was a pain point for a long time.
 
+- We got the local development environment working!
+
 - Additionally, a lot of bugs regarding the development environment and docker containers have been fixed.
 
 == | What obstacles are you encountering?
 
-- Getting the local development environment is still not working for Landon which is quite frustrating.
+- Designing the infrastructure, has been somewhat difficult.
 
 == | What do you plan to accomplish by the next team meeting?
 
