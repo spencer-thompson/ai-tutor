@@ -2,15 +2,44 @@
 
 This is the repository for the Generative AI Tutor pioneered at [UVU](https://www.uvu.edu/).
 
+
+![AI Tutor Homepage](./images/ai_tutor_screenshot_1.png)
+
+## Introduction
+
+The AI Tutor project has been under active development for quite some time, started back in early 2024.
+In discussions with the excellent faculty in the Tech Management Department at Utah Valley University,
+we hypothesized that using the new and exciting technology of large language models,
+we could provide excellent, _personalized_ tutoring to students *whenever they needed it*.
+
+So, we set out to provide a novel way to accomplish this goal.
+The original AI Tutor was indeed a success, quickly being adopted into a several courses at Utah Valley University,
+and gaining attention among multiple departments and more than a handful of students.
+
+This repository is where that code lives.
+
+
+## Design
+
+![An overview of the system design of the AI Tutor](./doc/ai-tutor-2-diagram-light.png)
+
 ## Development
 
 In order to run the project in development mode:
 
-1. Ensure [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/install/) and the [Mongo Shell](https://www.mongodb.com/try/download/shell) are installed
-2. In the project root directory, run the command `docker compose -f develop.yaml up mongo`
-3. Then, run `mongosh --file ./dev/mongo-init.js`
-4. In the project root directory, run the command `docker compose -f develop.yaml up --watch`
-5. Everything should be up and running 😄
+1. Ensure [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/install/) are installed.
+2. In the project root directory, run the command: `docker compose -f develop.yaml build`
+3. Then, still in the project root, run: `docker compose -f develop.yaml up --watch`
+4. Everything should be up and running 😄
+
+## Deployment
+
+- Our deployments are hosted on a [Hetzner](https://www.hetzner.com/cloud) virtual private server.
+
+1. We use [just](https://github.com/casey/just) to bundle everything needed to deploy into one command `just deploy`
+2. This essentially just uses `rsync` and `ssh` to send the files up, build the docker containers, and run them.
+
+
 
 # Acknowledgments
 
