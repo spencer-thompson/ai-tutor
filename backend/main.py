@@ -155,10 +155,9 @@ async def check_api_key(api_key: str = Security(header_scheme)) -> bool:
     """
     Check to see if an API key is valid.
     """
-    # A more standard way to check for a key is to query for its value.
-    document = await app.mongodb["keys"].find_one({"key": api_key})
+    document = await app.mongodb["keys"].find_one({api_key: {"$exists": True}})
     if document:
-        return document.get("description", "Valid Key")
+        return [v for k, v in document.items() if k not in {"_id"}][0]
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
