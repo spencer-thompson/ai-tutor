@@ -1,6 +1,6 @@
 // #set page(margin: 2cm, height: auto, width: 26cm)
 #set page(margin: 1cm)
-#set text(28pt, font: "Berkeley Mono", weight: 700)
+#set text(26pt, font: "Berkeley Mono", weight: 700)
 #set math.mat(align: right, gap: 10pt)
 #set enum(indent: 1em)
 #set list(indent: 1.5em)
@@ -16,7 +16,7 @@
 #align(center)[
   #v(2cm)
 
-  = Week Ten Meeting Log
+  = Week Eleven Meeting Log
 
   #v(-0.3cm)
   // #text(12pt)[_Systems of Linear Differential Equations_]
@@ -30,7 +30,7 @@
   #text(11pt, font: "Berkeley Mono")[
     Spencer Thompson | Landon Towers
 
-    10/26/2025
+    11/2/2025
   ]
 ]
 
@@ -50,28 +50,29 @@
 
 == | What have you done since last team meeting?
 
-- We managed to fix some issues with initializing a fresh instance of the database for development.
-  This was something that was a pain point for a long time.
+- We got the staging environment working!
+  In addition, we added a bunch of new domains to test various different builds of the tutor on.
 
-- We got the local development environment working!
+- We successfully deployed a new version of the AI Tutor with a variety of fixes as well as
+  migrating to the new GPT-5 model.
 
-- Additionally, a lot of bugs regarding the development environment and docker containers have been fixed.
+- The new deployed Tutor also more accurately follows the behavior that the Tech Management Department wants it to.
 
 == | What obstacles are you encountering?
 
-- Designing the infrastructure, has been somewhat difficult.
+- Communication is difficult, particularly when discussing more technical aspects of the codebase.
+
+- There are several different departments all connected to this project, all with different feedback, requirements, and wants.
+  Providing the features, paperwork, and deliverables for all parties involved is incredibly difficult.
 
 == | What do you plan to accomplish by the next team meeting?
 
-- We will need to have deployed our code to production.
-
-- Getting the local environment working properly.
+- Have official tests written and running.
 
 ~
 
 == | Contributions
 
-// TODO:
 #table(
   columns: (1fr,) * 4,
   // row-gutter: 1em,
@@ -89,7 +90,7 @@
   ],
   [
     // #align(center)[
-    Date: 10/26/2025
+    Date: 11/2/2025
     // ]
   ],
   [
@@ -139,4 +140,5 @@
 
 == | Notes
 
-- N/A
+- It may be beneficial for our team to have a meeting to more specifically discuss
+  how the project responsibilities will be split between team members.

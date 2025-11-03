@@ -4,6 +4,9 @@
   author: ("Spencer Thompson", "Landon Towers"),
 )
 
+#show link: set text(fill: blue)
+#show link: underline
+
 #set par(justify: true)
 #set rect(stroke: silver, inset: 1em)
 #show heading.where(level: 4): set heading(numbering: none)
@@ -18,7 +21,7 @@
 #set text(12pt, font: "Berkeley Mono")
 
 
-// #v(1cm)
+#v(1cm)
 #align(center)[
   #text(navy, 48pt)[*Sprint Two*]
 
@@ -30,7 +33,7 @@
   #datetime.today().display("[month repr:long] [day], [year]")
 ]
 
-#v(1cm)
+#v(2cm)
 
 #show outline.entry.where(
   level: 1,
@@ -39,11 +42,50 @@
 //   level: 2,
 // ): set block(above: 1.1em)
 
-#set text(9pt)
+#set text(10pt)
 
-#outline(indent: 1.7em, title: [Table of Contents], depth: 3)
+#outline(indent: 1.7em, title: [Table of Contents], depth: 2)
 
 #set text(10pt)
+
+
+= Team Organization
+
+- *Sprint Leader*: Spencer Thompson
+
+== Team 7
+
+- Spencer Thompson
+
+- Landon Towers
+
+== Meeting Schedule
+
+- *Professor*: Thursdays at 11:15 AM
+
+- *Sponsor*: Mondays at 2:00 PM
+
+- *Team*: Ad-hoc, scheduled weekly
+
+
+= Project Description
+
+
+The AI Tutor is a generative AI-powered learning assistant designed to support students at Utah Valley University (UVU). It provides a personalized and interactive learning experience by integrating with the Canvas Learning Management System (LMS). The application consists of a web-based frontend and a robust backend, working together to deliver a seamless and intuitive user experience.
+
+The frontend is a modern chat interface built with Svelte. It allows students to ask questions and receive answers from an AI tutor in a conversational manner. The interface supports rich text formatting, including markdown, code snippets with syntax highlighting, and mathematical equations using LaTeX. This ensures that the AI can provide clear and easy-to-understand explanations for a wide range of subjects.
+
+The backend is the core of the AI Tutor, developed using Python and the FastAPI framework. It orchestrates the entire system, managing user authentication, data processing, and communication with external services. The backend uses a MongoDB database to store user data, chat history, and course information.
+
+One of the key features of the AI Tutor is its "smart chat" functionality. By securely accessing a student's data from Canvas—including their enrolled courses, assignments, grades, and activity stream—the AI can provide context-aware and personalized assistance. For example, a student can ask for a summary of their upcoming assignments, clarification on a specific course topic, or help with a difficult concept from a lecture. The AI can also be customized by the user with a bio, to further personalize the experience.
+
+To answer a wide range of questions, the AI Tutor is equipped with several tools. It can read the content of webpages, which is useful for providing explanations based on external resources. It can also execute Python code, allowing it to function as a calculator or to demonstrate programming concepts.
+
+The AI Tutor is designed to be a safe and reliable learning environment. It includes a moderation service that filters out inappropriate content, and it uses a secure authentication system based on JSON Web Tokens (JWT) to protect user data. The application is also designed to be scalable and maintainable, with a containerized architecture using Docker.
+
+In summary, the AI Tutor is a comprehensive and innovative learning platform that combines the power of generative AI with the rich data available in the Canvas LMS. It aims to provide UVU students with a powerful and accessible tool to enhance their learning experience and academic success.
+
+
 
 = Meeting Logs
 
@@ -481,7 +523,17 @@
 #figure(image("assets/mainpage.png", width: 70%), caption: [AI Tutor Main Page])
 
 
-= Demo Code
+= Demo
+
+== Video
+
+- The Demo Video is in Google Drive here:
+
+  - #link("https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link")[
+      https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link
+    ]
+
+== Code
 
 
 #figure(caption: [Code to Migrate to GPT-5])[
@@ -643,13 +695,18 @@ This plan applies to all components of the AI Tutor project, including:
 
 - *Tools:* `Playwright`
 
+#pagebreak()
+
 === Security Testing
 
 - *Objective:* To identify and mitigate potential security vulnerabilities.
 
 - *Methods:*
+
   - Regular dependency scanning to find known vulnerabilities in third-party packages.
+
   - Manual penetration testing of key endpoints, focusing on authentication (JWT handling) and input validation to prevent injection attacks.
+
   - Ensuring all sensitive data is handled securely and API keys are not exposed.
 
 == Roles and Responsibilities
@@ -669,6 +726,7 @@ This plan applies to all components of the AI Tutor project, including:
 == Test Cases
 
 - This section provides a sample of test cases derived from the testing plan. The `Test Date` is set to the creation date and `Pass/Fail` status is pending execution.
+
 
 === Unit Test Cases (Backend)
 
@@ -699,12 +757,7 @@ This plan applies to all components of the AI Tutor project, including:
 )
 
 #set text(10pt)
-
-// | Test Case = | Description | Test Date | Inputs | Expected Outputs | Pass/Fail |
-// | :--- | :--- | :--- | :--- | :--- | :--- |
-// | *UT-BE-01* | *User Model Validation:* Tests that the `User` Pydantic model in `models.py` successfully validates a correct user object. | 2025-10-05 | `{"sub": "123", "name": "Test User"}` | The `User` model is instantiated without errors. | Pending |
-// | *UT-BE-02* | *Invalid User Model:* Tests that the `User` model raises a `ValidationError` if required fields are missing. | 2025-10-05 | `{"sub": "123"}` (missing `name`) | A `pydantic.ValidationError` is raised. | Pending |
-// | *UT-BE-03* | *AI Response Formatting:* Tests a utility function in `ai.py` that formats a raw LLM response into the correct JSON structure for the frontend. | 2025-10-05 | Raw text string from a mocked LLM. | A valid JSON object with `type` and `content` fields is returned. | Pending |
+#pagebreak()
 
 === Unit Test Cases (Frontend)
 
@@ -727,11 +780,6 @@ This plan applies to all components of the AI Tutor project, including:
   [ Pending ],
 )
 #set text(10pt)
-
-// | Test Case = | Description | Test Date | Inputs | Expected Outputs | Pass/Fail |
-// | :--- | :--- | :--- | :--- | :--- | :--- |
-// | *UT-FE-01* | *Message Component Rendering:* Verifies that the `Message.svelte` component correctly displays the message text and author. | 2025-10-05 | `props = { author: "AI", text: "Hello!" }` | The component renders a `div` containing the text "Hello!" and indicates it is from the "AI". | Pending |
-// | *UT-FE-02* | *Send Button Event:* Verifies that clicking the "Send" button in the `ChatInput.svelte` component dispatches a `send` event. | 2025-10-05 | User clicks the send button. | A `send` event is dispatched with the input field's text content as the payload. | Pending |
 
 === Integration Test Cases
 
@@ -756,11 +804,6 @@ This plan applies to all components of the AI Tutor project, including:
 )
 #set text(10pt)
 
-// | Test Case = | Description | Test Date | Inputs | Expected Outputs | Pass/Fail |
-// | :--- | :--- | :--- | :--- | :--- | :--- |
-// | *IT-BE-01* | *Get User Profile:* Verifies the `/api/users/me` endpoint. | 2025-10-05 | `GET` request to `/api/users/me` with a valid JWT for a user stored in the test database. | A `200 OK` response is returned with a JSON body containing the correct user's profile data. | Pending |
-// | *IT-BE-02* | *Create Conversation:* Verifies the `/api/conversations/` endpoint. | 2025-10-05 | `POST` request to `/api/conversations/` with a valid JWT and a title. | A `201 Created` response is returned, and a new conversation document is created in the database for that user. | Pending |
-
 === End-to-End Test Cases
 
 
@@ -780,10 +823,6 @@ This plan applies to all components of the AI Tutor project, including:
   [ Pending ],
 )
 #set text(10pt)
-
-// | Test Case = | Description | Test Date | Inputs | Expected Outputs | Pass/Fail |
-// | :--- | :--- | :--- | :--- | :--- | :--- |
-// | *E2E-01* | *Full Login and Chat Flow:* Simulates a user logging in, sending a message, and receiving a response. | 2025-10-05 | 1. Navigate to home page. 2. Click "Login". 3. Complete mock Canvas login. 4. Type "Hello" into chat. 5. Click "Send". | 1. User is redirected to Canvas. 2. User is redirected back to the app. 3. The message "Hello" appears in the chat window. 4. An AI response is streamed into the chat window. | Pending |
 
 === Security Test Cases
 
@@ -808,14 +847,19 @@ This plan applies to all components of the AI Tutor project, including:
 )
 #set text(10pt)
 
-// | Test Case = | Description | Test Date | Inputs | Expected Outputs | Pass/Fail |
-// | :--- | :--- | :--- | :--- | :--- | :--- |
-// | *ST-01* | *Unauthorized API Access:* Attempt to access an authenticated endpoint without proper credentials. | 2025-10-05 | `GET` request to `/api/users/me` with no `Authorization` header. | The API returns a `401 Unauthorized` or `403 Forbidden` status code. | Pending |
-// | *ST-02* | *XSS in Chat Input:* Attempt to inject a script into the chat. | 2025-10-05 | User types `<script>alert('XSS')</script>` into the chat input and sends. | The message is displayed as plain text in the chat window, and no alert dialog appears. The script is sanitized. | Pending |
-
 - Bug Report
 
-  *This section will be populated with bug reports as they are identified during the testing process. At this time, formal testing has not yet begun.*
+  - *API Key Check Failure*: After a merged pull request, the backend code was broken due to the `check_api_key` function breaking on the change.
+    This was reverted and fixed.
+
+  - *AI Tutor Behavior*: Not necessarily a discrete bug, but the LLM is not producing responses in accordance with the desires of the Tech Management Department, our project sponsor.
+
+  - *LLM Tool Code Execution Container*: The docker container that is used to sandbox code generated by the tutor to execute
+    is not working properly and breaking often.
+
+  - *Course Name*: In the Canvas API, the `course_name` parameter can be changed by users, and we need to
+    migrate from `course_name` to `course_code` so that we have more predictable behavior from the LLM.
+    This parameter is used as a pseudo-primary key by MongoDB.
 
 // | Date | Tester | Test Case Number | Priority | Severity Level | Assigned Developer | Fix Date |
 // | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -865,6 +909,6 @@ This plan applies to all components of the AI Tutor project, including:
 == Quality Assurance Metrics
 
 
-= README.md
+= README
 
-#figure(image("assets/aitutor_readme.png", width: 60%), caption: [Screenshot of the README.md from Github])
+#figure(image("assets/aitutor_readme.png", width: 60%), caption: [Screenshot of the `README.md` from Github])
