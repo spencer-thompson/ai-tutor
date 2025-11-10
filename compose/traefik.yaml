@@ -28,6 +28,13 @@ services:
       # - "--certificatesresolvers.production.acme.httpchallenge=true"
       # - "--certificatesresolvers.production.acme.httpchallenge.entrypoint=web"
 
+    healthcheck:
+      test: ["CMD", "traefik", "version"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
     ports:
       - 80:80
       - 443:443
