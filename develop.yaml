@@ -56,6 +56,8 @@ services:
     depends_on:
       - mongo
       - traefik
+      mongo:
+        condition: service_healthy
     networks:
       - web
     labels:
