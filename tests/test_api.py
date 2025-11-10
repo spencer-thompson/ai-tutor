@@ -1,12 +1,17 @@
 import os
+import pytest
 
 import jwt
 import requests
 
+# Skip these integration-style tests when essential environment variables are not set.
 domain = os.getenv("DOMAIN")
 api_key = os.getenv("BACKEND_API_KEY")
 api_key_name = os.getenv("BACKEND_API_KEY_NAME")
 jwt_secret = os.getenv("JWT_SECRET_KEY")
+
+if not domain or not api_key or not api_key_name or not jwt_secret:
+    pytest.skip("Integration tests require DOMAIN, BACKEND_API_KEY, BACKEND_API_KEY_NAME, and JWT_SECRET_KEY environment variables; skipping.", allow_module_level=True)
 
 if "aitutor" in domain:
     url = f"https://api.{domain}"

@@ -1,0 +1,7 @@
+pytest
+pytest-asyncio
+pytest-cov
+pytest-mock
+pydantic>=1.10.12,<2.0
+pyjwt
+requests
