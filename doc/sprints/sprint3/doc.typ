@@ -497,12 +497,50 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
   - N/A
 ]
 
-= Backlogs and Sprints
-
-// TODO: FINISH
+= Timeline
 
 #figure(image("assets/completion_timeline.png"), caption: [Completion Timeline])
 
+// TODO: FINISH
+
+== Backlogs
+
+#set text(9pt)
+
+#align(center)[
+
+  #table(
+    columns: 7,
+    align: left,
+    table.header([*ID*], [*Title*], [*Type*], [*Priority*], [*Status*], [*Owner*], [*Sprint*]),
+    [ANA.1], [Fix Analytics Server], [Bug], [1], [Backlog], [Spencer], [3],
+    [ANA.2], [Get Telemetry Data], [Chore], [2], [In Progress], [Spencer], [3],
+    [BUG.1], [Fix API Key Checking Error], [Bug], [1], [Complete], [Spencer], [2],
+    [DEV.1], [Fix Development Environment], [Bug], [2], [Complete], [Spencer], [1],
+    [STG.1], [Staging Server], [Tests], [2], [Backlog], [Landon], [2],
+    [REQ.1], [Revise FR / NFR Requirements], [Tests], [1], [Backlog], [Landon], [2],
+    [REQ.2], [Choose Which Requirements to Test], [Tests], [1], [Backlog], [Landon], [2],
+    [TST.1], [First Test Commit], [Tests], [1], [Backlog], [Landon], [2],
+    [TST.2], [Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
+    [TST.3], [Non-Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
+    [TST.4], [Automated Tests], [Tests], [3], [In Progress], [Landon], [4],
+    [TST.5], [Collect Data on Testing Metrics], [Tests], [2], [In Progress], [Landon], [4],
+    [FTR.1], [Migrate to GPT-5], [Feature], [2], [Complete], [Spencer], [1],
+    [FTR.1], [Button to choose Tutor Role], [Feature], [3], [In Progress], [Spencer], [3],
+    [FTR.2], [Migrate to GPT-5.1], [Feature], [2], [In Progress], [Spencer], [3],
+    [DPL.1], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [1],
+    [DPL.2], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [2],
+    [DPL.3], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [3],
+    [DOC.1], [Add Cover Page to Sprints], [Chore], [1], [Complete], [Spencer], [2],
+    [DOC.2], [Fix Architecture Diagram], [Chore], [2], [Backlog], [Spencer], [2],
+  )
+]
+
+#set text(10pt)
+
+== Sprints
+
+// TODO:
 
 = Software Requirement Specification
 
