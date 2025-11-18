@@ -8,7 +8,7 @@
 #show link: underline
 
 #set par(justify: true)
-#set rect(stroke: silver, inset: 1em)
+#set rect(stroke: silver, inset: 1em, outset: 1em)
 #show heading.where(level: 4): set heading(numbering: none)
 #set heading(numbering: "1.")
 #show heading: h => [
@@ -50,10 +50,10 @@
 //   level: 2,
 // ): set block(above: 1.1em)
 
-#set text(10pt)
+#set text(9pt)
 
 #pagebreak()
-#outline(indent: 1.7em, title: [Table of Contents], depth: 2)
+#outline(indent: 1.7em, title: [Table of Contents], depth: 3)
 
 #set text(10pt)
 
@@ -101,7 +101,12 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
 == Week 10
 
+~
+
+
 #rect()[
+  ~
+
   ==== | What have you done since last team meeting?
 
   - We managed to fix some issues with initializing a fresh instance of the database for development.
@@ -125,7 +130,6 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
   ==== | Contributions
 
-  // TODO:
   #table(
     columns: (1fr,) * 4,
     // row-gutter: 1em,
@@ -194,11 +198,19 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
   ==== | Notes
 
   - N/A
+
+  ~
 ]
+
+#pagebreak()
 
 == Week 11
 
+~
+
 #rect()[
+  ~
+
   ==== | What have you done since last team meeting?
 
   - We got the staging environment working!
@@ -293,11 +305,18 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
   - It may be beneficial for our team to have a meeting to more specifically discuss
     how the project responsibilities will be split between team members.
+
+  ~
 ]
+
+#pagebreak()
 
 == Week 12
 
+~
+
 #rect()[
+  ~
 
   ==== | What have you done since last team meeting?
 
@@ -393,11 +412,19 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
   ==== | Notes
 
   - N/A
+
+  ~
 ]
+
+#pagebreak()
 
 == Week 13
 
+~
+
 #rect()[
+
+  ~
 
   ==== | What have you done since last team meeting?
 
@@ -495,7 +522,11 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
   ==== | Notes
 
   - N/A
+
+  ~
 ]
+
+#pagebreak()
 
 = Timeline
 
@@ -503,7 +534,7 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
 // TODO: FINISH
 
-== Backlogs
+== Backlogs & Sprints
 
 #set text(9pt)
 
@@ -520,25 +551,25 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
     [STG.1], [Staging Server], [Tests], [2], [Backlog], [Landon], [2],
     [REQ.1], [Revise FR / NFR Requirements], [Tests], [1], [Backlog], [Landon], [2],
     [REQ.2], [Choose Which Requirements to Test], [Tests], [1], [Backlog], [Landon], [2],
-    [TST.1], [First Test Commit], [Tests], [1], [Backlog], [Landon], [2],
+    [TST.1], [Create First Tests], [Tests], [1], [Backlog], [Landon], [2],
     [TST.2], [Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
     [TST.3], [Non-Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
     [TST.4], [Automated Tests], [Tests], [3], [In Progress], [Landon], [4],
     [TST.5], [Collect Data on Testing Metrics], [Tests], [2], [In Progress], [Landon], [4],
     [FTR.1], [Migrate to GPT-5], [Feature], [2], [Complete], [Spencer], [1],
-    [FTR.1], [Button to choose Tutor Role], [Feature], [3], [In Progress], [Spencer], [3],
-    [FTR.2], [Migrate to GPT-5.1], [Feature], [2], [In Progress], [Spencer], [3],
+    [FTR.1], [Button to choose Tutor Role], [Feature], [3], [In Progress], [Spencer], [4],
+    [FTR.2], [Migrate to GPT-5.1], [Feature], [2], [In Progress], [Spencer], [4],
     [DPL.1], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [1],
     [DPL.2], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [2],
     [DPL.3], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [3],
     [DOC.1], [Add Cover Page to Sprints], [Chore], [1], [Complete], [Spencer], [2],
-    [DOC.2], [Fix Architecture Diagram], [Chore], [2], [Backlog], [Spencer], [2],
+    [DOC.2], [Fix Architecture Diagram], [Chore], [2], [Complete], [Spencer], [2],
   )
 ]
 
 #set text(10pt)
 
-== Sprints
+// == Sprints
 
 // TODO:
 
@@ -639,7 +670,9 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
 
 
-= Addressing Feedback
+// = Addressing Feedback
+//
+// TODO: Maybe?
 
 
 = Design
@@ -667,11 +700,14 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
 - *View System Analytics:* The Administrator accesses a separate analytics dashboard (Plausible) to view aggregated, anonymized usage data and system performance metrics.
 
+
+#pagebreak()
+
 == Architecture Diagram
 
-// TODO: Create new accurate architecture diagram
+~
 
-#figure(image("assets/archdiagram.png", width: 70%), caption: [Architecture Diagram])
+#figure(image("assets/ai-tutor-architecture-diagram-2.svg", width: 90%), caption: [Architecture Diagram])
 
 == Use Case Diagram
 
@@ -679,33 +715,82 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 
 == Class Diagram
 
-#figure(image("assets/classdiagram.png", width: 70%), caption: [Class Diagram])
+
+#figure(image("assets/classdiagram.png", width: 100%), caption: [Class Diagram])
+
+~
+
+== Design Patterns
+
+=== Authentication
+
+#figure(
+  image("assets/authentication_flow.png"),
+  caption: [Authentication Flow],
+)
+
+~
+
+- *Encapsulation of authentication & enrichment* (`get_user_from_token` centralizes token handling and course merging).
+
+- *Single Responsibility*: route handler just orchestrates; JWT parsing and DB logic are delegated.
+
+~
+
+=== Decorators
+
+#figure(
+  image("assets/decorator_like_processing.png"),
+  caption: [Decorator Like Processing],
+)
+
+
+~
+
+- *Iterator / Generator* pattern for streaming responses (`async for` over tokens).
+
+- *Decorator-like processing*: `openai_formatted_responses_iter` wraps `openai_responses_api_iter` to post-process tokens (math formatting) before yielding.
+
+
+=== Aggregator
+
+#figure(
+  image("assets/context_aggregation.png", width: 80%),
+  caption: [Context Aggregation],
+)
+
+~
+
+- *Façade / Aggregator*: `smart_chat_stream` hides complexities of multiple Mongo collections; it exposes a unified `context` object for downstream AI functions.
+
 
 == Other Diagrams
 
+
 #figure(image("assets/ai-tutor-2-diagram-light.png"), caption: [Architecture Diagram])
 
-#figure(image("assets/dockerrunning.png", width: 70%), caption: [AI Tutor Running in Docker])
+~
 
-#figure(image("assets/mainpage.png", width: 70%), caption: [AI Tutor Main Page])
+
+#figure(image("assets/mainpage.png", width: 90%), caption: [AI Tutor Main Page])
 
 
 = Demo
 
-== Video
+// == Video
+//
+// - The Demo Video is in Google Drive here:
+//
+//   - #link("https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link")[
+//       https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link
+//     ]
 
-- The Demo Video is in Google Drive here:
-
-  - #link("https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link")[
-      https://drive.google.com/drive/folders/1IO0jYRLZXh_n9kpROqcBzJVIzEC9H6kJ?usp=drive_link
-    ]
-
+#v(-0.5cm)
 == Code
 
-
 #figure(caption: [Code to Migrate to GPT-5])[
-  #rect(fill: silver)[
-    #text(5.7pt)[
+  #rect(fill: silver, outset: 0em)[
+    #text(5.5pt)[
       ```python
       async def openai_responses_api_iter(
           messages: List[Message],
@@ -1072,10 +1157,36 @@ This plan applies to all components of the AI Tutor project, including:
 //
 // == Test Cases
 
-
-== Quality Assurance Metrics
+// == Quality Assurance Metrics
 
 
 = README
 
 #figure(image("assets/aitutor_readme.png", width: 60%), caption: [Screenshot of the `README.md` from Github])
+
+== Instructions
+
+=== Development
+
+In order to run the project in development mode:
+
+1. Ensure #link("https://www.docker.com/")[Docker] and #link("https://docs.docker.com/compose/install/")[Docker Compose] are installed.
+2. In the project root directory, run the command: `docker compose -f develop.yaml build`
+3. Then, still in the project root, run: `docker compose -f develop.yaml up --watch`
+4. Everything should be up and running.
+
+~
+
+#figure(image("assets/dockerrunning.png", width: 90%), caption: [AI Tutor Running in Docker])
+
+~
+
+=== Deployment
+
+- Our deployments are hosted on a #link("https://www.hetzner.com/cloud")[Hetzner] virtual private server.
+
+1. We use #link("https://github.com/casey/just")[just] to bundle everything needed to deploy into one command `just deploy`
+2. This essentially just uses `rsync` and `ssh` to send the files up, build the docker containers, and run them.
+
+
+
