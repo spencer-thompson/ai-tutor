@@ -98,8 +98,28 @@ services:
 
       # redirect www to just aitutor
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^https?://www\\.(.*)"
-      - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://$1"
+      - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://$$1"
       - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
+
+  testing:
+    build:
+      context: ./backend/
+      dockerfile: testing.Dockerfile
+    command: pytest
+    environment:
+      CHAT_MODEL: ${CHAT_MODEL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      BACKEND_API_KEY_NAME: ${BACKEND_API_KEY_NAME}
+      PLAUSIBLE_API_KEY: ${PLAUSIBLE_API_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - web
 
   # svelte:
   #   build:
