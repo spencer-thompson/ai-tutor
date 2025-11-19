@@ -23,7 +23,7 @@
 
 #v(4cm)
 #align(center)[
-  #text(navy, 48pt)[*Sprint Three*]
+  #text(navy, 48pt)[*SPRINT THREE*]
 
   #line(length: 100%, stroke: 2pt + navy)
 
@@ -50,7 +50,7 @@
 //   level: 2,
 // ): set block(above: 1.1em)
 
-#set text(9pt)
+#set text(8.6pt)
 
 #pagebreak()
 #outline(indent: 1.7em, title: [Table of Contents], depth: 3)
@@ -551,11 +551,13 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
     [STG.1], [Staging Server], [Tests], [2], [Backlog], [Landon], [2],
     [REQ.1], [Revise FR / NFR Requirements], [Tests], [1], [Backlog], [Landon], [2],
     [REQ.2], [Choose Which Requirements to Test], [Tests], [1], [Backlog], [Landon], [2],
-    [TST.1], [Create First Tests], [Tests], [1], [Backlog], [Landon], [2],
-    [TST.2], [Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
-    [TST.3], [Non-Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
-    [TST.4], [Automated Tests], [Tests], [3], [In Progress], [Landon], [4],
-    [TST.5], [Collect Data on Testing Metrics], [Tests], [2], [In Progress], [Landon], [4],
+    [TST.1], [Create First Tests], [Tests], [1], [Complete], [Landon], [2],
+    [TST.2], [Revise Test PR], [Tests], [1], [In Progress], [Landon], [3],
+    [TST.3], [Merge Test PR into Stage], [Tests], [1], [Waiting], [Spencer], [3],
+    [TST.4], [Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
+    [TST.5], [Non-Functional Requirement Tests], [Tests], [2], [Backlog], [Landon], [3],
+    [TST.6], [Automated Tests], [Tests], [3], [In Progress], [Landon], [4],
+    [TST.7], [Collect Data on Testing Metrics], [Tests], [2], [In Progress], [Landon], [4],
     [FTR.1], [Migrate to GPT-5], [Feature], [2], [Complete], [Spencer], [1],
     [FTR.1], [Button to choose Tutor Role], [Feature], [3], [In Progress], [Spencer], [4],
     [FTR.2], [Migrate to GPT-5.1], [Feature], [2], [In Progress], [Spencer], [4],
@@ -564,6 +566,7 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
     [DPL.3], [Deploy New Features], [Chore], [1], [Complete], [Spencer], [3],
     [DOC.1], [Add Cover Page to Sprints], [Chore], [1], [Complete], [Spencer], [2],
     [DOC.2], [Fix Architecture Diagram], [Chore], [2], [Complete], [Spencer], [2],
+    [FIX.1], [Stop Paying Google Cloud], [Chore], [2], [In Progress], [Spencer], [4],
   )
 ]
 
@@ -762,6 +765,29 @@ In summary, the AI Tutor is a comprehensive and innovative learning platform tha
 ~
 
 - *Façade / Aggregator*: `smart_chat_stream` hides complexities of multiple Mongo collections; it exposes a unified `context` object for downstream AI functions.
+
+
+=== Data Models
+
+
+#figure(
+  image("assets/data_models.png", width: 100%),
+  caption: [Data Models],
+)
+
+=== Dependency Injection
+
+#figure(
+  image("assets/lifespan_dependency_injection.png", width: 100%),
+  caption: [Lifespan Dependency Injection],
+)
+
+=== Streaming Reponses
+
+#figure(
+  image("assets/streaming_response_pipeline.png", width: 100%),
+  caption: [Streaming Response Pipeline],
+)
 
 
 == Other Diagrams
