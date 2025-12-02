@@ -9,7 +9,7 @@
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:3
     restart: unless-stopped
     command:
       - "--log.level=DEBUG"
@@ -61,12 +61,12 @@ services:
       - traefik.http.routers.backend.entrypoints=web
       - traefik.http.routers.backend.rule=Host(`api.${DEV_DOMAIN}`)
       - traefik.http.services.backend.loadbalancer.server.port=8080
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://api.${DEV_DOMAIN}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://api.${DEV_DOMAIN}"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 30s
 
   python:
     build:

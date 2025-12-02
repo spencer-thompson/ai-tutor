@@ -123,6 +123,7 @@ app.add_middleware(
         "https://aitutor.live",
         "https://beta.aitutor.live",
         "https://uvu.instructure.com",
+        "http://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
         "http://localhost:5173",
@@ -194,17 +195,9 @@ async def get_user_from_token(token: str):
             raise HTTPException(status_code=403, detail="Invalid token")
 
         user = await app.mongodb["users"].find_one({"canvas_id": id, "institution": uni})
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-        user_courses_list = user.get("courses")
-        if not user_courses_list:
-            # If user has no courses, no need to perform course merge logic.
-            return user
-
         courses = (
             await app.mongodb["courses"]
-            .find({"institution": uni, "id": {"$in": [c["id"] for c in user_courses_list]}})
+            .find({"institution": uni, "id": {"$in": [c["id"] for c in user.get("courses")]}})
             .to_list(None)
         )
 
@@ -227,25 +220,17 @@ async def get_user_from_token(token: str):
             .to_list(None)
         )
 
-        # Create a lookup map from the catalog data for efficient merging.
-        catalog_map = {item["code"]: item for item in catalog_courses}
+        # this is the crazy "join" for mongo
+        # Joining the course catalog with a users courses from canvas
+        merged_courses = [
+            {**c, **a}
+            if (" ".join(c.get("course_code")) if c.get("course_code") else " ".join(c.get("name").split("-")[0:2]))
+            == a.get("code")
+            else c
+            for c, a in zip_longest(courses[:], catalog_courses, fillvalue={})
+        ]
 
-        # Create a map of the user's courses by ID for efficient updates.
-        user_courses_map = {c["id"]: c for c in user_courses_list}
-
-        # Iterate through the detailed courses and merge catalog data.
-        for course in courses:
-            course_code_str = (
-                " ".join(course.get("course_code").split(" ")[0:2])
-                if course.get("course_code")
-                else " ".join(course.get("name").split("-")[0:2])
-            )
-            if course["id"] in user_courses_map and (catalog_entry := catalog_map.get(course_code_str)):
-                # Merge the detailed course data and catalog data into the user's course entry.
-                user_courses_map[course["id"]].update(course)
-                user_courses_map[course["id"]].update(catalog_entry)
-
-        user["courses"] = list(user_courses_map.values())
+        user["courses"] = [u | c for u in user["courses"] for c in merged_courses if u["id"] == c["id"]]
         return user
 
     except jwt.ExpiredSignatureError:
@@ -605,5 +590,5 @@ async def smart_chat_stream(chat: Chat, token: str = Depends(oauth2_scheme)):
     # )
 
     return StreamingResponse(
-        openai_formatted_responses_iter(messages, descriptions, context), media_type="application/json"
+        openai_formatted_responses_iter(messages, descriptions, context, role=chat.role), media_type="application/json"
     )

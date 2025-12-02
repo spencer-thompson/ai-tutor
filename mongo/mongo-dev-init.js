@@ -50,6 +50,7 @@ appDb.users.deleteMany({});
 print("[mongo-init] Cleared all documents from 'users' collection.");
 
 // Upsert the development API key used by the browser extension.
+// NEVER CHANGE DB WITHOUT CLEAR COMMUNICATION FIRST
 appDb.keys.updateOne(
   { key: devApiKey },
   {
@@ -60,6 +61,7 @@ appDb.keys.updateOne(
   },
   { upsert: true },
 );
+
 print("[mongo-init] Upserted development API key into 'keys' collection.");
 
 print(`\n[mongo-init] Database '${appDbName}' is ready for development.`);

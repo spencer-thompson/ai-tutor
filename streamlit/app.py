@@ -10,7 +10,6 @@ import uuid
 from collections import namedtuple
 
 import requests
-
 import streamlit as st
 from streamlit.components.v1 import html
 
@@ -283,7 +282,8 @@ if "user" not in st.session_state:
                 str(c["id"]): True for c in st.session_state.user["courses"]
             }
 
-        st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
+        st.session_state.user_count = None
+        # st.session_state.user_count = st.session_state.backend.get("user_count").get("total_users")
         # st.session_state.user["logged_in"] = True
     except requests.exceptions.HTTPError as e:
         is_invalid_token = False
