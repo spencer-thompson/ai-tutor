@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, constr
+from pydantic import BaseModel
 
 # class UserModel(BaseModel):
 #     """
@@ -30,6 +30,7 @@ class Chat(BaseModel):
     Format for any Smart Chat endpoints
     """
 
+    role: Optional[Literal["Auto", "Tutor", "General", "Quick"]] = "Auto"
     messages: List[Message]
     courses: Optional[List[int]] = None
     model: Optional[Literal["gpt-4o", "gpt-4o-mini", "o1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"]] = "gpt-4.1"

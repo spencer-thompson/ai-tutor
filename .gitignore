@@ -1,8 +1,12 @@
 .envrc
 .venv/
 
+*.zip
+
 ### Experiential credit ###
 experiential_credit.zip
+sprint3_doc_recording_small.mp4
+ai_tutor_recording.mp4
 
 ### MONGO ###
 mongo/snapshots/*
@@ -317,3 +321,6 @@ app.*.symbols
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
 !.vscode/settings.json
+.env.local
+package-lock.json
+package-lock.json

@@ -11,12 +11,19 @@ PATTERNS = [  # patterns for converting latex to markdown math
 
 
 def runner(
-    courses, model: Literal["gpt-4o", "gpt-4o-mini", "o1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"] = "gpt-4.1"
+    courses,
+    model: Literal["gpt-4o", "gpt-4o-mini", "o1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"] = "gpt-4.1",
+    role: Literal["Auto", "Quick", "Tutor", "General"] = "Auto",
 ):
     """
     Helper function for the tutor, yields token as they are received
     """
-    data = {"messages": st.session_state.messages, "courses": [c["id"] for c in courses], "model": model}
+    data = {
+        "messages": st.session_state.messages,
+        "courses": [c["id"] for c in courses],
+        "model": model,
+        "role": role,
+    }
     completion = ""
     previous_tokens = []
     sliding_window_limit = 3  # set sliding window size
@@ -107,6 +114,7 @@ def chat_control_buttons():
                 format_func=lambda o: o["display"],
                 selection_mode="single",
                 label_visibility="collapsed",
+                width="stretch",
             )
 
             if st.session_state.chat_control:
@@ -139,6 +147,7 @@ selected_courses = st.pills(
     if c.get("course_code")
     else " ".join(c["name"].split("|")[0].split("-")[0:2]),
     label_visibility="collapsed",
+    width="stretch",
 )
 
 st.session_state.displayed_messages = st.empty()
@@ -179,7 +188,13 @@ if (
         },
     )
     with st.chat_message("assistant"):
-        st.write_stream(runner(selected_courses, model="gpt-4.1-nano"))
+        st.write_stream(
+            runner(
+                selected_courses,
+                model="gpt-4.1-nano",
+                role="Quick",
+            )
+        )
 
     st.session_state.messages.pop(0)
     st.session_state.has_sent_message = True

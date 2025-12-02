@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+import sys
 from collections import namedtuple
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -19,21 +20,30 @@ from itertools import zip_longest
 from typing import List
 
 import jwt
-from ai import openai_formatted_iter_response
 from anthropic import AsyncAnthropic
-from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from httpx import AsyncClient
 from markdownify import markdownify as md
-from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from openai import AsyncOpenAI
+from pymongo.errors import ConnectionFailure, OperationFailure
+
+from ai import openai_formatted_iter_response
+from models import AnalyticsRequest, CanvasCourse, CanvasData, Chat, Message, Settings, Token, User
+from responses import openai_formatted_responses_iter
 
 BACKEND_API_KEY_NAME = os.getenv("BACKEND_API_KEY_NAME")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-CONNECTION_STRING = f"mongodb://{os.getenv('MONGO_USERNAME')}:{os.getenv('MONGO_PASSWORD')}@mongo/?authSource=admin"
+# --- Database Connection Details ---
+# These are read from environment variables set in docker-compose.
+MONGO_APP_USERNAME = os.getenv("MONGO_APP_USERNAME")
+MONGO_APP_PASSWORD = os.getenv("MONGO_APP_PASSWORD")
+MONGO_HOST = os.getenv("MONGO_HOST", "mongo")
+MONGO_DATABASE = os.getenv("MONGO_DATABASE", "aitutor")
+MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 DOMAIN = os.getenv("DOMAIN")
 PLAUSIBLE_API_KEY = os.getenv("PLAUSIBLE_API_KEY")
@@ -57,28 +67,48 @@ logger = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
     """
-    This just safely starts and stops FastAPI with mongo
+    Safely starts and stops the FastAPI application, including the database connection.
     """
 
     app.log = logging.getLogger("uvicorn")
     app.log.info(f"--- API Started at [{DOMAIN}] ---")
 
-    app.mongodb_client = AsyncIOMotorClient(
-        CONNECTION_STRING
-    )  # This sets up mongodb and lets us reference from the fastapi object
-    app.mongodb = app.mongodb_client.get_database("aitutor")
-    ping_response = await app.mongodb.command("ping")
+    # --- Database Connection ---
+    try:
+        # Check for all required environment variables at startup
+        required_vars = {
+            "MONGO_APP_USERNAME": MONGO_APP_USERNAME,
+            "MONGO_APP_PASSWORD": MONGO_APP_PASSWORD,
+            "MONGO_HOST": MONGO_HOST,
+            "MONGO_DATABASE": MONGO_DATABASE,
+            "JWT_SECRET_KEY": JWT_SECRET_KEY,
+            "BACKEND_API_KEY_NAME": BACKEND_API_KEY_NAME,
+        }
+        missing_vars = [key for key, value in required_vars.items() if not value]
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+        mongo_uri = f"mongodb://{MONGO_APP_USERNAME}:{MONGO_APP_PASSWORD}@{MONGO_HOST}/?authSource={MONGO_AUTH_SOURCE}"
+        redacted_uri = f"mongodb://{MONGO_APP_USERNAME}:<REDACTED>@{MONGO_HOST}/?authSource={MONGO_AUTH_SOURCE}"
+
+        app.log.info("Attempting to connect to MongoDB...")
+        app.log.info(f"Connection String: {redacted_uri}")
+
+        app.mongodb_client = AsyncIOMotorClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        await app.mongodb_client.admin.command("ping")  # Verifies connection and auth
+        app.mongodb: AsyncIOMotorDatabase = app.mongodb_client[MONGO_DATABASE]
+
+        app.log.info(f"Successfully connected to MongoDB database '{MONGO_DATABASE}'.")
+
+    except (ValueError, ConnectionFailure, OperationFailure) as e:
+        app.log.error(f"DATABASE CONNECTION FAILED: {e}")
+        # Raising an exception during lifespan startup will prevent FastAPI from starting.
+        raise RuntimeError("Could not connect to the database. Exiting.") from e
 
     app.openai = AsyncOpenAI()  # Setup OpenAI
     app.anthropic = AsyncAnthropic()
 
     app.patterns = namedtuple("Pattern", ["clean_markdown"])(re.compile(r"(\n){2,}"))
-
-    if int(ping_response["ok"]) != 1:
-        raise Exception("Problem connecting to database cluster.")
-
-    else:
-        logger.info("Connected to database cluster.")
 
     yield
 
@@ -93,9 +123,12 @@ app.add_middleware(
         "https://aitutor.live",
         "https://beta.aitutor.live",
         "https://uvu.instructure.com",
+        "http://uvu.instructure.com",
         "http://localhost:8080",
         "http://localhost:5555",
         "http://localhost:5173",
+        f"http://{DOMAIN}",
+        f"https://{DOMAIN}",
         f"http://beta.{DOMAIN}",
         "chrome-extension://ndaaaojmnehkocealgfdaebakknpihcj",
         "chrome-extension://dkbedcgheicjblgfddhifhemjchjpkdl",
@@ -241,6 +274,21 @@ async def read_root():
     return {"Hello": "World"}
 
 
+@app.get("/health", tags=["System"])
+async def health_check(request: Request):
+    """
+    Health check endpoint. Confirms API is running and can connect to the database.
+    """
+    try:
+        # The 'ping' command is cheap and confirms connectivity and authentication.
+        await request.app.mongodb.command("ping")
+        return {"status": "ok", "database": "ok"}
+    except Exception as e:
+        # If this fails, it indicates a problem with the database connection.
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Database connection error: {e}")
+
+
 @app.get("/key")
 async def get_key(api_key_value: dict = Depends(check_api_key)):
     """
@@ -250,7 +298,7 @@ async def get_key(api_key_value: dict = Depends(check_api_key)):
 
 
 @app.get("/token")
-async def refresh_token(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def refresh_token(token: str = Depends(oauth2_scheme)):
     """
     Returns a valid JSON Web Token.
     Uses the current token to generate or refresh, a new token.
@@ -283,7 +331,7 @@ async def create_token(token_data: Token, api_key_value: dict = Depends(check_ap
 
 
 @app.get("/user", response_model=User)
-async def get_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def get_user(token: str = Depends(oauth2_scheme)):
     """
     Returns the currently logged in user (from JWT)
     Strips away tons of course information.
@@ -322,7 +370,7 @@ async def post_user(user_data: CanvasData, api_key_value: dict = Depends(check_a
 
 
 @app.delete("/user")
-async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def delete_user(token: str = Depends(oauth2_scheme)):
     """
     Delete All User Data for logged in User.
     """
@@ -332,9 +380,7 @@ async def delete_user(token: str = Depends(oauth2_scheme), api_key_value: dict =
 
 
 @app.post("/user_settings")
-async def update_user_settings(
-    settings: Settings, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def update_user_settings(settings: Settings, token: str = Depends(oauth2_scheme)):
     id, uni = await get_user_id_from_token(token)
 
     app.mongodb["users"].update_one(
@@ -345,9 +391,7 @@ async def update_user_settings(
 
 
 @app.post("/save_chat")
-async def save_chat_session(
-    messages: List[Message], token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def save_chat_session(messages: List[Message], token: str = Depends(oauth2_scheme)):
     """
     Saves the last chat message in the database.
     """
@@ -449,17 +493,8 @@ async def get_analytics_data(data: AnalyticsRequest, api_key_value: dict = Depen
             for u in matching_users
         ]
 
-        print(users)
-
-        # final_data = []
-
-    # filtered_data = [{k: v for k, v in d.items() if k != 'age'} for d in data]
-
-    # matching_courses = [{u.get("canvas_id"): u.get("courses")} for u in matching_users]
-
-    # final_data = [c for c in matching_courses]
-
-    # NOTE: not yet working like I would like
+        # TODO: The 'users' variable is populated but not yet used in the final response.
+        # Future work could involve merging this user data with the analytics results.
 
     return r.json()
 
@@ -503,7 +538,7 @@ async def chat_stream(messages: List[Message], api_key_value: dict = Depends(che
 
 
 @app.post("/v1/smart_chat")
-async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)):
+async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme)):
     """
     Sends full response with smart features
     `{"content": "the ai response"}` or `{"flagged": bool}`
@@ -512,9 +547,7 @@ async def smart_chat(chat: Chat, token: str = Depends(oauth2_scheme), api_key_va
 
 
 @app.post("/v1/smart_chat_stream")
-async def smart_chat_stream(
-    chat: Chat, token: str = Depends(oauth2_scheme), api_key_value: dict = Depends(check_api_key)
-):
+async def smart_chat_stream(chat: Chat, token: str = Depends(oauth2_scheme)):
     """
     Sends back chunks as they are generated from the AI.
     Response is an iterator in the form of:
@@ -552,6 +585,10 @@ async def smart_chat_stream(
 
     context = {"activity_stream": activity_context, "courses": course_context, "user": user_context}
 
+    # return StreamingResponse(
+    #     openai_formatted_iter_response(messages, descriptions, context, model), media_type="application/json"
+    # )
+
     return StreamingResponse(
-        openai_formatted_iter_response(messages, descriptions, context, model), media_type="application/json"
+        openai_formatted_responses_iter(messages, descriptions, context, role=chat.role), media_type="application/json"
     )

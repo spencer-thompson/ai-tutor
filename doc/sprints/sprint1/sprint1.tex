@@ -1,0 +1,916 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%   Combined LaTeX Document for AI Tutor Project
+%   Generated from 11 Markdown files.
+%
+%   Instructions:
+%   1. Save this file as "combined_document.tex"
+%   2. Place it inside your main "Document/" folder.
+%   3. Compile twice with a LaTeX compiler (e.g., pdflatex or xelatex)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt, a4paper]{article}
+
+% --- PACKAGES ---
+\usepackage[margin=1in]{geometry}
+
+% --- Modern Font & Language Setup (for XeTeX/LuaLaTeX) ---
+% These replace inputenc and fontenc
+\usepackage{fontspec} % This will load the TeX default fonts (e.g., Latin Modern)
+\usepackage[english]{babel}
+\usepackage{graphicx}
+% --- End Font Setup ---
+
+\usepackage{hyperref}
+\usepackage{amsmath}       % For LaTeX math (mentioned in SRS)
+\usepackage{xltabular}     % For tables that span multiple pages
+\usepackage{booktabs}      % For professional-looking table lines
+\usepackage{parskip}       % Paragraphs separated by space, not indent
+\usepackage{titlesec}      % For custom section formatting
+\usepackage{caption}       % For better control over captions
+\usepackage{array}         % For table column definitions
+
+% --- DOCUMENT SETUP ---
+
+% Set the path for images. Assumes this .tex file is in the "Document/"
+% folder, and the images are in "Document/assets/".
+\graphicspath{{./assets/}}
+
+% Format hyperlinks
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=cyan,
+	pdftitle={AI Tutor Submission},
+	pdfauthor={Team 7}
+}
+
+% Format section titles to be larger and bold
+\titleformat*{\section}{\Large\bfseries}
+\titleformat*{\subsection}{\large\bfseries}
+\titleformat*{\subsubsection}{\normalsize\bfseries}
+
+% Setup for figures
+\captionsetup[figure]{labelsep=period, justification=centering, width=0.8\textwidth}
+
+% --- DOCUMENT INFORMATION ---
+\title{AI Tutor Submission}
+\author{Team 7 \\ Spencer Thompson \\ Landon Towers}
+\date{\today}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                      BEGIN DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               1-TeamOrganization.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Team Organization}
+	
+	\subsection*{Team 7}
+	\begin{itemize}
+		\item Spencer Thompson
+		\item Landon Towers
+	\end{itemize}
+	
+	% The original file had a ToC, which we are replacing with \tableofcontents
+	% We will start with the next section from that file.
+	
+	\subsection*{Team Organization}
+	\begin{itemize}
+		\item Spencer Thompson (Sprint Lead)
+		\item Landon Towers
+		\item \textbf{Meeting schedule:}
+		\begin{itemize}
+			\item \textbf{Professor:} Thursdays at 11:15 AM
+			\item \textbf{Sponsor:} Mondays at 2:00 PM
+			\item \textbf{Team:} Ad-hoc, scheduled weekly.
+		\end{itemize}
+	\end{itemize}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               2-ProjectDescription.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Project Description}
+	
+	The AI Tutor is a generative AI-powered learning assistant designed to support students at Utah Valley University (UVU). It provides a personalized and interactive learning experience by integrating with the Canvas Learning Management System (LMS). The application consists of a web-based frontend and a robust backend, working together to deliver a seamless and intuitive user experience.
+	
+	The frontend is a modern chat interface built with Svelte. It allows students to ask questions and receive answers from an AI tutor in a conversational manner. The interface supports rich text formatting, including markdown, code snippets with syntax highlighting, and mathematical equations using \LaTeX. This ensures that the AI can provide clear and easy-to-understand explanations for a wide range of subjects.
+	
+	The backend is the core of the AI Tutor, developed using Python and the FastAPI framework. It orchestrates the entire system, managing user authentication, data processing, and communication with external services. The backend uses a MongoDB database to store user data, chat history, and course information.
+	
+	One of the key features of the AI Tutor is its "smart chat" functionality. By securely accessing a student's data from Canvas—including their enrolled courses, assignments, grades, and activity stream—the AI can provide context-aware and personalized assistance. For example, a student can ask for a summary of their upcoming assignments, clarification on a specific course topic, or help with a difficult concept from a lecture. The AI can also be customized by the user with a bio, to further personalize the experience.
+	
+	To answer a wide range of questions, the AI Tutor is equipped with several tools. It can read the content of webpages, which is useful for providing explanations based on external resources. It can also execute Python code, allowing it to function as a calculator or to demonstrate programming concepts.
+	
+	The AI Tutor is designed to be a safe and reliable learning environment. It includes a moderation service that filters out inappropriate content, and it uses a secure authentication system based on JSON Web Tokens (JWT) to protect user data. The application is also designed to be scalable and maintainable, with a containerized architecture using Docker.
+	
+	In summary, the AI Tutor is a comprehensive and innovative learning platform that combines the power of generative AI with the rich data available in the Canvas LMS. It aims to provide UVU students with a powerful and accessible tool to enhance their learning experience and academic success.
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               3-MeetingContribution.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Meeting Log \& Contribution Form}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.9\textwidth]{week_5_log.png}
+		\caption*{Week 5 Log}
+	\end{figure}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.9\textwidth]{week_6_log.png}
+		\caption*{Week 6 Log}
+	\end{figure}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.9\textwidth]{week_7_log.png}
+		\caption*{Week 7 Log}
+	\end{figure}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               4-BacklogSprints.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Backlogs and Sprints}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\textwidth]{completion_timeline.png}
+		\caption*{Timeline, Description, and Backlog}
+	\end{figure}
+	
+	\subsubsection*{Sprint 1 (Sep 1 - Sep 14)}
+	\begin{itemize}
+		\item \textbf{Landon:} Plan new features, bug fixes and sprints.
+		\item \textbf{Spencer:} Outline team member responsibilities.
+		\item \textbf{Landon:} Design new features and major refactoring.
+		\item \textbf{Spencer:} Design how modules and separate code will communicate.
+		\item \textbf{Landon:} Design APIs.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 2 (Sep 15 - Sep 28)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Rapidly add new features.
+		\item \textbf{Landon:} Accumulate technical debt.
+		\item \textbf{Spencer:} Deploy.
+		\item \textbf{Landon:} Finish prototype for features.
+		\item \textbf{Spencer:} Identify problem areas and technical debt.
+		\item \textbf{Landon:} Deploy.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 3 (Sep 29 - Oct 12)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Add tests, polish features and fix bugs.
+		\item \textbf{Landon:} Deploy.
+		\item \textbf{Landon:} Pay back technical debt.
+		\item \textbf{Spencer:} Remove as much code as possible until the tutor breaks then fix it.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 4 (Oct 13 - Oct 26)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Write documentation, primarily code documentation of existing and new code.
+		\item \textbf{Landon:} Code comments and READMEs.
+		\item \textbf{Landon:} Plan any changes to features, and overdue fixes.
+		\item \textbf{Spencer:} Plan how to pay back more tricky aspects of technical debt.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 5 (Oct 27 - Nov 9)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Start or change new features.
+		\item \textbf{Landon:} Accumulate technical debt.
+		\item \textbf{Spencer:} Deploy.
+		\item \textbf{Landon:} Finish out all features in project scope.
+		\item \textbf{Spencer:} Identify technical debt.
+		\item \textbf{Landon:} Deploy.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 6 (Nov 10 - Nov 23)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Major code removal and addition of code comments.
+		\item \textbf{Landon:} Once again delete as much code as possible until the tutor breaks and fix again.
+		\item \textbf{Landon:} Polish out features.
+		\item \textbf{Spencer:} Fix bugs.
+		\item \textbf{Landon:} Tweak and enhance tutor behavior.
+		\item \textbf{Spencer:} Finish features.
+	\end{itemize}
+	
+	\subsubsection*{Sprint 7 (Nov 24 - Dec 7)}
+	\begin{itemize}
+		\item \textbf{Spencer:} Major code cleanup.
+		\item \textbf{Landon:} Make sure every file is documented with comments and doc-strings.
+		\item \textbf{Spencer:} Aim for maintainability.
+		\item \textbf{Landon:} Technical Report.
+		\item \textbf{Spencer:} Project Report.
+		\item \textbf{Landon:} Analytics Report.
+		\item \textbf{Spencer:} Project Finished.
+	\end{itemize}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               5-SRS.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Software Requirement Specification (SRS)}
+	
+	\subsection{Functional Requirements}
+	
+	\subsubsection{User Management}
+	\begin{itemize}
+		\item \textbf{F1.1:} Users must be able to log in to the system using their UVU credentials via Canvas OAuth2.
+		\item \textbf{F1.2:} The system must use JSON Web Tokens (JWT) for authenticating API requests after the initial login.
+		\item \textbf{F1.3:} Users shall be able to set a custom bio in their profile. The content of this bio will be included in the system prompt sent to the AI to influence its responses.
+		\item \textbf{F1.4:} The system shall provide an administrative dashboard that displays the following real-time analytics: total number of users, number of active users, and total messages sent.
+	\end{itemize}
+	
+	\subsubsection{Chat Interface}
+	\begin{itemize}
+		\item \textbf{F2.1:} The system shall provide a web-based chat interface for users to interact with the AI Tutor.
+		\item \textbf{F2.2:} The chat interface must display the conversation history, with user and AI messages clearly distinguished.
+		\item \textbf{F2.3:} The system shall stream messages to the client in real-time using websockets or a similar technology.
+		\item \textbf{F2.4:} The chat interface shall render AI responses in GitHub-flavored markdown, supporting tables, lists, bold, italics, and other standard formatting.
+		\item \textbf{F2.5:} The system must render mathematical equations formatted using \LaTeX syntax.
+		\item \textbf{F2.6:} The system must provide syntax highlighting for code snippets in Python, JavaScript, Java, C++, and SQL.
+	\end{itemize}
+	
+	\subsubsection{AI Tutor}
+	\begin{itemize}
+		\item \textbf{F3.1:} The AI Tutor shall generate responses to user queries using a large language model (LLM) specified in the system configuration (e.g., GPT-4, Claude 3).
+		\item \textbf{F3.3:} The system shall provide a "smart chat" feature that injects context from the user's Canvas data into the LLM prompt to generate personalized responses.
+		\item \textbf{F3.4:} The AI Tutor shall be able to retrieve the user's enrolled courses, upcoming assignments, and recent grades from the Canvas API.
+		\item \textbf{F3.5:} The AI Tutor shall have the ability to use the following tools to perform specific tasks:
+		\begin{itemize}
+			\item \textbf{F3.5.1:} A web scraper tool that can read the full text content of a webpage given a URL.
+			\item \textbf{F3.5.2:} A Python code interpreter that can execute sandboxed Python code to perform calculations or demonstrate programming concepts.
+		\end{itemize}
+		\item \textbf{F3.6:} All user input and AI-generated responses must be passed through a content moderation filter. Any content flagged as inappropriate (e.g., hate speech, violence) shall be blocked and logged.
+	\end{itemize}
+	
+	\subsection{Non-functional Requirements}
+	
+	\subsubsection{Security}
+	\begin{itemize}
+		\item \textbf{NF1.1:} All network communication between the client and server must be encrypted using TLS 1.2 or higher.
+		\item \textbf{NF1.2:} The system must be protected against the OWASP Top 10 web vulnerabilities, which includes Cross-Site Scripting (XSS) and NoSQL Injection.
+		\item \textbf{NF1.3:} Access to the backend API must be restricted to authenticated users with valid JWTs. Direct access via API keys is prohibited.
+		\item \textbf{NF1.4:} All user data, including Canvas information and chat history, must be encrypted at rest in the database using AES-256 encryption.
+	\end{itemize}
+	
+	\subsubsection{Performance}
+	\begin{itemize}
+		\item \textbf{NF2.1:} The user interface shall have a response time of less than 200ms for all user interactions (e.g., button clicks, page loads).
+		\item \textbf{NF2.2:} The first token of a streamed AI response shall be delivered to the client in under 2 seconds, on average.
+		\item \textbf{NF2.3:} The system shall initially support 100 concurrent users with an average API response time of under 500ms.
+	\end{itemize}
+	
+	\subsubsection{Usability}
+	\begin{itemize}
+		\item \textbf{NF3.1:} A new user must be able to successfully send a message in "smart chat" mode within 60 seconds of their first login without requiring documentation.
+		\item \textbf{NF3.2:} All error messages displayed to the user must include a unique error code and a clear, human-readable explanation of the problem.
+		\item \textbf{NF3.3:} The AI Tutor's responses shall achieve a Flesch-Kincaid grade level score between 8 and 12 to ensure they are understandable to a broad audience.
+	\end{itemize}
+	
+	\subsubsection{Scalability}
+	\begin{itemize}
+		\item \textbf{NF4.1:} The system shall be horizontally scalable. An increase in container instances must result in a proportional increase in user capacity.
+		\item \textbf{NF4.2:} The application shall be fully containerized using Docker, with all services defined in a \texttt{docker-compose.yml} file for automated deployment and scaling.
+	\end{itemize}
+	
+	\subsubsection{Reliability}
+	\begin{itemize}
+		\item \textbf{NF5.1:} The system shall have a service availability of 99.9\% (uptime).
+		\item \textbf{NF5.2:} The system shall have a Mean Time To Recovery (MTTR) of less than 15 minutes.
+		\item \textbf{NF5.3:} The content moderation filter shall have a false negative rate of less than 1\% for clearly inappropriate content.
+	\end{itemize}
+	
+	\subsubsection{Maintainability}
+	\begin{itemize}
+		\item \textbf{NF6.1:} All Python code must adhere to the PEP 8 style guide, enforced by an automated linter.
+		\item \textbf{NF6.2:} The application shall have a modular design, with a clear separation of concerns between the data, business logic, and presentation layers.
+		\item \textbf{NF6.3:} All new code committed to the main branch must have a minimum of 80\% unit test coverage.
+	\end{itemize}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               6-DemoCode.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Demo Code}
+	
+	Not available
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               7-Design.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Design}
+	\begin{itemize}
+		\item Class Diagram (High Cohesion and Loose Coupling)
+	\end{itemize}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\textwidth]{classdiagram.png}
+		\caption*{Class Diagram}
+	\end{figure}
+	
+	\begin{itemize}
+		\item Design patterns
+		\begin{itemize}
+			\item \textbf{Singleton Pattern:} The FastAPI application instance (\texttt{app}) and the MongoDB client (\texttt{app.mongodb\_client}) are initialized once and used throughout the application's lifecycle. This is managed by the \texttt{db\_lifpan} async context manager, ensuring a single, shared connection to the database.
+			\item \textbf{Strategy Pattern:} The backend can use different large language models (e.g., OpenAI, Anthropic) to generate responses. The \texttt{openai\_iter\_response} and \texttt{anthropic\_iter\_response} functions in \texttt{ai.py} represent different strategies for the same task. The application can select the strategy based on the user's choice of model.
+			\item \textbf{Decorator Pattern:} The FastAPI framework uses decorators extensively to define API endpoints (e.g., \texttt{@app.get}, \texttt{@app.post}). These decorators add routing and other functionality to the endpoint functions without modifying their core logic, which is a clear example of the Decorator pattern.
+		\end{itemize}
+		\item Architecture diagram
+	\end{itemize}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.9\textwidth]{archdiagram.png}
+		\caption*{Architecture Diagram}
+	\end{figure}
+	
+	\begin{itemize}
+		\item ERD diagram
+	\end{itemize}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\textwidth]{erddiagram.png}
+		\caption*{ERD Diagram}
+	\end{figure}
+	
+	\begin{itemize}
+		\item Use case diagram
+	\end{itemize}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.7\textwidth]{usecasediagram.png}
+		\caption*{Use Case Diagram}
+	\end{figure}
+	
+	\subsection{Use Case Descriptions}
+	\begin{itemize}
+		\item \textbf{Authenticate with UVU ID:} The user logs into the system. The system initiates an OAuth2 flow with the external Canvas LMS, which handles the actual authentication using the user's UVU credentials.
+		\item \textbf{Fetch User Profile:} The user retrieves their current profile information from the system, such as their name and custom bio, which is then displayed in the application's settings interface.
+		\item \textbf{Update User Profile:} The user modifies and saves their profile information (specifically their bio) to personalize the AI's tone and responses.
+		\item \textbf{List Conversations:} The user's client application requests and displays a list of all their past chat sessions, allowing them to select a previous conversation for review.
+		\item \textbf{Retrieve Conversation:} After a user selects a conversation from the list, the client application retrieves the full message history for that specific chat session from the server.
+		\item \textbf{Initiate Smart Chat:} The user starts a new conversation in "smart chat" mode. This is a distinct action that tells the backend to inject context from the user's Canvas data into the AI's prompt.
+		\item \textbf{Send Chat Message:} The user sends a query to the AI Tutor. This is the most common action. This use case can be extended with specialized tools if the query requires them.
+		\item \textbf{Access Course Info:} When a "Smart Chat" is active, the system automatically fetches the user's course information, assignments, and other relevant data from the Canvas API to provide context for the AI's response. This is a system action triggered by the user's chat message.
+		\item \textbf{Fetch Web Content:} As an extension of "Send Chat Message," if the user's query contains a URL, the AI can use this tool to access the content of that webpage to inform its answer.
+		\item \textbf{Execute Python Code:} As an extension of "Send Chat Message," the AI can use this tool to write and run Python code in a secure, sandboxed environment to perform calculations, run algorithms, or demonstrate programming concepts.
+		\item \textbf{View System Analytics:} The Administrator accesses a separate analytics dashboard (Plausible) to view aggregated, anonymized usage data and system performance metrics.
+	\end{itemize}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               8-TestingQA.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Testing}
+	\begin{itemize}
+		\item Testing Plan
+	\end{itemize}
+	This testing plan outlines the strategy and procedures to ensure the AI Tutor application is reliable, functional, and secure. The plan covers multiple levels of testing, from individual components to the system as a whole.
+	
+	\subsection{1. Scope}
+	This plan applies to all components of the AI Tutor project, including:
+	\begin{itemize}
+		\item \textbf{Backend:} The Python FastAPI application, including all API endpoints, business logic, and interactions with the database and external services (Canvas, LLMs).
+		\item \textbf{Frontend:} The Svelte-based web interface, including UI components, state management, and user interactions.
+		\item \textbf{Infrastructure:} The Docker-based containerization and deployment configuration.
+	\end{itemize}
+	
+	\subsection{2. Testing Strategy}
+	A multi-layered testing approach will be used to validate the application at different levels.
+	
+	\subsubsection{a. Unit Testing}
+	\begin{itemize}
+		\item \textbf{Objective:} To verify that individual functions and components work correctly in isolation.
+		\item \textbf{Backend (Python):} Each function in the FastAPI application will have corresponding unit tests. Mocking will be used to isolate components from external dependencies like the database or the Canvas API.
+		\begin{itemize}
+			\item \textbf{Tools:} \texttt{pytest}
+		\end{itemize}
+		\item \textbf{Frontend (Svelte):} Individual Svelte components and utility functions will be tested to ensure they render and behave as expected given specific props and user events.
+		\begin{itemize}
+			\item \textbf{Tools:} \texttt{Vitest}, \texttt{Svelte Testing Library}
+		\end{itemize}
+	\end{itemize}
+	
+	\subsubsection{b. Integration Testing}
+	\begin{itemize}
+		\item \textbf{Objective:} To verify that different parts of the application work together as intended.
+		\item \textbf{Backend:} Tests will focus on the interaction between API endpoints and the MongoDB database. For example, ensuring that creating a user via an endpoint correctly stores the user in the database.
+		\begin{itemize}
+			\item \textbf{Tools:} \texttt{pytest}, \texttt{TestClient} for FastAPI
+		\end{itemize}
+		\item \textbf{Frontend-Backend:} Tests will verify that the frontend can successfully make API calls to the backend and handle the responses correctly. This will involve running both the frontend and backend servers in a test environment.
+		\begin{itemize}
+			\item \textbf{Tools:} \texttt{Playwright} or \texttt{Cypress}
+		\end{itemize}
+	\end{itemize}
+	
+	\subsubsection{c. End-to-End (E2E) Testing}
+	\begin{itemize}
+		\item \textbf{Objective:} To simulate real user scenarios from start to finish, ensuring the entire application flow is working correctly.
+		\item \textbf{Scenarios:} Key user journeys will be tested, such as:
+		\begin{enumerate}
+			\item User logs in via Canvas, asks a question in Smart Chat, and receives a context-aware answer.
+			\item User updates their bio, starts a new chat, and verifies the AI's tone has changed.
+			\item User asks a question that requires executing Python code.
+		\end{enumerate}
+		\item \textbf{Tools:} \texttt{Playwright}
+	\end{itemize}
+	
+	\subsubsection{d. Security Testing}
+	\begin{itemize}
+		\item \textbf{Objective:} To identify and mitigate potential security vulnerabilities.
+		\item \textbf{Methods:}
+		\begin{itemize}
+			\item Regular dependency scanning to find known vulnerabilities in third-party packages.
+			\item Manual penetration testing of key endpoints, focusing on authentication (JWT handling) and input validation to prevent injection attacks.
+			\item Ensuring all sensitive data is handled securely and API keys are not exposed.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{3. Roles and Responsibilities}
+	\begin{itemize}
+		\item \textbf{All Team Members:} Responsible for writing unit tests for the code they develop.
+		\item \textbf{Sprint Lead:} Responsible for overseeing the testing process, running integration and E2E tests before a release, and managing bug reports.
+	\end{itemize}
+	
+	\subsection{4. Metrics and Quality Assurance}
+	\begin{itemize}
+		\item \textbf{Code Coverage:} Aim for a minimum of 80\% unit test coverage for the backend Python code, measured using \texttt{pytest-cov}.
+		\item \textbf{Bug Tracking:} All bugs will be logged as GitHub Issues. Each bug report will include a description, steps to reproduce, priority, and severity.
+		\item \textbf{Pass/Fail Criteria:} For a sprint to be considered complete, all unit and integration tests must pass, and there should be no outstanding critical or high-priority bugs.
+	\end{itemize}
+	\begin{itemize}
+		\item Test Cases
+	\end{itemize}
+	This section provides a sample of test cases derived from the testing plan. The \texttt{Test Date} is set to the creation date and \texttt{Pass/Fail} status is pending execution.
+	
+	\subsubsection{Unit Test Cases (Backend)}
+	
+	\begin{xltabular}{\textwidth}{|l|X|l|X|X|l|}
+		\caption{Unit Test Cases (Backend)} \label{tab:unit-backend} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{6}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{6}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		\textbf{UT-BE-01} & \textbf{User Model Validation:} Tests that the \texttt{User} Pydantic model in \texttt{models.py} successfully validates a correct user object. & 2025-10-05 & \texttt{\{"sub": "123", "name": "Test User"\}} & The \texttt{User} model is instantiated without errors. & Pending \\
+		\hline
+		\textbf{UT-BE-02} & \textbf{Invalid User Model:} Tests that the \texttt{User} model raises a \texttt{ValidationError} if required fields are missing. & 2025-10-05 & \texttt{\{"sub": "123"\}} (missing \texttt{name}) & A \texttt{pydantic.ValidationError} is raised. & Pending \\
+		\hline
+		\textbf{UT-BE-03} & \textbf{AI Response Formatting:} Tests a utility function in \texttt{ai.py} that formats a raw LLM response into the correct JSON structure for the frontend. & 2025-10-05 & Raw text string from a mocked LLM. & A valid JSON object with \texttt{type} and \texttt{content} fields is returned. & Pending \\
+	\end{xltabular}
+	
+	\subsubsection{Unit Test Cases (Frontend)}
+	
+	\begin{xltabular}{\textwidth}{|l|X|l|X|X|l|}
+		\caption{Unit Test Cases (Frontend)} \label{tab:unit-frontend} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{6}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{6}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		\textbf{UT-FE-01} & \textbf{Message Component Rendering:} Verifies that the \texttt{Message.svelte} component correctly displays the message text and author. & 2025-10-05 & \texttt{props = \{ author: "AI", text: "Hello!" \}} & The component renders a \texttt{div} containing the text "Hello!" and indicates it is from the "AI". & Pending \\
+		\hline
+		\textbf{UT-FE-02} & \textbf{Send Button Event:} Verifies that clicking the "Send" button in the \texttt{ChatInput.svelte} component dispatches a \texttt{send} event. & 2025-10-05 & User clicks the send button. & A \texttt{send} event is dispatched with the input field's text content as the payload. & Pending \\
+	\end{xltabular}
+	
+	\subsubsection{Integration Test Cases}
+	
+	\begin{xltabular}{\textwidth}{|l|X|l|X|X|l|}
+		\caption{Integration Test Cases} \label{tab:integration} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{6}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{6}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		\textbf{IT-BE-01} & \textbf{Get User Profile:} Verifies the \texttt{/api/users/me} endpoint. & 2025-10-05 & \texttt{GET} request to \texttt{/api/users/me} with a valid JWT for a user stored in the test database. & A \texttt{200 OK} response is returned with a JSON body containing the correct user's profile data. & Pending \\
+		\hline
+		\textbf{IT-BE-02} & \textbf{Create Conversation:} Verifies the \texttt{/api/conversations/} endpoint. & 2025-10-05 & \texttt{POST} request to \texttt{/api/conversations/} with a valid JWT and a title. & A \texttt{201 Created} response is returned, and a new conversation document is created in the database for that user. & Pending \\
+	\end{xltabular}
+	
+	\subsubsection{End-to-End Test Cases}
+	
+	\begin{xltabular}{\textwidth}{|l|X|l|X|X|l|}
+		\caption{End-to-End Test Cases} \label{tab:e2e} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{6}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{6}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		\textbf{E2E-01} & \textbf{Full Login and Chat Flow:} Simulates a user logging in, sending a message, and receiving a response. & 2025-10-05 & 1. Navigate to home page. 2. Click "Login". 3. Complete mock Canvas login. 4. Type "Hello" into chat. 5. Click "Send". & 1. User is redirected to Canvas. 2. User is redirected back to the app. 3. The message "Hello" appears in the chat window. 4. An AI response is streamed into the chat window. & Pending \\
+	\end{xltabular}
+	
+	\subsubsection{Security Test Cases}
+	
+	\begin{xltabular}{\textwidth}{|l|X|l|X|X|l|}
+		\caption{Security Test Cases} \label{tab:security} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{6}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Test Case \#} & \textbf{Description} & \textbf{Test Date} & \textbf{Inputs} & \textbf{Expected Outputs} & \textbf{Pass/Fail} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{6}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		\textbf{ST-01} & \textbf{Unauthorized API Access:} Attempt to access an authenticated endpoint without proper credentials. & 2025-10-05 & \texttt{GET} request to \texttt{/api/users/me} with no \texttt{Authorization} header. & The API returns a \texttt{401 Unauthorized} or \texttt{403 Forbidden} status code. & Pending \\
+		\hline
+		\textbf{ST-02} & \textbf{XSS in Chat Input:} Attempt to inject a script into the chat. & 2025-10-05 & User types \texttt{<script>alert('XSS')</script>} into the chat input and sends. & The message is displayed as plain text in the chat window, and no alert dialog appears. The script is sanitized. & Pending \\
+	\end{xltabular}
+	
+	\begin{itemize}
+		\item Bug Report
+	\end{itemize}
+	\textit{This section will be populated with bug reports as they are identified during the testing process. At this time, formal testing has not yet begun.}
+	
+	\begin{xltabular}{\textwidth}{|l|l|l|l|l|l|l|}
+		\caption{Bug Report} \label{tab:bug-report} \\
+		\hline
+		\textbf{Date} & \textbf{Tester} & \textbf{Test Case Number} & \textbf{Priority} & \textbf{Severity Level} & \textbf{Assigned Developer} & \textbf{Fix Date} \\
+		\hline
+		\endfirsthead
+		
+		\multicolumn{7}{c}%
+		{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+		\hline
+		\textbf{Date} & \textbf{Tester} & \textbf{Test Case Number} & \textbf{Priority} & \textbf{Severity Level} & \textbf{Assigned Developer} & \textbf{Fix Date} \\
+		\hline
+		\endhead
+		
+		\hline \multicolumn{7}{r}{{Continued on next page}} \\
+		\endfoot
+		
+		\hline
+		\endlastfoot
+		& & & & & & \\
+	\end{xltabular}
+	
+	\begin{itemize}
+		\item Assessment Report
+	\end{itemize}
+	\textit{This section will contain an analysis of the testing results, including metrics trends and an overall assessment of application quality. This report will be generated after the initial testing cycles are complete.}
+	
+	\subsection{5. Preventive QA}
+	\begin{itemize}
+		\item \textbf{Static Code Analysis:} Automated tools will be used to analyze the source code without executing it. This helps to identify potential vulnerabilities, bugs, and code smells early in the development process.
+		\begin{itemize}
+			\item \textbf{Tools:} \texttt{ruff}, \texttt{bandit}
+		\end{itemize}
+		\item \textbf{Code Reviews:} All new code will be reviewed by at least one other team member before it is merged into the main branch. This helps to ensure code quality, consistency, and knowledge sharing among the team.
+		\item \textbf{Coding Standards:} The team will adhere to a consistent set of coding standards (e.g., PEP 8 for Python) to ensure that the codebase is readable and maintainable.
+	\end{itemize}
+	
+	\subsection{6. Design and Maintenance Metrics}
+	
+	\subsubsection{a. Design Metrics}
+	\begin{itemize}
+		\item \textbf{Cyclomatic Complexity:} This metric measures the complexity of a function's decision-making logic. A high cyclomatic complexity can indicate that a function is difficult to test and maintain. The target is to keep the cyclomatic complexity of all functions below 10.
+		\item \textbf{Coupling:} This metric measures the degree of interdependence between modules. Low coupling is desirable, as it makes it easier to modify one module without affecting others.
+		\item \textbf{Cohesion:} This metric measures how closely related the responsibilities of a single module are. High cohesion is desirable, as it indicates that a module has a well-defined purpose.
+	\end{itemize}
+	
+	\subsubsection{b. Maintenance Metrics}
+	\begin{itemize}
+		\item \textbf{Mean Time To Repair (MTTR):} This metric measures the average time it takes to fix a bug, from the time it is reported to the time a fix is deployed. The target MTTR for critical bugs is less than 24 hours.
+		\item \textbf{Mean Time Between Failures (MTBF):} This metric measures the average time between system failures. A high MTBF indicates a reliable system. The target MTBF is greater than 1000 hours.
+		\item \textbf{Code Churn:} This metric measures the number of times a file is modified. A high code churn can indicate that a file is a "hotspot" in the codebase and may be a candidate for refactoring.
+	\end{itemize}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               9-Feedback.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Feedback Analysis and Action Plan}
+	
+	\subsection{Analysis of Feedback}
+	
+	The user feedback is generally positive, with users appreciating the AI Tutor's integration with Canvas for accessing assignments and grades. The ability to answer specific questions and provide summaries is also highly valued. However, several key areas for improvement have been identified:
+	
+	\textbf{Key Issues \& Bugs:}
+	\begin{itemize}
+		\item \textbf{Accuracy:} There are instances of the AI providing incorrect information, particularly regarding class schedules and assignments with distant due dates.
+		\item \textbf{Stability:} Several users reported crashes and error messages, especially when asking certain types of questions.
+		\item \textbf{Complex Queries:} The AI struggles with complex or multi-part questions and does not handle "cafeteria-style" grading structures well.
+		\item \textbf{Scope:} The AI's knowledge is limited to the information it can access, leading to incorrect assumptions (e.g., all assignments are required).
+	\end{itemize}
+	
+	\textbf{Feature Requests \& Suggestions:}
+	\begin{itemize}
+		\item \textbf{Syllabus Integration:} Direct access to the course syllabus would significantly improve accuracy, especially for grading policies and assignment requirements.
+		\item \textbf{Expanded Scope:} Users want the AI to provide information on school events, announcements, and course locations (including a map).
+		\item \textbf{Improved Task Management:} Suggestions include adding timeframes to assignments and providing reminders for due dates.
+		\item \textbf{Onboarding:} Some users were confused about how to use the tool or that it required a browser extension.
+	\end{itemize}
+	
+	\subsection{Plan to Address Feedback}
+	
+	Based on the analysis, the following actions are proposed:
+	
+	\begin{enumerate}
+		\item \textbf{Improve Accuracy and Stability:}
+		\begin{itemize}
+			\item \textbf{Bug Fixing:} Prioritize fixing the identified bugs, including the causes of crashes and incorrect information.
+			\item \textbf{Enhanced Canvas Integration:} Improve the data retrieval from Canvas to get more accurate and complete information, including assignments with distant due dates.
+			\item \textbf{Contextual Understanding:} Improve the AI's ability to understand the context of questions, especially for complex and multi-part queries.
+		\end{itemize}
+		
+		\item \textbf{Implement High-Impact Features:}
+		\begin{itemize}
+			\item \textbf{Syllabus Integration:} Develop a feature to allow the AI to access and understand the course syllabus. This will be the highest priority new feature.
+			\item \textbf{Improved Onboarding:} Create a better onboarding experience for new users, explaining how to use the tool and its limitations.
+			\item \textbf{Task Management Features:} Investigate the feasibility of adding timeframes to assignments and a reminder system.
+		\end{itemize}
+		
+		\item \textbf{Expand the AI's Knowledge Base:}
+		\begin{itemize}
+			\item \textbf{School-wide Information:} Explore the possibility of integrating with other school systems to provide information on events and announcements.
+			\item \textbf{Location Services:} Investigate adding a map feature for course locations.
+		\end{itemize}
+		
+		\item \textbf{Continuous Improvement:}
+		\begin{itemize}
+			\item \textbf{Feedback Mechanism:} Implement a more direct way for users to provide feedback within the application.
+			\item \textbf{Monitoring:} Continue to monitor user feedback and system performance to identify and address issues proactively.
+		\end{itemize}
+	\end{enumerate}
+	
+	\subsection{User Feedback}
+	
+	\begin{quote}
+		The AI tutor was very helpful. I was surprised at how well it was able to access the information in Canvas. I was able to ask it some very specific questions about grades, and it had the answers. I also had a question about accessing my textbooks through Wolverine Access and it was able to answer than and help me find what I was looking for. I likely wouldn't have been able to find it on my own very easily, and I found it useful to have the AI Tutor to help me.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		After I downloaded the Ai, the first question I asked was, "What are my missing assignments?"  It gave me a list of upcoming assignments due this week.  Basically I asked it questions about assignments, due dates and which are most urgent.  The feedback was on point.  I will continue to use the Ai to check on my assignments and grades as well.  I feel it lacks in the accuracy of providing overall school events, announcements and personalization of course times and location; I 'm feel a map for location to each course would really help, especially in the first couple weeks of class.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		The AI tutor was interesting. I didn't appreciate that I had to download an extension in order to use it, but I digress. I enjoyed the AI tutor. I asked it to help me understand technology that goes with human genome editing. We started off with what it is, how the editing works, key players, editing techniques, an overview, ethics, and then it asked me to ask more questions so we could refine my understanding and move deeper into our understanding of this topic. I will probably use this tutor for math, because that is what I struggle with the most.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I asked it to create a homework schedule where I take 3 hours per class per week. Which is honestly on par with what I do typically. The feature I appreciate most is it seems to be oriented to serving UVU students which is nice, but will become a pitfall if a BYU student tried to use this program. I won't mention improvements just yet since I expect to experience some things as I use this system I rather not give feedback just yet. I'm not sure how I will use this program.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		After downloading the AI tutor I am unsure of where to implement this, I noticed that the tutor is still in development. Hopefully I will be able to use this in canvas to assess what my standings are in my courses.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I asked the AI tutor about the Delphinium program since I hadn't used it before. I first asked if points show up automatically after completing assignments or if you have to wait for grading, and it answered my question. However, I found the AI less helpful in a cafeteria-style format. When I asked if TechTip assignments were required, it said all assignments were required, which could be improved with syllabus access. I plan to keep using the AI tutor for questions, as it often provides answers before I need to ask my teacher.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I found the AI tutor helpful in explaining assignments, sometimes it helps just to see it reworded. This semester I have two cafeteria style classes, including this one. I've been told multiple times that canvas doesn't understand cafeteria style, so I was curious if the AI understood it. When I asked it to explain the grading system for those classes, it told me that there were categories weighted differently that would contribute to a final grade. I tried being more specific, and asked it to explain the system based off the syllabus, but it gave me the same answer. I do think I will use it to explain confusing assignments, but definitely double check everything it says.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		AI Tutor is a lot cooler than I had expected going into this and am glad I did.  The connectivity it has with all my school info is extremally helpful for wanting to know when my next test might be.  I put it through some stress tests to see if it would falter, but it gave me what I was looking for every time.  I plan to actually use this in the future for all school related needs.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		My experience with the AI tutor was mixed. With my first question I asked if I had
+		any upcoming assignments in my aviation class. I did not mention the title of this class
+		as this class was called AVSC 1010 but it understood that this class was the class I was
+		talking about. However it could not pull up an assignment that was due later this month
+		in that class.
+		My second question was probably the most successful question. I asked what
+		assignments were due this week and it pulled up all the assignments that were due this
+		week from all five of my courses. They were all correct and this made me very happy.
+		It does not take multiple questions at once, it struggled with midterms but defined
+		other things extremely well. In the future, I will probably just ask it simple questions
+		regarding the syllabus or due dates which it accomplishes very well. Overall the AI tutor
+		has potential.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I asked the Ai assistant to tell me the things I need to get done for the week. I asked the Ai than to assist me on prioritizing my time for the assignments this week. I found out that it gives you links quickly to the assignments due. I would recommend adding timeframes for assigments to better organize my time and attention. I plan to use it to help me organize and prioritize my assignments in the week and month throughout the semester.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I got a message that said the AI Tutor is currently in development, I do not know if that is why I could not really use it.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I thought that the AI tutor was really cool, I first asked it when my next assignment was due and it gave me a list in each course and even the next due date! I think that it is super helpful that it connects to my canvas courses. I think that the AI tutor will be really helpful in understanding complicated subjects without needing to head to google.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		With AI tutor I asked it many questions about questions I was being asked to complete assignments and it gave me ideas on how I could answer the question. I thought it was cool how it synced up to my canvas and could specifically ask questions about the courses I am taking. I think I can use Tutor AI to ask questions and help me brainstorm for my classes.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		At first I thought that having another AI but this one is just for Canvas felt redundant, since I can use one to ask questions that I may have about the assignment, but the moment I asked it about the upcoming assignments, not only did it show all the assignment and their due dates, it also gave a brief sentence on what to expect on it, which is super nice considering that it takes a lot of time reading, and then understanding. This AI does help a lot in the realm of focusing the tasks, and since it's tailored towards my assignments, I will find myself using to ask specific questions instead of asking the professor and waiting for a response, although, it's important to remember that if I have a question to always ask the professor first.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I asked the AI Tutor about an assignment that's due on wednesday, and it brought up the assignment requirements, details, dates, and basically anything important. I like how you can select specific classes, as well as how it has access to the course so it can give you specific information about assignments, due dates, requirements, etc. I also like how it gives you links for the specific information it is giving you, that could help very much if you can't find a specific detail, date, or really anything.. It could be very useful. I will probably use it to summarize assignments and simplify my workload.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		The Artificial Intelligence Tutor tool helps me stay on top of my assignments. It can help me create a schedule that will allow me to stay on top of my assignments, without falling behind. Often as a student, it can be difficult to manage large workloads for multiple different classes. With the Artificial Intelligence Tutor, students can finally have aid in completing their assignments and creating ways to get ahead of them. As a Utah Valley University student, I will use the Artificial Intelligence Tutor to aid me with any questions regarding how to prepare best to complete my assignments and complete them before the assigned due date.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I found this AI Tutor to not be the best. It helped me with very simple tasks such as "When is my next assignment due?", however when I asked another question that I thought was as simple as the one I just asked, "When do I have these classes?" half of the time it crashed on me showing me an error sign, the other 50\% of the time it mixed up my classes, telling me that the classes I have on Monday and Wednesday, according to the AI, I have it on Tuesday and Thursday which is incorrect. I am incredibly hesitant about using this AI feature this semester as I encountered many bugs in most of my experiences with it. Once I see this application more ironed out, I may come to use it.
+	\end{quote}	
+	
+	\hrule
+	
+	\begin{quote}
+		I used AI Tutor to give me some background information about the play Antigone, by Sophocles. I asked about this because I have a discussion next week in my philosophy class so I wanted to get some brief background knowledge before I start reading the play. It helped go over the play and even added key themes and cultural context about the play. In all it helped me get a better understanding about what I am about to get into. I may use AI Tutor to help me with small things or to ask it questions to help guide me in the right direction of the topic.
+	\end{quote}
+	
+	\hrule
+	
+	\begin{quote}
+		I asked the AI tutor to help me create a schedule to keep up with my History class and its readings. Not that I really need it but I just wanted to see what it could do. It did create a schedule but only for this week and for the two classes I asked it not to do, haha. That's all that I asked it to do because I didn't have a ton of time to explore it. I would use it to send me reminders or something for assignments a day before it is due. I do pretty good about remembering to turn stuff in but occasionally I forget smaller assignments.
+	\end{quote}
+	\clearpage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%               10-Readme.md
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Readme}
+	
+	This is the repository for the Generative AI Tutor pioneered at \href{https://www.uvu.edu/}{UVU}.
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.9\textwidth]{mainpage.png}
+		\caption*{AI Tutor Homepage}
+	\end{figure}
+	
+	\subsection{Introduction}
+	
+	The AI Tutor project has been under active development for quite some time, started back in early 2024.
+	In discussions with the excellent faculty in the Tech Management Department at Utah Valley University,
+	we hypothesized that using the new and exciting technology of large language models,
+	we could provide excellent, \textit{personalized} tutoring to students \textit{whenever they needed it}.
+	
+	So, we set out to provide a novel way to accomplish this goal.
+	The original AI Tutor was indeed a success, quickly being adopted into a several courses at Utah Valley University,
+	and gaining attention among multiple departments and more than a handful of students.
+	
+	This repository is where that code lives.
+	
+	\subsection{Design}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\textwidth]{ai-tutor-2-diagram-light.png}
+		\caption*{An overview of the system design of the AI Tutor}
+	\end{figure}
+	
+	\subsection{Development}
+	
+	In order to run the project in development mode:
+	
+	\begin{enumerate}
+		\item Ensure \href{https://www.docker.com/}{Docker} and \href{https://docs.docker.com/compose/install/}{Docker Compose} are installed.
+		\item In the project root directory, run the command: \texttt{docker compose -f develop.yaml build}
+		\item Then, still in the project root, run: \texttt{docker compose -f develop.yaml up --watch}
+		\item Everything should be up and running :)
+	\end{enumerate}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.8\textwidth]{compiling.png}
+		\caption*{Docker Building}
+	\end{figure}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.8\textwidth]{dockerrunning.png}
+		\caption*{Docker Running}
+	\end{figure}
+	
+	\subsection{Deployment}
+	\begin{itemize}
+		\item Our deployments are hosted on a \href{https://www.hetzner.com/cloud}{Hetzner} virtual private server.
+	\end{itemize}
+	
+	\begin{enumerate}
+		\item We use \href{https://github.com/casey/just}{just} to bundle everything needed to deploy into one command \texttt{just deploy}
+		\item This essentially just uses \texttt{rsync} and \texttt{ssh} to send the files up, build the docker containers, and run them.
+	\end{enumerate}
+	
+	\subsection{Acknowledgments}
+	\begin{itemize}
+		\item \textbf{\href{https://www.uvu.edu/directory/employee/?id=eXpuVHFkeWcrVkF0N2pvTjdpNmg2dz09}{Dr. Ahmed Alsharif}}: For making everything possible and supporting this project so wholeheartedly.
+		\item \textbf{\href{https://www.uvu.edu/directory/employee/?id=ZnBHYXBLNUN3cUgvV2ZNQjFVTEUzdz09}{Dr. Armen Ilikchyan}}: For paving the way, and providing invaluable guidance.
+	\end{itemize}
+	\clearpage
+	
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                      END DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

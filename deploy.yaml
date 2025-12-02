@@ -15,7 +15,8 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
-    command: fastapi run main.py --host 0.0.0.0 --port 8080
+    # command: fastapi run main.py --host 0.0.0.0 --port 8080
+    command: uv run fastapi run main.py --host 0.0.0.0 --port 8080
     restart: unless-stopped
     develop:
       watch:
@@ -33,6 +34,9 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MONGO_USERNAME: ${MONGO_USERNAME}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_APP_USERNAME: ${MONGO_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_AUTH_SOURCE: ${MONGO_AUTH_SOURCE:-admin}
     depends_on:
       # - mongo
       - traefik
@@ -52,7 +56,7 @@ services:
     build:
       context: ./streamlit/
       dockerfile: Dockerfile
-    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    command: uv run streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN}

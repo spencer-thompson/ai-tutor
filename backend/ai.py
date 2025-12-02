@@ -15,8 +15,9 @@ from typing import Dict, List
 from anthropic import AsyncAnthropic
 from httpx import AsyncClient
 from markdownify import markdownify as md
-from models import Message
 from openai import AsyncOpenAI
+
+from models import Message
 
 CHAT_MODEL = os.getenv("CHAT_MODEL")
 
