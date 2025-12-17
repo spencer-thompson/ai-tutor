@@ -996,7 +996,7 @@ assurance and enables confident refactoring and feature development.
 
 === Performance
 
-- #sym.ballot.heavy *NF2.1:* The user interface shall have a response time of less than 200ms for all user interactions (e.g., button clicks, page loads).
+- #sym.ballot.heavy *NF2.1:* The user interface shall have a response time of less than 500ms for all user interactions.
 
 - #sym.ballot.heavy *NF2.2:* The first token of a streamed AI response shall be delivered to the client in under 2 seconds, on average.
 
@@ -1010,11 +1010,13 @@ assurance and enables confident refactoring and feature development.
 
 - #sym.ballot.cross *NF3.3:* The AI Tutor's responses shall achieve a Flesch-Kincaid grade level score between 8 and 12 to ensure they are understandable to a broad audience.
 
+- #sym.ballot.heavy *NF3.4:* The AI Tutor's responses should accurately reflect what a user sees on Canvas.
+
 === Scalability
 
-- #sym.ballot.cross *NF4.1:* The system shall be horizontally scalable. An increase in container instances must result in a proportional increase in user capacity.
+- #sym.ballot.cross *NF4.1:* The system shall be able to scale horizontally. An increase in container instances must result in a proportional increase in user capacity.
 
-- #sym.ballot.heavy *NF4.2:* The application shall be fully containerized using Docker, with all services defined in a `docker-compose.yml` file for automated deployment and scaling.
+- #sym.ballot.heavy *NF4.2:* The application shall be fully containerized using Docker, with all services defined in a `docker-compose.yaml` file for automated deployment and scaling.
 
 === Reliability
 
