@@ -62,6 +62,16 @@ appDb.keys.updateOne(
   { upsert: true },
 );
 
+devKeyObj = {};
+devKeyObj[devApiKey] = "Development API key for browser extension";
+appDb.keys.updateOne(
+  { key: devApiKey },
+  {
+    $set: devKeyObj,
+  },
+  { upsert: true },
+);
+
 print("[mongo-init] Upserted development API key into 'keys' collection.");
 
 print(`\n[mongo-init] Database '${appDbName}' is ready for development.`);
